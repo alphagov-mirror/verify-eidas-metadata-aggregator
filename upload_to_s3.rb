@@ -16,6 +16,6 @@ s3 = Aws::S3::Resource.new(region: aws_region)
 metadata_list.each do |country, url|
   obj = s3.bucket(bucket_name).object(country)
   metadata = `curl -A "Mozilla" --max-time 60 #{url}`
-  obj.put(body: metadata, server_side_encryption: encryption_algorithm)
+  obj.put(body: metadata, server_side_encryption: encryption_algorithm, acl: 'public-read')
 end
 
