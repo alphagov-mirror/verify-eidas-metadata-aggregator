@@ -1,7 +1,26 @@
 CEF Proxy Node metadata: https://cef-proxy-node-eidas-joint.cloudapps.digital/ServiceMetadata
 Stub Country metadata: https://idp-stub-joint.ida.digital.cabinet-office.gov.uk/stub-country/ServiceMetadata
-Poland metadata: https://plnode.eidas.gov.pl/EidasNode/ServiceMetadata
-Italy metadata: https://service.eid.gov.it/ServiceMetadata
-Spain metadata: https://se-eidas.redsara.es/EidasNode/ServiceMetadata
+
+# Unreachable - awaiting whitelisting of our IP
+# Poland metadata: https://plnode.eidas.gov.pl/EidasNode/ServiceMetadata
+
+# Namespace issues? need to make sure it is readable by our resolvers
+# Italy metadata: https://service.eid.gov.it/ServiceMetadata
+
+# Malformed XML
+# Spain metadata: https://se-eidas.redsara.es/EidasNode/ServiceMetadata
+
+# Unreachable
+# Denmark metadata: http://eidas-pilot.digst.dk/EidasNode/ServiceMetadata
+
+# No info 
+# Luxembourg metadata: 
+
 Netherlands metadata: https://acc-eidas.minez.nl/EidasNodeP/ServiceMetadata
-Belgium metadata: https://idp-poc2.iamfas.qa.belgium.be/EidasNode/ServiceMetadata
+Belgium metadata: https://idp.iamfas.qa.belgium.be/EidasNode/ServiceMetadata
+Estonia metadata: https://eidastest.eesti.ee/EidasNode/ServiceMetadata
+Sweden metadata: https://se.proxy.qa.sveidas.se/eidas-ps/ServiceMetadata
+
+# Invalid TLS certificate chain
+# Croatia: https://eidastst.fina.hr/EidasNode/ServiceMetadata
+
