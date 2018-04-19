@@ -1,5 +1,5 @@
 CEF Proxy Node metadata: https://cef-proxy-node-eidas-joint.cloudapps.digital/ServiceMetadata
-Stub Country metadata: https://idp-stub-joint.ida.digital.cabinet-office.gov.uk/stub-country/ServiceMetadata
+Stub Country metadata: https://ida-stub-idp-joint.cloudapps.digital/stub-country/ServiceMetadata
 
 # Unreachable - awaiting whitelisting of our IP
 # Poland metadata: https://plnode.eidas.gov.pl/EidasNode/ServiceMetadata
