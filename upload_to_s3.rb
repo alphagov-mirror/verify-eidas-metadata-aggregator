@@ -4,12 +4,16 @@ require 'aws-sdk-s3'
 require 'yaml'
 require 'cgi'
 
-aws_region = 'eu-west-1'
-bucket_name = 'govukverify-eidas-metadata-aggregator-dev'
+aws_region = ENV['AWS_REGION']
+bucket_name = ENV['BUCKET_NAME']
 encryption_algorithm = 'AES256'
-metadata_list_file = File.join(__dir__, 'metadata_list.yml')
+metadata_list_file = ENV['METADATA_FILE']
 
-metadata_list = YAML.load_file metadata_list_file
+puts "*"*50
+puts "PUSHING METADATA FROM FILE #{metadata_list_file} TO #{bucket_name} IN #{aws_region}"
+puts "*"*50
+
+metadata_list = YAML.load_file File.join(__dir__, metadata_list_file)
 abort("Error: File supplied is not valid YAML") unless metadata_list
 
 s3 = Aws::S3::Resource.new(region: aws_region)

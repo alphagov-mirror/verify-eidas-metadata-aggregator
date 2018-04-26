@@ -1,5 +1,4 @@
-CEF Proxy Node metadata: https://cef-proxy-node-eidas-joint.cloudapps.digital/ServiceMetadata
-Stub Country metadata: https://ida-stub-idp-joint.cloudapps.digital/stub-country/ServiceMetadata
+Stub Country metadata: https://ida-stub-idp-integration.cloudapps.digital/stub-country/ServiceMetadata
 
 # Unreachable - awaiting whitelisting of our IP
 # Poland metadata: https://plnode.eidas.gov.pl/EidasNode/ServiceMetadata
@@ -16,8 +15,9 @@ Stub Country metadata: https://ida-stub-idp-joint.cloudapps.digital/stub-country
 # No info 
 # Luxembourg metadata: 
 
-Netherlands metadata: https://acc-eidas.minez.nl/EidasNodeP/ServiceMetadata
-Belgium metadata: https://idp.iamfas.qa.belgium.be/EidasNode/ServiceMetadata
+# Netherlands metadata: https://acc-eidas.minez.nl/EidasNodeP/ServiceMetadata
+# Belgium metadata: https://idp.iamfas.qa.belgium.be/EidasNode/ServiceMetadata
+
 Estonia metadata: https://eidastest.eesti.ee/EidasNode/ServiceMetadata
 Sweden metadata: https://se.proxy.qa.sveidas.se/eidas-ps/ServiceMetadata
 
