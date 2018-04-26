@@ -9,8 +9,7 @@ bucket_name = ENV['BUCKET_NAME']
 encryption_algorithm = 'AES256'
 metadata_list_file = ENV['METADATA_FILE']
 
-abort('Please supply AWS_REGION, BUCKET_NAME, METADATA_FILE as environment variables') unless aws_re
-gion && bucket_name && metadata_list_file
+abort('Please supply AWS_REGION, BUCKET_NAME, METADATA_FILE as environment variables') unless aws_region && bucket_name && metadata_list_file
 
 puts "*"*50
 puts "PUSHING METADATA FROM FILE #{metadata_list_file} TO #{bucket_name} IN #{aws_region}"
