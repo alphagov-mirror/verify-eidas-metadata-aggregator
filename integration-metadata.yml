@@ -19,7 +19,7 @@ Stub Country metadata: https://ida-stub-idp-integration.cloudapps.digital/stub-c
 # Belgium metadata: https://idp.iamfas.qa.belgium.be/EidasNode/ServiceMetadata
 
 Estonia metadata: https://eidastest.eesti.ee/EidasNode/ServiceMetadata
-Sweden metadata: https://se.proxy.qa.sveidas.se/eidas-ps/ServiceMetadata
+Sweden metadata: https://qa.proxy.eidas.swedenconnect.se/eidas-ps/ServiceMetadata
 
 # Invalid TLS certificate chain
 # Croatia: https://eidastst.fina.hr/EidasNode/ServiceMetadata
