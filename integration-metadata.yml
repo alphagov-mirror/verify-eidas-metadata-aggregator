@@ -9,8 +9,7 @@ Stub Country metadata: https://ida-stub-idp-integration.cloudapps.digital/stub-c
 # Malformed XML
 # Spain metadata: https://se-eidas.redsara.es/EidasNode/ServiceMetadata
 
-# Unreachable
-# Denmark metadata: http://eidas-pilot.digst.dk/EidasNode/ServiceMetadata
+Denmark metadata: https://eidas-pilot.digst.dk/eidas-ps-dk/ServiceMetadata
 
 # No info 
 # Luxembourg metadata: 
