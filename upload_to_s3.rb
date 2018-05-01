@@ -22,6 +22,15 @@ s3 = Aws::S3::Resource.new(region: aws_region)
 updated_metadata = []
 
 metadata_list.each do |country, url|
+  # Convert to Hex
+  s3_object_key = url.unpack('H*')[0].downcase
+  updated_metadata << s3_object_key
+  obj = s3.bucket(bucket_name).object(s3_object_key)
+  metadata = `curl -A "Mozilla" --max-time 15 #{url}`
+  obj.put(body: metadata, server_side_encryption: encryption_algorithm, acl: 'public-read', content_type: 'application/samlmetadata+xml')
+end
+
+metadata_list.each do |country, url|
   s3_object_key = CGI.escape url
   updated_metadata << s3_object_key
   obj = s3.bucket(bucket_name).object(s3_object_key)
