@@ -1,78 +1,68 @@
 package uk.gov.ida.metadataaggregator;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.text.MessageFormat;
 import java.util.Collection;
+
+import static uk.gov.ida.metadataaggregator.Logging.*;
 
 @SuppressWarnings("unused")
 public class MetadataAggregator {
 
-    private final S3Handler s3Handler = new S3Handler();
+    public void s3BucketLambda(AggregatorConfig testObject) {
+        S3BucketClient s3BucketClient = new S3BucketClient();
+        aggregateMetadata(s3BucketClient, s3BucketClient);
+    }
 
-    @SuppressWarnings("unused")
-    public void myHandler(AggregatorConfig testObject) {
-
+    private void aggregateMetadata(ConfigSource configSource, MetadataUploader metadataDestination) {
         AggregatorConfig config;
         try {
-            config = s3Handler.downloadResource();
-        } catch(AmazonClientException e) {
-            Logging.log("Error retrieving file from {0}", e, s3Handler.getConfigSource());
-            return;
+            config = configSource.downloadConfig();
         } catch (IOException e) {
-            Logging.log("Unable to parse config file", e);
+            log("Unable to retrieve config file", e);
             return;
         }
 
-        Logging.log("Processing country metadata");
+        log("Processing country metadata");
 
         int successfulUploads = 0;
         Collection<String> metadataUrls = config.getMetadataUrls();
 
         for (String url : metadataUrls) {
-            boolean successfulUpload = processMetadataFrom(url);
+            boolean successfulUpload = processMetadataFrom(url, metadataDestination);
             if (successfulUpload) successfulUploads++;
         }
 
-        Logging.log(
+        log(
                 "Finished processing country metadata with {0} successful uploads out of {1}",
                 successfulUploads,
                 metadataUrls.size()
         );
     }
 
-    AggregatorConfig downloadResource() throws IOException {
-        return s3Handler.downloadResource();
-    }
-
-    private boolean processMetadataFrom(String url) {
-        String aggregatedMetadata;
+    private boolean processMetadataFrom(String url, MetadataUploader metadataDestination) {
+        String countryMetadataFile;
         try {
-            aggregatedMetadata = downloadUrl(url);
+            countryMetadataFile = downloadMetadata(url);
         } catch (IOException e) {
-            Logging.log("Error downloading metadata file {0}", e, url);
+            log("Error downloading metadata file {0}", e, url);
             return false;
         }
-
-        int contentLength = aggregatedMetadata.length();
 
         try {
-            s3Handler.uploadMetadata(url, aggregatedMetadata, objectMetadata(contentLength));
-        } catch (UnsupportedEncodingException e) {
-            Logging.log("Error uploading metadata file {0} to S3 bucket", e, url);
+            metadataDestination.uploadMetadata(url, countryMetadataFile);
+        } catch (IOException e) {
+            log("Error uploading metadata file {0}", e, url);
             return false;
         }
+
         return true;
     }
 
-    private String downloadUrl(String url) throws IOException {
+    private String downloadMetadata(String url) throws IOException {
         URLConnection urlConnection = new URL(url).openConnection();
         BufferedReader in = new BufferedReader(new InputStreamReader(
                 urlConnection.getInputStream()));
@@ -84,22 +74,5 @@ public class MetadataAggregator {
         in.close();
 
         return html.toString();
-    }
-
-    private ObjectMetadata objectMetadata(int contentLength) {
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(contentLength);
-        return metadata;
-    }
-
-    static class Logging {
-        static void log(String message, Throwable e, Object... args) {
-            log(message + ": " + e.getMessage(), args);
-            e.printStackTrace();
-        }
-
-        static void log(String message, Object... args) {
-            System.out.println(MessageFormat.format(message, args));
-        }
     }
 }
