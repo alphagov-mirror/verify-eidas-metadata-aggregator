@@ -1,3 +1,5 @@
-CEF Proxy Node metadata: https://cef-proxy-node-eidas-joint.cloudapps.digital/ServiceMetadata
-Stub Country metadata: https://ida-stub-idp-joint.cloudapps.digital/stub-country/ServiceMetadata
+CEF Proxy Node:
+  url: https://cef-proxy-node-eidas-joint.cloudapps.digital/ServiceMetadata
+Stub Country:
+  url: https://ida-stub-idp-joint.cloudapps.digital/stub-country/ServiceMetadata
 

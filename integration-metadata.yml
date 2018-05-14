@@ -1,21 +1,28 @@
-Stub Country metadata: https://ida-stub-idp-integration.cloudapps.digital/stub-country/ServiceMetadata
+Stub Country:
+  url: https://ida-stub-idp-integration.cloudapps.digital/stub-country/ServiceMetadata
 
 # Unreachable - awaiting whitelisting of our IP
-# Poland metadata: https://plnode.eidas.gov.pl/EidasNode/ServiceMetadata
+# Poland: https://plnode.eidas.gov.pl/EidasNode/ServiceMetadata
 
 # Namespace issues? need to make sure it is readable by our resolvers
-# Italy metadata: https://service.eid.gov.it/ServiceMetadata
+# Italy: https://service.eid.gov.it/ServiceMetadata
 
-Spain metadata: https://se-eidas.redsara.es/EidasNode/ServiceMetadata
-Denmark metadata: https://eidas-pilot.digst.dk/eidas-ps-dk/ServiceMetadata
+Spain:
+  url: https://se-eidas.redsara.es/EidasNode/ServiceMetadata
+Denmark:
+  url: https://eidas-pilot.digst.dk/eidas-ps-dk/ServiceMetadata
 
-# No info 
-# Luxembourg metadata: 
+# No info
+# Luxembourg:
 
-Netherlands metadata: https://acc-eidas.minez.nl/EidasNodeP/ServiceMetadata
-
-Belgium metadata: https://idp.iamfas.qa.belgium.be/EidasNode/ServiceMetadata
-
-Estonia metadata: https://eidastest.eesti.ee/EidasNode/ServiceMetadata
-Sweden metadata: https://qa.proxy.eidas.swedenconnect.se/eidas-ps/ServiceMetadata
-Croatia: https://eidastst.fina.hr/EidasNode/ServiceMetadata
+Netherlands:
+  url: https://acc-eidas.minez.nl/EidasNodeP/ServiceMetadata
+Belgium:
+  url: https://idp.iamfas.qa.belgium.be/EidasNode/ServiceMetadata
+Estonia:
+  url: https://eidastest.eesti.ee/EidasNode/ServiceMetadata
+Sweden:
+  url: https://qa.proxy.eidas.swedenconnect.se/eidas-ps/ServiceMetadata
+Croatia:
+  url: https://eidastst.fina.hr/EidasNode/ServiceMetadata
+  tls_cert: integration_tls_certs/croatia.pem
