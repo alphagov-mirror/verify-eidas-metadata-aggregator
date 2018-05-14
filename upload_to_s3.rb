@@ -18,13 +18,14 @@ metadata_list = YAML.load_file File.join(__dir__, metadata_list_file)
 abort("Error: File supplied is not valid YAML") unless metadata_list
 
 def metadata_content url, tls_cert
+  puts "USING TLS CERT: #{tls_cert}" if tls_cert
   optional_tls_cert = "--cacert #{tls_cert}" if tls_cert
   `curl #{optional_tls_cert} -A "Mozilla" --max-time 15 #{url}`
 end
 
-def aws_put object, url, tls_cert
+def aws_put object, content
   object.put(
-    body: metadata_content(url, tls_cert),
+    body: content,
     server_side_encryption: 'AES256',
     acl: 'public-read',
     content_type: 'application/samlmetadata+xml'
@@ -38,7 +39,7 @@ metadata_list.each do |country, metadata|
   url = metadata['url']
   s3_object_key = url.unpack('H*')[0].downcase
   updated_metadata << s3_object_key
-  aws_put s3.bucket(bucket_name).object(s3_object_key), url, metadata['tls_cert']
+  aws_put s3.bucket(bucket_name).object(s3_object_key), metadata_content(url, metadata['tls_cert'])
 end
 
 s3.bucket(bucket_name).objects.each do |object|
