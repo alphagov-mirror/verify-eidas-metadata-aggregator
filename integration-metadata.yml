@@ -4,9 +4,6 @@ Stub Country:
 # Unreachable - awaiting whitelisting of our IP
 # Poland: https://plnode.eidas.gov.pl/EidasNode/ServiceMetadata
 
-# Namespace issues? need to make sure it is readable by our resolvers
-# Italy: https://service.eid.gov.it/ServiceMetadata
-
 Spain:
   url: https://se-eidas.redsara.es/EidasNode/ServiceMetadata
 Denmark:
@@ -26,3 +23,6 @@ Sweden:
 Croatia:
   url: https://eidastst.fina.hr/EidasNode/ServiceMetadata
   tls_cert: integration_tls_certs/croatia.pem
+Italy:
+  url: https://service.test.eid.gov.it/EidasNode/ServiceMetadata
+  tls_cert: integration_tls_certs/italy.pem
