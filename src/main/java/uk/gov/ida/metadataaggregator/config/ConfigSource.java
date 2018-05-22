@@ -1,4 +1,4 @@
-package uk.gov.ida.metadataaggregator;
+package uk.gov.ida.metadataaggregator.config;
 
 import java.io.IOException;
 

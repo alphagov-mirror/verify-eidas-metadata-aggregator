@@ -1,7 +1,7 @@
-package uk.gov.ida.metadataaggregator;
+package uk.gov.ida.metadataaggregator.metadatastore;
 
 import java.io.IOException;
 
-public interface MetadataUploader {
+public interface MetadataStore {
     void uploadMetadata(String url, String countryMetadata) throws IOException;
 }
