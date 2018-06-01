@@ -20,9 +20,12 @@ Estonia:
   url: https://eidastest.eesti.ee/EidasNode/ServiceMetadata
 Sweden:
   url: https://qa.proxy.eidas.swedenconnect.se/eidas-ps/ServiceMetadata
-Croatia:
-  url: https://eidastst.fina.hr/EidasNode/ServiceMetadata
-  tls_cert: integration_tls_certs/croatia.pem
+
+# TLS Cert is expired - we need to wait for HR to update it
+#Croatia:
+#  url: https://eidastst.fina.hr/EidasNode/ServiceMetadata
+#  tls_cert: integration_tls_certs/croatia.pem
+
 Italy:
   url: https://service.test.eid.gov.it/EidasNode/ServiceMetadata
   tls_cert: integration_tls_certs/italy.pem
