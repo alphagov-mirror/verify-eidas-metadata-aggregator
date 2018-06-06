@@ -1,7 +1,16 @@
-group 'test'
-version '1.0-SNAPSHOT'
+buildscript {
+    repositories {
+        maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'uk.gov.ida:ida-gradle:1.1.0-15'
+    }
+}
 
 apply plugin: 'java'
+
 
 group = "uk.gov.ida"
 version = "0.1.$version"
@@ -14,13 +23,27 @@ jar {
 
 sourceCompatibility = 1.8
 
+ext {
+    awsLambdaVersion = '1.1.0'
+    awsJavaVersion = '1.9.2'
+    openSamlVersion = '3.3.0'
+    junitVersion = '4.12'
+}
+
 repositories {
     maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
     mavenCentral()
 }
 
 dependencies {
-    compile group:'com.amazonaws', name: 'aws-lambda-java-core', version: '1.1.0'
-    compile 'com.amazonaws:aws-java-sdk:1.9.2'
-    compile "uk.gov.ida:saml-metadata-bindings:3.3.0-129"
+    compile (
+            "com.amazonaws:aws-lambda-java-core:${awsLambdaVersion}",
+            "com.amazonaws:aws-java-sdk:${awsJavaVersion}",
+            "uk.gov.ida:saml-metadata-bindings:${openSamlVersion}-129"
+    )
+
+    testCompile(
+            "junit:junit:${junitVersion}",
+            'org.mockito:mockito-core:2.12.0'
+    )
 }
