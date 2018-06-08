@@ -1,5 +1,7 @@
 package uk.gov.ida.metadataaggregator;
 
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3Client;
 import uk.gov.ida.metadataaggregator.apigateway.ApiGatewayProxyResponse;
 import uk.gov.ida.metadataaggregator.apigateway.ApiGatewayRequest;
 import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
@@ -12,14 +14,16 @@ import static uk.gov.ida.metadataaggregator.Logging.log;
 @SuppressWarnings("unused")
 public class AwsLambdaHandlers {
 
+    private static final String BUCKET_NAME = "CONFIG_BUCKET";
+
     public ApiGatewayProxyResponse s3BucketLambda(ApiGatewayRequest testObject) {
-        S3BucketClient s3BucketClient = getConfigS3BucketClient();
+        S3BucketClient s3BucketClient = getS3BucketClient();
         new MetadataAggregator(s3BucketClient, new CountryMetadataCurler(), s3BucketClient).aggregateMetadata();
         return new ApiGatewayProxyResponse(200, null, null);
     }
 
     public void s3BucketLambda(AggregatorConfig testObject) {
-        S3BucketClient s3BucketClient = getConfigS3BucketClient();
+        S3BucketClient s3BucketClient = getS3BucketClient();
         new MetadataAggregator(s3BucketClient, new CountryMetadataCurler(), s3BucketClient).aggregateMetadata();
     }
 
@@ -35,22 +39,18 @@ public class AwsLambdaHandlers {
             return;
         }
 
-        new MetadataAggregator(getConfigS3BucketClient(), validatingResolver, getMetadataS3BucketClient()).aggregateMetadata();
+        S3BucketClient s3BucketClient = getS3BucketClient();
+        new MetadataAggregator(s3BucketClient, validatingResolver, s3BucketClient).aggregateMetadata();
     }
 
-    private S3BucketClient getConfigS3BucketClient() {
+    private S3BucketClient getS3BucketClient() {
         return new S3BucketClient(
-                System.getenv("CONFIG_BUCKET"),
-                System.getenv("AWS_ACCESS_KEY"),
-                System.getenv("AWS_SECRET_KEY")
+                System.getenv(BUCKET_NAME),
+                new AmazonS3Client(new BasicAWSCredentials(
+                        System.getenv("AWS_ACCESS_KEY"),
+                        System.getenv("AWS_SECRET_KEY"))
+                )
         );
     }
 
-    private S3BucketClient getMetadataS3BucketClient() {
-        return new S3BucketClient(
-                System.getenv("METADATA_BUCKET"),
-                System.getenv("AWS_ACCESS_KEY"),
-                System.getenv("AWS_SECRET_KEY")
-        );
-    }
 }

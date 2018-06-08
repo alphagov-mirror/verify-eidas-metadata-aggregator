@@ -30,9 +30,9 @@ class S3BucketClient implements ConfigSource, MetadataStore {
     private final String bucketName;
     private final AmazonS3Client s3Client;
 
-    public S3BucketClient(String configBucket, String awsAccessKey, String awsSecretKey) {
+    public S3BucketClient(String configBucket, AmazonS3Client s3Client) {
         this.bucketName = configBucket;
-        s3Client = new AmazonS3Client(new com.amazonaws.auth.BasicAWSCredentials(awsAccessKey, awsSecretKey));
+        this.s3Client = s3Client;
     }
 
     @Override
