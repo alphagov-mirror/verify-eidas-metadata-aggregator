@@ -9,7 +9,7 @@ import java.net.URLConnection;
 public class CountryMetadataCurler implements CountryMetadataSource {
 
     @Override
-    public String downloadMetadata(String url) throws MetadataResolverException {
+    public String downloadMetadata(String url) throws MetadataSourceException {
 
         try {
             URLConnection urlConnection = new URL(url).openConnection();
@@ -24,7 +24,7 @@ public class CountryMetadataCurler implements CountryMetadataSource {
 
             return html.toString();
         } catch (IOException e) {
-            throw new MetadataResolverException("Unable to retrieve metadatasource from "+ url, e);
+            throw new MetadataSourceException("Unable to retrieve metadatasource from "+ url, e);
         }
     }
 }

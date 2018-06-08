@@ -41,15 +41,15 @@ public class CountryMetadataValidatingResolver implements CountryMetadataSource 
         this.trustAnchors = trustAnchors;
     }
 
-    public static CountryMetadataValidatingResolver build(AggregatorConfig testObject, String password, String eidasTrustAnchorUriString) throws MetadataResolverException {
+    public static CountryMetadataValidatingResolver build(AggregatorConfig testObject, String password, String eidasTrustAnchorUriString) throws MetadataSourceException {
         KeyStore trustStore;
         try (InputStream stream = new StringInputStream(testObject.getKeyStore())) {
             trustStore = KeyStore.getInstance("JKS");
             trustStore.load(stream, password.toCharArray());
         } catch (IOException e) {
-            throw new MetadataResolverException("Unable to read key store string", e);
+            throw new MetadataSourceException("Unable to read key store string", e);
         } catch (GeneralSecurityException e) {
-            throw new MetadataResolverException("Error building trust store", e);
+            throw new MetadataSourceException("Error building trust store", e);
         }
 
         EidasTrustAnchorResolver trustAnchorResolver = new EidasTrustAnchorResolver(
@@ -66,14 +66,14 @@ public class CountryMetadataValidatingResolver implements CountryMetadataSource 
                             .collect(Collectors.toMap(JWK::getKeyID, identity()));
         } catch (GeneralSecurityException | ParseException | JOSEException e) {
             Logging.log("Error creating CountryMetadataValidatingResolver", e);
-            throw new MetadataResolverException("Error creating CountryMetadataValidatingResolver", e);
+            throw new MetadataSourceException("Error creating CountryMetadataValidatingResolver", e);
         }
 
         return new CountryMetadataValidatingResolver(trustAnchors);
     }
 
     @Override
-    public String downloadMetadata(String url) throws MetadataResolverException {
+    public String downloadMetadata(String url) throws MetadataSourceException {
         MetadataResolver metadataResolver = metadataResolver(url);
 
         CriteriaSet criteria = new CriteriaSet();
@@ -83,7 +83,7 @@ public class CountryMetadataValidatingResolver implements CountryMetadataSource 
         try {
             entityDescriptor = metadataResolver.resolveSingle(criteria);
         } catch (ResolverException e) {
-            throw new MetadataResolverException("Unable to resolve metadatasource from " + url, e);
+            throw new MetadataSourceException("Unable to resolve metadatasource from " + url, e);
         }
 
         if (entityDescriptor == null || entityDescriptor.getDOM() == null) return null;

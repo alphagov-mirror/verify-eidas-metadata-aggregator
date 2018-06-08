@@ -11,11 +11,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Hex;
 import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
 import uk.gov.ida.metadataaggregator.config.ConfigSource;
+import uk.gov.ida.metadataaggregator.config.ConfigSourceException;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStore;
+import uk.gov.ida.metadataaggregator.metadatastore.MetadataStoreException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.text.MessageFormat;
 import java.util.stream.Collectors;
 
 import static uk.gov.ida.metadataaggregator.Logging.*;
@@ -32,7 +36,7 @@ class S3BucketClient implements ConfigSource, MetadataStore {
     }
 
     @Override
-    public AggregatorConfig downloadConfig() throws IOException {
+    public AggregatorConfig downloadConfig() throws ConfigSourceException {
 
         log("Downloading config file from {0}", bucketName);
 
@@ -40,23 +44,31 @@ class S3BucketClient implements ConfigSource, MetadataStore {
         try {
             object = s3Client.getObject(bucketName, CONFIG_BUCKET_KEY);
         } catch (AmazonClientException e) {
-            log("Error retrieving file from {0}", e, "S3:" + bucketName);
-            throw new IOException(e);
+            throw new ConfigSourceException(MessageFormat.format("Error retrieving file from {0}", e, "S3:" + bucketName), e);
         }
 
         S3ObjectInputStream objectContent = object.getObjectContent();
         String result = new BufferedReader(new InputStreamReader(objectContent))
                 .lines().collect(Collectors.joining("\n"));
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(result, AggregatorConfig.class);
+        try {
+            return mapper.readValue(result, AggregatorConfig.class);
+        } catch (IOException e) {
+            throw new ConfigSourceException("Unable to deserialise downloaded config", e);
+        }
     }
 
     @Override
-    public void uploadMetadata(String resourceName, String metadataFile) throws IOException {
+    public void uploadMetadata(String resourceName, String metadataFile) throws MetadataStoreException {
         ObjectMetadata objectMetadata = objectMetadata(metadataFile.length());
 
         String hexEncodedUrl = Hex.encodeHexString(resourceName.getBytes());
-        StringInputStream metadataStream = new StringInputStream(metadataFile);
+        StringInputStream metadataStream;
+        try {
+            metadataStream = new StringInputStream(metadataFile);
+        } catch (UnsupportedEncodingException e) {
+            throw new MetadataStoreException("Error opening metadata file stream to store", e);
+        }
         s3Client.putObject(new PutObjectRequest(bucketName, hexEncodedUrl, metadataStream, objectMetadata));
     }
 
