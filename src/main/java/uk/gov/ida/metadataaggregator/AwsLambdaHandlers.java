@@ -9,7 +9,12 @@ import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataCurler;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataValidatingResolver;
 import uk.gov.ida.metadataaggregator.metadatasource.MetadataSourceException;
 
-import static uk.gov.ida.metadataaggregator.LambdaConstants.*;
+import static uk.gov.ida.metadataaggregator.LambdaConstants.AWS_ACCESS_KEY;
+import static uk.gov.ida.metadataaggregator.LambdaConstants.AWS_SECRET_KEY;
+import static uk.gov.ida.metadataaggregator.LambdaConstants.BUCKET_NAME;
+import static uk.gov.ida.metadataaggregator.LambdaConstants.SUCCESS_STATUS_CODE;
+import static uk.gov.ida.metadataaggregator.LambdaConstants.TRUST_ANCHOR_PASSCODE;
+import static uk.gov.ida.metadataaggregator.LambdaConstants.TRUST_ANCHOR_URI;
 import static uk.gov.ida.metadataaggregator.Logging.log;
 
 @SuppressWarnings("unused")
@@ -27,8 +32,8 @@ public class AwsLambdaHandlers {
     }
 
     public void s3BucketValidatingLambda(AggregatorConfig testObject) {
-        String password = System.getenv(TRUST_ANCHOR_PASSCODE);
-        String eidasTrustAnchorUriString = System.getenv(TRUST_ANCHOR_URI);
+        String password = getEnvironmentVariable(TRUST_ANCHOR_PASSCODE);
+        String eidasTrustAnchorUriString = getEnvironmentVariable(TRUST_ANCHOR_URI);
 
         CountryMetadataValidatingResolver validatingResolver;
         try {
@@ -43,13 +48,24 @@ public class AwsLambdaHandlers {
     }
 
     private S3BucketClient getS3BucketClient() {
+        String awsAccessKey = getEnvironmentVariable(AWS_ACCESS_KEY);
+        String awsSecretKey = getEnvironmentVariable(AWS_SECRET_KEY);
+        String bucketName = getEnvironmentVariable(BUCKET_NAME);
+
         return new S3BucketClient(
-                System.getenv(BUCKET_NAME),
+                bucketName,
                 new AmazonS3Client(new BasicAWSCredentials(
-                        System.getenv(AWS_ACCESS_KEY),
-                        System.getenv(AWS_SECRET_KEY))
+                        awsAccessKey,
+                        awsSecretKey)
                 )
         );
     }
 
+    private String getEnvironmentVariable(String envKey) {
+        String awsAccessKey = System.getenv(envKey);
+        if(awsAccessKey == null){
+            throw new IllegalStateException("AWS_ACCESS_KEY is not defined");
+        }
+        return awsAccessKey;
+    }
 }
