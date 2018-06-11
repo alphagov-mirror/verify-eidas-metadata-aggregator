@@ -8,7 +8,6 @@ import uk.gov.ida.metadataaggregator.metadatasource.MetadataSourceException;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStore;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStoreException;
 
-import java.io.IOException;
 import java.util.Collection;
 
 import static uk.gov.ida.metadataaggregator.Logging.log;

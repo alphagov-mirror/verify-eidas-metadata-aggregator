@@ -9,17 +9,16 @@ import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataCurler;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataValidatingResolver;
 import uk.gov.ida.metadataaggregator.metadatasource.MetadataSourceException;
 
+import static uk.gov.ida.metadataaggregator.LambdaConstants.*;
 import static uk.gov.ida.metadataaggregator.Logging.log;
 
 @SuppressWarnings("unused")
 public class AwsLambdaHandlers {
 
-    private static final String BUCKET_NAME = "CONFIG_BUCKET";
-
     public ApiGatewayProxyResponse s3BucketLambda(ApiGatewayRequest testObject) {
         S3BucketClient s3BucketClient = getS3BucketClient();
         new MetadataAggregator(s3BucketClient, new CountryMetadataCurler(), s3BucketClient).aggregateMetadata();
-        return new ApiGatewayProxyResponse(200, null, null);
+        return new ApiGatewayProxyResponse(SUCCESS_STATUS_CODE, null, null);
     }
 
     public void s3BucketLambda(AggregatorConfig testObject) {
@@ -28,8 +27,8 @@ public class AwsLambdaHandlers {
     }
 
     public void s3BucketValidatingLambda(AggregatorConfig testObject) {
-        String password = System.getenv("TRUST_ANCHOR_PASSCODE");
-        String eidasTrustAnchorUriString = System.getenv("TRUST_ANCHOR_URI");
+        String password = System.getenv(TRUST_ANCHOR_PASSCODE);
+        String eidasTrustAnchorUriString = System.getenv(TRUST_ANCHOR_URI);
 
         CountryMetadataValidatingResolver validatingResolver;
         try {
@@ -47,8 +46,8 @@ public class AwsLambdaHandlers {
         return new S3BucketClient(
                 System.getenv(BUCKET_NAME),
                 new AmazonS3Client(new BasicAWSCredentials(
-                        System.getenv("AWS_ACCESS_KEY"),
-                        System.getenv("AWS_SECRET_KEY"))
+                        System.getenv(AWS_ACCESS_KEY),
+                        System.getenv(AWS_SECRET_KEY))
                 )
         );
     }

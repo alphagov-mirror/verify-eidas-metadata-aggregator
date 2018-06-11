@@ -22,6 +22,7 @@ import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 import java.util.stream.Collectors;
 
+import static uk.gov.ida.metadataaggregator.LambdaConstants.*;
 import static uk.gov.ida.metadataaggregator.Logging.log;
 
 class S3BucketClient implements ConfigSource, MetadataStore {
@@ -41,7 +42,7 @@ class S3BucketClient implements ConfigSource, MetadataStore {
 
         S3Object object;
         try {
-            object = s3Client.getObject(bucketName, Constants.CONFIG_BUCKET_KEY);
+            object = s3Client.getObject(bucketName, CONFIG_BUCKET_KEY);
         } catch (AmazonClientException e) {
             throw new ConfigSourceException(MessageFormat.format("Error retrieving file from {0}", e, "S3:" + bucketName), e);
         }

@@ -25,7 +25,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.ida.metadataaggregator.Constants.CONFIG_BUCKET_KEY;
+import static uk.gov.ida.metadataaggregator.LambdaConstants.CONFIG_BUCKET_KEY;
 
 public class S3BucketClientTest {
 

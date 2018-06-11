@@ -35,6 +35,8 @@ import java.util.stream.Collectors;
 import static com.google.common.base.Functions.identity;
 
 public class CountryMetadataValidatingResolver implements CountryMetadataSource {
+    private static final String JKS = "JKS";
+
     private final Map<String, JWK> trustAnchors;
 
     private CountryMetadataValidatingResolver(Map<String, JWK> trustAnchors) {
@@ -44,7 +46,7 @@ public class CountryMetadataValidatingResolver implements CountryMetadataSource 
     public static CountryMetadataValidatingResolver build(AggregatorConfig testObject, String password, String eidasTrustAnchorUriString) throws MetadataSourceException {
         KeyStore trustStore;
         try (InputStream stream = new StringInputStream(testObject.getKeyStore())) {
-            trustStore = KeyStore.getInstance("JKS");
+            trustStore = KeyStore.getInstance(JKS);
             trustStore.load(stream, password.toCharArray());
         } catch (IOException e) {
             throw new MetadataSourceException("Unable to read key store string", e);
