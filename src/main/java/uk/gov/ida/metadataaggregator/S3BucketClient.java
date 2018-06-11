@@ -22,10 +22,9 @@ import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 import java.util.stream.Collectors;
 
-import static uk.gov.ida.metadataaggregator.Logging.*;
+import static uk.gov.ida.metadataaggregator.Logging.log;
 
 class S3BucketClient implements ConfigSource, MetadataStore {
-    private static final String CONFIG_BUCKET_KEY = "CONFIG_BUCKET_KEY";
 
     private final String bucketName;
     private final AmazonS3Client s3Client;
@@ -42,7 +41,7 @@ class S3BucketClient implements ConfigSource, MetadataStore {
 
         S3Object object;
         try {
-            object = s3Client.getObject(bucketName, CONFIG_BUCKET_KEY);
+            object = s3Client.getObject(bucketName, Constants.CONFIG_BUCKET_KEY);
         } catch (AmazonClientException e) {
             throw new ConfigSourceException(MessageFormat.format("Error retrieving file from {0}", e, "S3:" + bucketName), e);
         }
@@ -69,7 +68,12 @@ class S3BucketClient implements ConfigSource, MetadataStore {
         } catch (UnsupportedEncodingException e) {
             throw new MetadataStoreException("Error opening metadata file stream to store", e);
         }
-        s3Client.putObject(new PutObjectRequest(bucketName, hexEncodedUrl, metadataStream, objectMetadata));
+
+        try {
+            s3Client.putObject(new PutObjectRequest(bucketName, hexEncodedUrl, metadataStream, objectMetadata));
+        } catch (RuntimeException e){
+            throw new MetadataStoreException("Error uploading metadata to S3 bucket", e);
+        }
     }
 
     private ObjectMetadata objectMetadata(int contentLength) {
