@@ -64,7 +64,7 @@ public class AwsLambdaHandlers {
     private String getEnvironmentVariable(String envKey) {
         String awsAccessKey = System.getenv(envKey);
         if(awsAccessKey == null){
-            throw new IllegalStateException("AWS_ACCESS_KEY is not defined");
+            throw new IllegalStateException(envKey+" is not defined");
         }
         return awsAccessKey;
     }
