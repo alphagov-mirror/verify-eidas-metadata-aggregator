@@ -10,11 +10,12 @@ import org.opensaml.core.criterion.EntityIdCriterion;
 import org.opensaml.saml.metadata.resolver.MetadataResolver;
 import org.opensaml.saml.metadata.resolver.filter.MetadataFilter;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
-import uk.gov.ida.metadataaggregator.Logging;
 import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
 import uk.gov.ida.saml.metadata.EidasTrustAnchorResolver;
 import uk.gov.ida.saml.metadata.ExpiredCertificateMetadataFilter;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
 import static com.google.common.base.Functions.identity;
 
 public class CountryMetadataValidatingResolver implements CountryMetadataSource {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CountryMetadataValidatingResolver.class);
     private static final String JKS = "JKS";
 
     private final Map<String, JWK> trustAnchors;
@@ -67,7 +69,7 @@ public class CountryMetadataValidatingResolver implements CountryMetadataSource 
                             .stream()
                             .collect(Collectors.toMap(JWK::getKeyID, identity()));
         } catch (GeneralSecurityException | ParseException | JOSEException e) {
-            Logging.log("Error creating CountryMetadataValidatingResolver", e);
+            LOGGER.error("Error creating CountryMetadataValidatingResolver", new Object[]{}, e);
             throw new MetadataSourceException("Error creating CountryMetadataValidatingResolver", e);
         }
 

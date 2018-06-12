@@ -30,6 +30,7 @@ ext {
     junitVersion = '4.12'
     mockitoVersion = '2.12.0'
     assertJVersion = "3.10.0"
+    slf4jVersion = "1.7.12"
 }
 
 repositories {
@@ -41,7 +42,8 @@ dependencies {
     compile (
             "com.amazonaws:aws-lambda-java-core:${awsLambdaVersion}",
             "com.amazonaws:aws-java-sdk:${awsJavaVersion}",
-            "uk.gov.ida:saml-metadata-bindings:${openSamlVersion}-129"
+            "uk.gov.ida:saml-metadata-bindings:${openSamlVersion}-129",
+            "org.slf4j:log4j-over-slf4j:${slf4jVersion}"
     )
 
     testCompile(

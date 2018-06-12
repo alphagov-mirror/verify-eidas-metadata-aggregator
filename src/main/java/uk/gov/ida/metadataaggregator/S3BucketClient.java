@@ -9,6 +9,8 @@ import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.util.StringInputStream;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
 import uk.gov.ida.metadataaggregator.config.ConfigSource;
 import uk.gov.ida.metadataaggregator.config.ConfigSourceException;
@@ -23,9 +25,10 @@ import java.text.MessageFormat;
 import java.util.stream.Collectors;
 
 import static uk.gov.ida.metadataaggregator.LambdaConstants.*;
-import static uk.gov.ida.metadataaggregator.Logging.log;
 
 class S3BucketClient implements ConfigSource, MetadataStore {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(S3BucketClient.class);
 
     private final String bucketName;
     private final AmazonS3Client s3Client;
@@ -38,7 +41,7 @@ class S3BucketClient implements ConfigSource, MetadataStore {
     @Override
     public AggregatorConfig downloadConfig() throws ConfigSourceException {
 
-        log("Downloading config file from {0}", bucketName);
+        LOGGER.info("Downloading config file from {0}", new Object[]{bucketName});
 
         S3Object object;
         try {
@@ -72,7 +75,7 @@ class S3BucketClient implements ConfigSource, MetadataStore {
 
         try {
             s3Client.putObject(new PutObjectRequest(bucketName, hexEncodedUrl, metadataStream, objectMetadata));
-        } catch (RuntimeException e){
+        } catch (RuntimeException e) {
             throw new MetadataStoreException("Error uploading metadata to S3 bucket", e);
         }
     }

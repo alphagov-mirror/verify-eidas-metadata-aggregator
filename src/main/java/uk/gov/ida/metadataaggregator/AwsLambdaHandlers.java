@@ -2,6 +2,8 @@ package uk.gov.ida.metadataaggregator;
 
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.ida.metadataaggregator.apigateway.ApiGatewayProxyResponse;
 import uk.gov.ida.metadataaggregator.apigateway.ApiGatewayRequest;
 import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
@@ -15,10 +17,11 @@ import static uk.gov.ida.metadataaggregator.LambdaConstants.BUCKET_NAME;
 import static uk.gov.ida.metadataaggregator.LambdaConstants.SUCCESS_STATUS_CODE;
 import static uk.gov.ida.metadataaggregator.LambdaConstants.TRUST_ANCHOR_PASSCODE;
 import static uk.gov.ida.metadataaggregator.LambdaConstants.TRUST_ANCHOR_URI;
-import static uk.gov.ida.metadataaggregator.Logging.log;
 
 @SuppressWarnings("unused")
 public class AwsLambdaHandlers {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AwsLambdaHandlers.class);
 
     public ApiGatewayProxyResponse s3BucketLambda(ApiGatewayRequest testObject) {
         S3BucketClient s3BucketClient = getS3BucketClient();
@@ -39,7 +42,7 @@ public class AwsLambdaHandlers {
         try {
             validatingResolver = CountryMetadataValidatingResolver.build(testObject, password, eidasTrustAnchorUriString);
         } catch (MetadataSourceException e) {
-            log("Unable to build country metadatasource resolver", e);
+            LOGGER.error("Unable to build country metadatasource resolver", new Object[]{}, e);
             return;
         }
 
