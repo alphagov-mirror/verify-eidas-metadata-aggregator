@@ -41,13 +41,13 @@ class S3BucketClient implements ConfigSource, MetadataStore {
     @Override
     public AggregatorConfig downloadConfig() throws ConfigSourceException {
 
-        LOGGER.info("Downloading config file from {0}", new Object[]{bucketName});
+        LOGGER.info("Downloading config file from S3Bucket: {}", bucketName);
 
         S3Object object;
         try {
             object = s3Client.getObject(bucketName, CONFIG_BUCKET_KEY);
         } catch (AmazonClientException e) {
-            throw new ConfigSourceException(MessageFormat.format("Error retrieving file from {0}", e, "S3:" + bucketName), e);
+            throw new ConfigSourceException(MessageFormat.format("Error retrieving file from S3 bucket: {0} - ", bucketName, e.getMessage()), e);
         }
 
         S3ObjectInputStream objectContent = object.getObjectContent();

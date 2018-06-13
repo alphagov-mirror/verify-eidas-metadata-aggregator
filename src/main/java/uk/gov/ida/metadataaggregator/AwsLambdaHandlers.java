@@ -42,7 +42,7 @@ public class AwsLambdaHandlers {
         try {
             validatingResolver = CountryMetadataValidatingResolver.build(testObject, password, eidasTrustAnchorUriString);
         } catch (MetadataSourceException e) {
-            LOGGER.error("Unable to build country metadatasource resolver", new Object[]{}, e);
+            LOGGER.error("Unable to build country metadatasource resolver. MetadataSourceException : {}", e.getMessage());
             return;
         }
 

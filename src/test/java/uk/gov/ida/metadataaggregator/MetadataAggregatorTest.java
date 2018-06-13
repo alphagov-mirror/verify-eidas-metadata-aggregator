@@ -64,7 +64,7 @@ public class MetadataAggregatorTest {
     public void shouldNotUploadAnyMetadataWhenExceptionThrowByConfigSource()
             throws ConfigSourceException, MetadataStoreException, MetadataSourceException {
 
-        when(testConfigSource.downloadConfig()).thenThrow(new ConfigSourceException("Test error"));
+        when(testConfigSource.downloadConfig()).thenThrow(new ConfigSourceException("Unable to obtain config"));
 
         testAggregator.aggregateMetadata();
 
@@ -91,8 +91,8 @@ public class MetadataAggregatorTest {
     public void shouldUploadValidMetadataWhenExceptionThrowByMetadataSource()
             throws ConfigSourceException, MetadataStoreException, MetadataSourceException {
 
-        String invalidUrl = "invalidUrl";
-        String validUrl= "validUrl";
+        String invalidUrl = "http://www.invalidUrl.com";
+        String validUrl= "http://www.validUrl.com";
         String validMetadata = "validMetadata";
 
         when(testConfigSource.downloadConfig())
@@ -109,9 +109,9 @@ public class MetadataAggregatorTest {
     public void shouldUploadValidMetadataWhenPreviousUploadFailed()
             throws ConfigSourceException, MetadataStoreException, MetadataSourceException {
 
-        String unsuccessfulUrl = "unsuccessfulUrl";
+        String unsuccessfulUrl = "http://www.unsuccessfulUrl.com";
         String unsuccessfulMetadata = "unsuccessfulMetadata";
-        String successfulUrl= "successfulUrl";
+        String successfulUrl= "http://www.successfulUrl.com";
         String successfulMetadata = "successfulMetadata";
 
         when(testConfigSource.downloadConfig())

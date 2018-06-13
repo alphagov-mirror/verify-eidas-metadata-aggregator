@@ -33,11 +33,11 @@ public class MetadataAggregator {
         try {
             config = configSource.downloadConfig();
         } catch (ConfigSourceException e) {
-            LOGGER.error("Unable to retrieve config file", new Object[]{}, e);
+            LOGGER.error("Metadata Aggregator error - Unable to download Aggregator Config file: {}" , e.getMessage());
             return;
         }
 
-        LOGGER.info("Processing country metadatasource", new Object[]{});
+        LOGGER.info("Processing country metadatasource");
 
         int successfulUploads = 0;
         Collection<String> metadataUrls = config.getMetadataUrls();
@@ -47,7 +47,7 @@ public class MetadataAggregator {
             if (successfulUpload) successfulUploads++;
         }
 
-        LOGGER.info("Finished processing country metadatasource with {0} successful uploads out of {1}", new Object[]{successfulUploads, metadataUrls.size()});
+        LOGGER.info("Finished processing country metadatasource with {} successful uploads out of {}", successfulUploads, metadataUrls.size());
     }
 
     private boolean processMetadataFrom(String url) {
@@ -55,14 +55,14 @@ public class MetadataAggregator {
         try {
             countryMetadataFile = countryMetadataCurler.downloadMetadata(url);
         } catch (MetadataSourceException e) {
-            LOGGER.error("Error downloading metadatasource file {0}", new Object[]{url}, e);
+            LOGGER.error("Error downloading metadatasource file {} Exception: {}", url, e.getMessage());
             return false;
         }
 
         try {
             metadataStore.uploadMetadata(url, countryMetadataFile);
         } catch (MetadataStoreException e) {
-            LOGGER.error("Error uploading metadatasource file {0}", new Object[]{url}, e);
+            LOGGER.error("Error uploading metadatasource file {} Exception: {}", url, e.getMessage());
             return false;
         }
 

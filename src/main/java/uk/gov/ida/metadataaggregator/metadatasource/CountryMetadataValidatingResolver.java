@@ -69,7 +69,7 @@ public class CountryMetadataValidatingResolver implements CountryMetadataSource 
                             .stream()
                             .collect(Collectors.toMap(JWK::getKeyID, identity()));
         } catch (GeneralSecurityException | ParseException | JOSEException e) {
-            LOGGER.error("Error creating CountryMetadataValidatingResolver", new Object[]{}, e);
+            LOGGER.error("Error creating CountryMetadataValidatingResolver. Exception: {} Message: {}", e.getClass(), e.getMessage());
             throw new MetadataSourceException("Error creating CountryMetadataValidatingResolver", e);
         }
 
