@@ -2,6 +2,7 @@ package uk.gov.ida.metadataaggregator;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
@@ -77,6 +78,17 @@ class S3BucketClient implements ConfigSource, MetadataStore {
             s3Client.putObject(new PutObjectRequest(bucketName, hexEncodedUrl, metadataStream, objectMetadata));
         } catch (RuntimeException e) {
             throw new MetadataStoreException("Error uploading metadata to S3 bucket", e);
+        }
+    }
+
+    @Override
+    public void deleteMetadata(String hexEncodedUrl) throws MetadataStoreException {
+        LOGGER.info("Deleting metadata with key: {} from S3 bucket: {}", hexEncodedUrl, bucketName);
+
+        try {
+            s3Client.deleteObject(new DeleteObjectRequest(bucketName, hexEncodedUrl));
+        } catch (RuntimeException e) {
+            throw new MetadataStoreException("Error removing metadata from S3 bucket", e);
         }
     }
 

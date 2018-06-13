@@ -2,26 +2,26 @@ package uk.gov.ida.metadataaggregator;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import org.apache.commons.codec.binary.Hex;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
 import uk.gov.ida.metadataaggregator.config.ConfigSourceException;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStoreException;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.InputStreamReader;
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,15 +34,22 @@ public class S3BucketClientTest {
     private static final String HEX_ENCODED_METADATA_URL = String.valueOf(Hex.encodeHex(TEST_METADATA_URL.getBytes()));
     private static final String TEST_METADATA = "testMetadataString";
 
+    private AmazonS3Client amazonS3Client;
+    private S3BucketClient s3BucketClient;
+
+    @Before
+    public void setUp() {
+        amazonS3Client = mock(AmazonS3Client.class);
+        s3BucketClient = new S3BucketClient(TEST_BUCKET_NAME, amazonS3Client);
+    }
+
     @Test
     public void shouldMapDownloadedConfigIntoObject() throws ConfigSourceException {
-
-        AmazonS3Client testClient = mock(AmazonS3Client.class);
         String testJson = JsonAggregatorConfigBuilder.newConfig().withMetadataUrl(TEST_METADATA_URL).toJson();
         S3Object mockS3Object = mockS3ObjectReturning(testJson);
-        when(testClient.getObject(TEST_BUCKET_NAME, CONFIG_BUCKET_KEY)).thenReturn(mockS3Object);
+        when(amazonS3Client.getObject(TEST_BUCKET_NAME, CONFIG_BUCKET_KEY)).thenReturn(mockS3Object);
 
-        AggregatorConfig aggregatorConfig = new S3BucketClient(TEST_BUCKET_NAME, testClient).downloadConfig();
+        AggregatorConfig aggregatorConfig = new S3BucketClient(TEST_BUCKET_NAME, amazonS3Client).downloadConfig();
 
         Collection<String> metadataUrls = aggregatorConfig.getMetadataUrls();
         assertThat(metadataUrls).hasSize(1);
@@ -50,9 +57,6 @@ public class S3BucketClientTest {
 
     @Test
     public void shouldPutObjectIntoS3BucketUnderHexEncodedKey() throws MetadataStoreException {
-        AmazonS3Client amazonS3Client = mock(AmazonS3Client.class);
-
-        S3BucketClient s3BucketClient = new S3BucketClient(TEST_BUCKET_NAME, amazonS3Client);
         s3BucketClient.uploadMetadata(TEST_METADATA_URL, TEST_METADATA);
 
         ArgumentCaptor<PutObjectRequest> putObjectRequestArgumentCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
@@ -60,26 +64,17 @@ public class S3BucketClientTest {
 
         PutObjectRequest value = putObjectRequestArgumentCaptor.getValue();
         assertThat(value.getKey()).isEqualTo(HEX_ENCODED_METADATA_URL);
-
-        String uploadedMetadata = new BufferedReader(new InputStreamReader(value.getInputStream()))
-                .lines().collect(Collectors.joining("\n"));
-
-        assertThat(uploadedMetadata).isEqualTo(TEST_METADATA);
     }
 
     @Test
-    public void shouldConvertExceptionIntoDomainTypeWhenDownloadMappingFails(){
-        AmazonS3Client amazonS3Client = mock(AmazonS3Client.class);
-        S3BucketClient s3BucketClient = new S3BucketClient(TEST_BUCKET_NAME, amazonS3Client);
+    public void shouldConvertExceptionIntoDomainTypeWhenDownloadMappingFails() {
         when(amazonS3Client.getObject(anyString(), anyString())).thenThrow(new AmazonClientException(""));
 
         assertThatExceptionOfType(ConfigSourceException.class).isThrownBy(s3BucketClient::downloadConfig);
     }
 
     @Test
-    public void shouldConvertExceptionIntoDomainTypeWhenDownloadFails(){
-        AmazonS3Client amazonS3Client = mock(AmazonS3Client.class);
-        S3BucketClient s3BucketClient = new S3BucketClient(TEST_BUCKET_NAME, amazonS3Client);
+    public void shouldConvertExceptionIntoDomainTypeWhenDownloadFails() {
         String testJson = JsonAggregatorConfigBuilder.newConfig().withMetadataUrl(TEST_METADATA_URL).toInvalidJson();
         S3Object mockS3Object = mockS3ObjectReturning(testJson);
         when(amazonS3Client.getObject(TEST_BUCKET_NAME, CONFIG_BUCKET_KEY)).thenReturn(mockS3Object);
@@ -88,14 +83,27 @@ public class S3BucketClientTest {
     }
 
     @Test
-    public void shouldConvertExceptionIntoDomainTypeWhenUploadFails(){
-        AmazonS3Client amazonS3Client = mock(AmazonS3Client.class);
-        S3BucketClient s3BucketClient = new S3BucketClient(TEST_BUCKET_NAME, amazonS3Client);
-
+    public void shouldConvertExceptionIntoDomainTypeWhenUploadFails() {
         when(amazonS3Client.putObject(any())).thenThrow(new RuntimeException());
 
         assertThatExceptionOfType(MetadataStoreException.class)
                 .isThrownBy(() -> s3BucketClient.uploadMetadata(TEST_METADATA_URL, TEST_METADATA));
+    }
+
+    @Test
+    public void shouldDeleteObjectFromS3Bucket() throws MetadataStoreException {
+        s3BucketClient.deleteMetadata(HEX_ENCODED_METADATA_URL);
+
+        ArgumentCaptor<DeleteObjectRequest> deleteObjectRequestArgumentCaptor = ArgumentCaptor.forClass(DeleteObjectRequest.class);
+        verify(amazonS3Client).deleteObject(deleteObjectRequestArgumentCaptor.capture());
+    }
+
+    @Test
+    public void shouldThrowWhenDeleteObjectFromS3BucketFails() {
+        doThrow(new RuntimeException()).when(amazonS3Client).deleteObject(any());
+
+        assertThatExceptionOfType(MetadataStoreException.class)
+                .isThrownBy(() -> s3BucketClient.deleteMetadata(HEX_ENCODED_METADATA_URL));
     }
 
     private S3Object mockS3ObjectReturning(String testJson) {
