@@ -116,12 +116,90 @@ public class MetadataAggregatorTest {
 
         when(testConfigSource.downloadConfig())
                 .thenReturn(new AggregatorConfig(ImmutableSet.of(unsuccessfulUrl, successfulUrl), null));
-
         when(testMetadataSource.downloadMetadata(unsuccessfulUrl)).thenReturn(unsuccessfulMetadata);
         when(testMetadataSource.downloadMetadata(successfulUrl)).thenReturn(successfulMetadata);
 
         doThrow(new MetadataStoreException("Metadata store failed"))
                 .when(testMetadataStore).uploadMetadata(unsuccessfulUrl, unsuccessfulMetadata);
+
+        testAggregator.aggregateMetadata();
+
+        verify(testMetadataStore).uploadMetadata(successfulUrl, successfulMetadata);
+    }
+
+    @Test
+    public void shouldDeleteMetadataWhenDownloadIsUnsuccessful()
+            throws ConfigSourceException, MetadataSourceException, MetadataStoreException {
+
+        String unsuccessfulUrl = "http://www.unsuccessfulUrl.com";
+
+        when(testConfigSource.downloadConfig())
+                .thenReturn(new AggregatorConfig(ImmutableSet.of(unsuccessfulUrl),null));
+        doThrow(new MetadataSourceException("Metadata source failed"))
+                .when(testMetadataSource).downloadMetadata(unsuccessfulUrl);
+
+        testAggregator.aggregateMetadata();
+
+        verify(testMetadataStore).deleteMetadata(unsuccessfulUrl);
+    }
+
+    @Test
+    public void shouldDeleteMetadataWhenUploadIsUnsuccessful()
+            throws ConfigSourceException, MetadataSourceException, MetadataStoreException {
+
+        String unsuccessfulUrl = "http://www.unsuccessfulUrl.com";
+        String unsuccessfulMetadata = "unsuccessfulMetadata";
+
+        when(testConfigSource.downloadConfig())
+                .thenReturn(new AggregatorConfig(ImmutableSet.of(unsuccessfulUrl), null));
+        when(testMetadataSource.downloadMetadata(unsuccessfulUrl)).thenReturn(unsuccessfulMetadata);
+
+        doThrow(new MetadataStoreException("Metadata store failed"))
+                .when(testMetadataStore).uploadMetadata(unsuccessfulUrl,unsuccessfulMetadata);
+
+        testAggregator.aggregateMetadata();
+
+        verify(testMetadataStore).deleteMetadata(unsuccessfulUrl);
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenDeleteMetadataFails()
+            throws MetadataSourceException, ConfigSourceException, MetadataStoreException {
+
+        String unsuccessfulUrl = "http://www.unsuccessfulUrl.com";
+        String unsuccessfulMetadata = "unsuccessfulMetadata";
+
+        when(testConfigSource.downloadConfig())
+                .thenReturn(new AggregatorConfig(ImmutableSet.of(unsuccessfulUrl), null));
+        when(testMetadataSource.downloadMetadata(unsuccessfulUrl)).thenReturn(unsuccessfulMetadata);
+
+        doThrow(new MetadataSourceException("Download metadata has failed"))
+                .when(testMetadataSource).downloadMetadata(unsuccessfulUrl);
+        doThrow(new MetadataStoreException("Delete metadata has failed"))
+                .when(testMetadataStore).deleteMetadata(unsuccessfulUrl);
+
+        testAggregator.aggregateMetadata();
+
+        verify(testMetadataStore).deleteMetadata(unsuccessfulUrl);
+    }
+
+    @Test
+    public void shouldUploadValidMetadataWhenDeleteOfPreviousMetadataFails() throws MetadataStoreException, MetadataSourceException, ConfigSourceException {
+
+        String unsuccessfulUrl = "http://www.unsuccessfulUrl.com";
+        String unsuccessfulMetadata = "unsuccessfulMetadata";
+        String successfulUrl= "http://www.successfulUrl.com";
+        String successfulMetadata = "successfulMetadata";
+
+        when(testConfigSource.downloadConfig())
+                .thenReturn(new AggregatorConfig(ImmutableSet.of(unsuccessfulUrl, successfulUrl), null));
+        when(testMetadataSource.downloadMetadata(unsuccessfulUrl)).thenReturn(unsuccessfulMetadata);
+        when(testMetadataSource.downloadMetadata(successfulUrl)).thenReturn(successfulMetadata);
+
+        doThrow(new MetadataSourceException("Download metadata has failed"))
+                .when(testMetadataSource).downloadMetadata(unsuccessfulUrl);
+        doThrow(new MetadataStoreException("Delete metadata has failed"))
+                .when(testMetadataStore).deleteMetadata(unsuccessfulUrl);
 
         testAggregator.aggregateMetadata();
 

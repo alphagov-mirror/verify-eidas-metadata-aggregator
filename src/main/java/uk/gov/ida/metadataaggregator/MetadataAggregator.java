@@ -33,7 +33,7 @@ public class MetadataAggregator {
         try {
             config = configSource.downloadConfig();
         } catch (ConfigSourceException e) {
-            LOGGER.error("Metadata Aggregator error - Unable to download Aggregator Config file: {}" , e.getMessage());
+            LOGGER.error("Metadata Aggregator error - Unable to download Aggregator Config file: {}", e.getMessage());
             return;
         }
 
@@ -56,6 +56,7 @@ public class MetadataAggregator {
             countryMetadataFile = countryMetadataCurler.downloadMetadata(url);
         } catch (MetadataSourceException e) {
             LOGGER.error("Error downloading metadatasource file {} Exception: {}", url, e.getMessage());
+            deleteMetadata(url);
             return false;
         }
 
@@ -63,9 +64,17 @@ public class MetadataAggregator {
             metadataStore.uploadMetadata(url, countryMetadataFile);
         } catch (MetadataStoreException e) {
             LOGGER.error("Error uploading metadatasource file {} Exception: {}", url, e.getMessage());
+            deleteMetadata(url);
             return false;
         }
-
         return true;
+    }
+
+    private void deleteMetadata(String url) {
+        try {
+            metadataStore.deleteMetadata(url);
+        } catch (MetadataStoreException e) {
+            LOGGER.error("Error deleting metadatasource file {} Exception: {}", url, e.getMessage());
+        }
     }
 }
