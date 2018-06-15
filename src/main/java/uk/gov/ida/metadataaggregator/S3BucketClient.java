@@ -82,10 +82,11 @@ class S3BucketClient implements ConfigSource, MetadataStore {
     }
 
     @Override
-    public void deleteMetadata(String hexEncodedUrl) throws MetadataStoreException {
-        LOGGER.info("Deleting metadata with key: {} from S3 bucket: {}", hexEncodedUrl, bucketName);
+    public void deleteMetadata(String resourceName) throws MetadataStoreException {
+        String hexEncodedUrl = Hex.encodeHexString(resourceName.getBytes());
 
         try {
+            LOGGER.info("Deleting metadata with key: {} from S3 bucket: {}", hexEncodedUrl, bucketName);
             s3Client.deleteObject(new DeleteObjectRequest(bucketName, hexEncodedUrl));
         } catch (RuntimeException e) {
             throw new MetadataStoreException("Error removing metadata from S3 bucket", e);
