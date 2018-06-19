@@ -140,7 +140,7 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).deleteMetadata(unsuccessfulUrl);
+        verify(testMetadataStore).deleteMetadataWithMetadataUrl(unsuccessfulUrl);
     }
 
     @Test
@@ -159,7 +159,7 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).deleteMetadata(unsuccessfulUrl);
+        verify(testMetadataStore).deleteMetadataWithMetadataUrl(unsuccessfulUrl);
     }
 
     @Test
@@ -176,11 +176,11 @@ public class MetadataAggregatorTest {
         doThrow(new MetadataSourceException("Download metadata has failed"))
                 .when(testMetadataSource).downloadMetadata(unsuccessfulUrl);
         doThrow(new MetadataStoreException("Delete metadata has failed"))
-                .when(testMetadataStore).deleteMetadata(unsuccessfulUrl);
+                .when(testMetadataStore).deleteMetadataWithMetadataUrl(unsuccessfulUrl);
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).deleteMetadata(unsuccessfulUrl);
+        verify(testMetadataStore).deleteMetadataWithMetadataUrl(unsuccessfulUrl);
     }
 
     @Test
@@ -199,7 +199,7 @@ public class MetadataAggregatorTest {
         doThrow(new MetadataSourceException("Download metadata has failed"))
                 .when(testMetadataSource).downloadMetadata(unsuccessfulUrl);
         doThrow(new MetadataStoreException("Delete metadata has failed"))
-                .when(testMetadataStore).deleteMetadata(unsuccessfulUrl);
+                .when(testMetadataStore).deleteMetadataWithMetadataUrl(unsuccessfulUrl);
 
         testAggregator.aggregateMetadata();
 

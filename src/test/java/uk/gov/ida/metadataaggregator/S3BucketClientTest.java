@@ -3,9 +3,11 @@ package uk.gov.ida.metadataaggregator;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +17,9 @@ import uk.gov.ida.metadataaggregator.config.ConfigSourceException;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStoreException;
 
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -92,7 +96,7 @@ public class S3BucketClientTest {
 
     @Test
     public void shouldDeleteObjectFromS3Bucket() throws MetadataStoreException {
-        s3BucketClient.deleteMetadata(TEST_METADATA_URL);
+        s3BucketClient.deleteMetadataWithMetadataUrl(TEST_METADATA_URL);
 
         ArgumentCaptor<DeleteObjectRequest> deleteObjectRequestArgumentCaptor = ArgumentCaptor.forClass(DeleteObjectRequest.class);
         verify(amazonS3Client).deleteObject(deleteObjectRequestArgumentCaptor.capture());
@@ -106,7 +110,45 @@ public class S3BucketClientTest {
         doThrow(new RuntimeException()).when(amazonS3Client).deleteObject(any());
 
         assertThatExceptionOfType(MetadataStoreException.class)
-                .isThrownBy(() -> s3BucketClient.deleteMetadata(HEX_ENCODED_METADATA_URL));
+                .isThrownBy(() -> s3BucketClient.deleteMetadataWithMetadataUrl(HEX_ENCODED_METADATA_URL));
+    }
+
+    @Test
+    public void shouldRetrieveAllKeysFromS3Bucket() throws MetadataStoreException {
+        String kid1 = "http://example1.com";
+        String kid2 = "http://example2.com";
+
+        S3ObjectSummary s3Object1 = createS3ObjectSummary(kid1);
+        S3ObjectSummary s3Object2 = createS3ObjectSummary(kid2);
+
+        List<S3ObjectSummary> s3ObjectSummaries = new ArrayList<>();
+        s3ObjectSummaries.add(s3Object1);
+        s3ObjectSummaries.add(s3Object2);
+
+        ObjectListing objectListing = mock(ObjectListing.class);
+        when(amazonS3Client.listObjects(TEST_BUCKET_NAME)).thenReturn(objectListing);
+        when(objectListing.getObjectSummaries()).thenReturn(s3ObjectSummaries);
+
+        List<String> s3BucketKeys = s3BucketClient.getAllKeysFromS3Bucket();
+
+        assertThat(s3BucketKeys.get(0).contains(kid1));
+        assertThat(s3BucketKeys.get(1).contains(kid2));
+    }
+
+    @Test
+    public void shouldThrowWhenS3ObjectListCantBeRetrievedFromBucket() {
+        doThrow(new RuntimeException()).when(amazonS3Client).listObjects(TEST_BUCKET_NAME);
+
+        assertThatExceptionOfType(MetadataStoreException.class)
+                .isThrownBy(() -> s3BucketClient.getAllKeysFromS3Bucket());
+    }
+
+    private S3ObjectSummary createS3ObjectSummary(String key) {
+        S3ObjectSummary s3ObjectSummary = new S3ObjectSummary();
+        s3ObjectSummary.setBucketName(TEST_BUCKET_NAME);
+        s3ObjectSummary.setKey(key);
+
+        return s3ObjectSummary;
     }
 
     private S3Object mockS3ObjectReturning(String testJson) {
