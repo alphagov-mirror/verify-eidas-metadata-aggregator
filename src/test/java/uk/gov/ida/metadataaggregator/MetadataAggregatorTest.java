@@ -1,6 +1,7 @@
 package uk.gov.ida.metadataaggregator;
 
 import com.google.common.collect.ImmutableSet;
+import org.junit.Before;
 import org.junit.Test;
 import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
 import uk.gov.ida.metadataaggregator.config.ConfigSource;
@@ -9,6 +10,9 @@ import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataSource;
 import uk.gov.ida.metadataaggregator.metadatasource.MetadataSourceException;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStore;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStoreException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
@@ -22,7 +26,12 @@ public class MetadataAggregatorTest {
     private final ConfigSource testConfigSource = mock(ConfigSource.class);
     private final CountryMetadataSource testMetadataSource = mock(CountryMetadataSource.class);
     private final MetadataStore testMetadataStore = mock(MetadataStore.class);
-    private final MetadataAggregator testAggregator = new MetadataAggregator(testConfigSource, testMetadataSource, testMetadataStore);
+    private MetadataAggregator testAggregator;
+
+    @Before
+    public void before() {
+        testAggregator = new MetadataAggregator(testConfigSource, testMetadataSource, testMetadataStore);
+    }
 
     @Test
     public void shouldUploadMetadataDownloadedFromSourceToStore()
@@ -167,11 +176,9 @@ public class MetadataAggregatorTest {
             throws MetadataSourceException, ConfigSourceException, MetadataStoreException {
 
         String unsuccessfulUrl = "http://www.unsuccessfulUrl.com";
-        String unsuccessfulMetadata = "unsuccessfulMetadata";
 
         when(testConfigSource.downloadConfig())
                 .thenReturn(new AggregatorConfig(ImmutableSet.of(unsuccessfulUrl), null));
-        when(testMetadataSource.downloadMetadata(unsuccessfulUrl)).thenReturn(unsuccessfulMetadata);
 
         doThrow(new MetadataSourceException("Download metadata has failed"))
                 .when(testMetadataSource).downloadMetadata(unsuccessfulUrl);
@@ -184,16 +191,15 @@ public class MetadataAggregatorTest {
     }
 
     @Test
-    public void shouldUploadValidMetadataWhenDeleteOfPreviousMetadataFails() throws MetadataStoreException, MetadataSourceException, ConfigSourceException {
+    public void shouldUploadValidMetadataWhenDeleteOfPreviousMetadataFails()
+            throws MetadataStoreException, MetadataSourceException, ConfigSourceException {
 
         String unsuccessfulUrl = "http://www.unsuccessfulUrl.com";
-        String unsuccessfulMetadata = "unsuccessfulMetadata";
-        String successfulUrl= "http://www.successfulUrl.com";
+        String successfulUrl = "http://www.successfulUrl.com";
         String successfulMetadata = "successfulMetadata";
 
         when(testConfigSource.downloadConfig())
                 .thenReturn(new AggregatorConfig(ImmutableSet.of(unsuccessfulUrl, successfulUrl), null));
-        when(testMetadataSource.downloadMetadata(unsuccessfulUrl)).thenReturn(unsuccessfulMetadata);
         when(testMetadataSource.downloadMetadata(successfulUrl)).thenReturn(successfulMetadata);
 
         doThrow(new MetadataSourceException("Download metadata has failed"))
@@ -204,5 +210,53 @@ public class MetadataAggregatorTest {
         testAggregator.aggregateMetadata();
 
         verify(testMetadataStore).uploadMetadata(successfulUrl, successfulMetadata);
+    }
+
+    @Test
+    public void shouldDeleteMetadataFromS3BucketWhenNotInConfig()
+            throws ConfigSourceException, MetadataSourceException, MetadataStoreException {
+
+        String testUrl1 = "testUrl1";
+        String testMetadata1 = "testMetadata1";
+        String testUrl2 = "testUrl2";
+        String testMetadata2 = "testMetadata2";
+        String testUrl3 = "testUrl3";
+
+        List<String> s3BucketUrls = new ArrayList<>();
+        s3BucketUrls.add(HexUtils.encodeString(testUrl1));
+        s3BucketUrls.add(HexUtils.encodeString(testUrl2));
+        s3BucketUrls.add(HexUtils.encodeString(testUrl3));
+
+        when(testConfigSource.downloadConfig())
+                .thenReturn(new AggregatorConfig(ImmutableSet.of(testUrl1, testUrl2), null));
+        when(testMetadataSource.downloadMetadata(testUrl1)).thenReturn(testMetadata1);
+        when(testMetadataSource.downloadMetadata(testUrl2)).thenReturn(testMetadata2);
+        when(testMetadataStore.getAllHexEncodedUrlsFromS3Bucket()).thenReturn(s3BucketUrls);
+
+        testAggregator.aggregateMetadata();
+
+        verify(testMetadataStore).deleteMetadataWithHexEncodedUrl(HexUtils.encodeString(testUrl3));
+        verify(testMetadataStore).uploadMetadata(testUrl1, testMetadata1);
+        verify(testMetadataStore).uploadMetadata(testUrl2, testMetadata2);
+    }
+
+    @Test
+    public void shouldUploadMetadataWhenRetrievingKeysFromS3BucketFails() throws ConfigSourceException, MetadataSourceException, MetadataStoreException {
+        String testUrl1 = "testUrl1";
+        String testMetadata1 = "testMetadata1";
+        String testUrl2 = "testUrl2";
+        String testMetadata2 = "testMetadata2";
+
+        when(testConfigSource.downloadConfig())
+                .thenReturn(new AggregatorConfig(ImmutableSet.of(testUrl1, testUrl2), null));
+        doThrow(new MetadataStoreException("Unable to retrieve keys from S3 Bucket"))
+                .when(testMetadataStore).getAllHexEncodedUrlsFromS3Bucket();
+        when(testMetadataSource.downloadMetadata(testUrl1)).thenReturn(testMetadata1);
+        when(testMetadataSource.downloadMetadata(testUrl2)).thenReturn(testMetadata2);
+
+        testAggregator.aggregateMetadata();
+
+        verify(testMetadataStore).uploadMetadata(testUrl1, testMetadata1);
+        verify(testMetadataStore).uploadMetadata(testUrl2, testMetadata2);
     }
 }

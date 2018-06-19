@@ -129,7 +129,7 @@ public class S3BucketClientTest {
         when(amazonS3Client.listObjects(TEST_BUCKET_NAME)).thenReturn(objectListing);
         when(objectListing.getObjectSummaries()).thenReturn(s3ObjectSummaries);
 
-        List<String> s3BucketKeys = s3BucketClient.getAllKeysFromS3Bucket();
+        List<String> s3BucketKeys = s3BucketClient.getAllHexEncodedUrlsFromS3Bucket();
 
         assertThat(s3BucketKeys.get(0).contains(kid1));
         assertThat(s3BucketKeys.get(1).contains(kid2));
@@ -140,7 +140,7 @@ public class S3BucketClientTest {
         doThrow(new RuntimeException()).when(amazonS3Client).listObjects(TEST_BUCKET_NAME);
 
         assertThatExceptionOfType(MetadataStoreException.class)
-                .isThrownBy(() -> s3BucketClient.getAllKeysFromS3Bucket());
+                .isThrownBy(() -> s3BucketClient.getAllHexEncodedUrlsFromS3Bucket());
     }
 
     private S3ObjectSummary createS3ObjectSummary(String key) {
