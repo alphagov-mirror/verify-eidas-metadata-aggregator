@@ -7,9 +7,9 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.util.StringInputStream;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static uk.gov.ida.metadataaggregator.LambdaConstants.*;
@@ -41,7 +43,6 @@ class S3BucketClient implements ConfigSource, MetadataStore {
 
     @Override
     public AggregatorConfig downloadConfig() throws ConfigSourceException {
-
         LOGGER.info("Downloading config file from S3Bucket: {}", bucketName);
 
         S3Object object;
@@ -66,7 +67,7 @@ class S3BucketClient implements ConfigSource, MetadataStore {
     public void uploadMetadata(String resourceName, String metadataFile) throws MetadataStoreException {
         ObjectMetadata objectMetadata = objectMetadata(metadataFile.length());
 
-        String hexEncodedUrl = Hex.encodeHexString(resourceName.getBytes());
+        String hexEncodedUrl = HexUtils.encodeString(resourceName);
         StringInputStream metadataStream;
         try {
             metadataStream = new StringInputStream(metadataFile);
@@ -82,15 +83,37 @@ class S3BucketClient implements ConfigSource, MetadataStore {
     }
 
     @Override
-    public void deleteMetadata(String resourceName) throws MetadataStoreException {
-        String hexEncodedUrl = Hex.encodeHexString(resourceName.getBytes());
+    public void deleteMetadataWithMetadataUrl(String metadataUrl) throws MetadataStoreException {
+        String hexEncodedMetadataUrl = HexUtils.encodeString(metadataUrl);
+        deleteMetadataWithHexEncodedUrl(hexEncodedMetadataUrl);
+    }
 
+    @Override
+    public void deleteMetadataWithHexEncodedUrl(String hexEncodedMetadataUrl) throws MetadataStoreException {
         try {
-            LOGGER.info("Deleting metadata with key: {} from S3 bucket: {}", hexEncodedUrl, bucketName);
-            s3Client.deleteObject(new DeleteObjectRequest(bucketName, hexEncodedUrl));
+            LOGGER.info("Deleting metadata with key: {} from S3 bucket: {}", hexEncodedMetadataUrl, bucketName);
+            s3Client.deleteObject(new DeleteObjectRequest(bucketName, hexEncodedMetadataUrl));
         } catch (RuntimeException e) {
             throw new MetadataStoreException("Error removing metadata from S3 bucket", e);
         }
+    }
+
+    @Override
+    public List<String> getAllHexEncodedUrlsFromS3Bucket() throws MetadataStoreException {
+        List<String> bucketKeyList = new ArrayList<>();
+        List<S3ObjectSummary> bucketObjects;
+
+        try{
+            bucketObjects = s3Client.listObjects(bucketName).getObjectSummaries();
+        } catch (RuntimeException e) {
+            throw new MetadataStoreException("Error retrieving objects from S3 Bucket", e);
+        }
+
+        for (S3ObjectSummary s3ObjectSummary : bucketObjects) {
+            bucketKeyList.add(s3ObjectSummary.getKey());
+        }
+
+        return bucketKeyList;
     }
 
     private ObjectMetadata objectMetadata(int contentLength) {
