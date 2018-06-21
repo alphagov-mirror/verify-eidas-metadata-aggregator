@@ -64,10 +64,9 @@ class S3BucketClient implements ConfigSource, MetadataStore {
     }
 
     @Override
-    public void uploadMetadata(String resourceName, String metadataFile) throws MetadataStoreException {
+    public void uploadMetadata(String resource, String metadataFile) throws MetadataStoreException {
         ObjectMetadata objectMetadata = objectMetadata(metadataFile.length());
 
-        String hexEncodedUrl = HexUtils.encodeString(resourceName);
         StringInputStream metadataStream;
         try {
             metadataStream = new StringInputStream(metadataFile);
@@ -76,23 +75,17 @@ class S3BucketClient implements ConfigSource, MetadataStore {
         }
 
         try {
-            s3Client.putObject(new PutObjectRequest(bucketName, hexEncodedUrl, metadataStream, objectMetadata));
+            s3Client.putObject(new PutObjectRequest(bucketName, resource, metadataStream, objectMetadata));
         } catch (RuntimeException e) {
             throw new MetadataStoreException("Error uploading metadata to S3 bucket", e);
         }
     }
 
     @Override
-    public void deleteMetadataWithMetadataUrl(String metadataUrl) throws MetadataStoreException {
-        String hexEncodedMetadataUrl = HexUtils.encodeString(metadataUrl);
-        deleteMetadataWithHexEncodedUrl(hexEncodedMetadataUrl);
-    }
-
-    @Override
-    public void deleteMetadataWithHexEncodedUrl(String hexEncodedMetadataUrl) throws MetadataStoreException {
+    public void deleteMetadata(String resource) throws MetadataStoreException {
         try {
-            LOGGER.info("Deleting metadata with key: {} from S3 bucket: {}", hexEncodedMetadataUrl, bucketName);
-            s3Client.deleteObject(new DeleteObjectRequest(bucketName, hexEncodedMetadataUrl));
+            LOGGER.info("Deleting metadata with key: {} from S3 bucket: {}", resource, bucketName);
+            s3Client.deleteObject(new DeleteObjectRequest(bucketName, resource));
         } catch (RuntimeException e) {
             throw new MetadataStoreException("Error removing metadata from S3 bucket", e);
         }

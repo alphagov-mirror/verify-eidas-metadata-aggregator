@@ -46,7 +46,7 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).uploadMetadata(testUrl1, testMetadata1);
+        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl1), testMetadata1);
     }
 
     @Test
@@ -65,8 +65,8 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).uploadMetadata(testUrl1, testMetadata1);
-        verify(testMetadataStore).uploadMetadata(testUrl2, testMetadata2);
+        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl1), testMetadata1);
+        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl2), testMetadata2);
     }
 
     @Test
@@ -111,7 +111,7 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).uploadMetadata(validUrl, validMetadata);
+        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(validUrl), validMetadata);
     }
 
     @Test
@@ -129,11 +129,11 @@ public class MetadataAggregatorTest {
         when(testMetadataSource.downloadMetadata(successfulUrl)).thenReturn(successfulMetadata);
 
         doThrow(new MetadataStoreException("Metadata store failed"))
-                .when(testMetadataStore).uploadMetadata(unsuccessfulUrl, unsuccessfulMetadata);
+                .when(testMetadataStore).uploadMetadata(HexUtils.encodeString(unsuccessfulUrl), unsuccessfulMetadata);
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).uploadMetadata(successfulUrl, successfulMetadata);
+        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(successfulUrl), successfulMetadata);
     }
 
     @Test
@@ -149,7 +149,7 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).deleteMetadataWithMetadataUrl(unsuccessfulUrl);
+        verify(testMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl));
     }
 
     @Test
@@ -164,11 +164,11 @@ public class MetadataAggregatorTest {
         when(testMetadataSource.downloadMetadata(unsuccessfulUrl)).thenReturn(unsuccessfulMetadata);
 
         doThrow(new MetadataStoreException("Metadata store failed"))
-                .when(testMetadataStore).uploadMetadata(unsuccessfulUrl,unsuccessfulMetadata);
+                .when(testMetadataStore).uploadMetadata(HexUtils.encodeString(unsuccessfulUrl),unsuccessfulMetadata);
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).deleteMetadataWithMetadataUrl(unsuccessfulUrl);
+        verify(testMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl));
     }
 
     @Test
@@ -183,11 +183,11 @@ public class MetadataAggregatorTest {
         doThrow(new MetadataSourceException("Download metadata has failed"))
                 .when(testMetadataSource).downloadMetadata(unsuccessfulUrl);
         doThrow(new MetadataStoreException("Delete metadata has failed"))
-                .when(testMetadataStore).deleteMetadataWithMetadataUrl(unsuccessfulUrl);
+                .when(testMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl));
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).deleteMetadataWithMetadataUrl(unsuccessfulUrl);
+        verify(testMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl));
     }
 
     @Test
@@ -205,11 +205,11 @@ public class MetadataAggregatorTest {
         doThrow(new MetadataSourceException("Download metadata has failed"))
                 .when(testMetadataSource).downloadMetadata(unsuccessfulUrl);
         doThrow(new MetadataStoreException("Delete metadata has failed"))
-                .when(testMetadataStore).deleteMetadataWithMetadataUrl(unsuccessfulUrl);
+                .when(testMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl));
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).uploadMetadata(successfulUrl, successfulMetadata);
+        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(successfulUrl), successfulMetadata);
     }
 
     @Test
@@ -235,9 +235,9 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).deleteMetadataWithHexEncodedUrl(HexUtils.encodeString(testUrl3));
-        verify(testMetadataStore).uploadMetadata(testUrl1, testMetadata1);
-        verify(testMetadataStore).uploadMetadata(testUrl2, testMetadata2);
+        verify(testMetadataStore).deleteMetadata(HexUtils.encodeString(testUrl3));
+        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl1), testMetadata1);
+        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl2), testMetadata2);
     }
 
     @Test
@@ -256,7 +256,7 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).uploadMetadata(testUrl1, testMetadata1);
-        verify(testMetadataStore).uploadMetadata(testUrl2, testMetadata2);
+        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl1), testMetadata1);
+        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl2), testMetadata2);
     }
 }

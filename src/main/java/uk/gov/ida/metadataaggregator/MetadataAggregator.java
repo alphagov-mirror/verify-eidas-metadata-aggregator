@@ -60,15 +60,15 @@ public class MetadataAggregator {
             countryMetadataFile = countryMetadataCurler.downloadMetadata(metadataUrl);
         } catch (MetadataSourceException e) {
             LOGGER.error("Error downloading metadatasource file {} Exception: {}", metadataUrl, e.getMessage());
-            deleteMetadataWithMetadataUrl(metadataUrl);
+            deleteMetadataWithHexEncodedMetadataUrl(HexUtils.encodeString(metadataUrl));
             return false;
         }
 
         try {
-            metadataStore.uploadMetadata(metadataUrl, countryMetadataFile);
+            metadataStore.uploadMetadata(HexUtils.encodeString(metadataUrl), countryMetadataFile);
         } catch (MetadataStoreException e) {
             LOGGER.error("Error uploading metadatasource file {} Exception: {}", metadataUrl, e.getMessage());
-            deleteMetadataWithMetadataUrl(metadataUrl);
+            deleteMetadataWithHexEncodedMetadataUrl(HexUtils.encodeString(metadataUrl));
             return false;
         }
         return true;
@@ -86,7 +86,7 @@ public class MetadataAggregator {
         toRemoveHexedBucketUrls.removeAll(hexedConfigUrls);
 
         for (String hexedBucketUrl : toRemoveHexedBucketUrls) {
-            deleteMetadataWithHexEncodedUrl(hexedBucketUrl);
+            deleteMetadataWithHexEncodedMetadataUrl(hexedBucketUrl);
         }
     }
 
@@ -100,17 +100,9 @@ public class MetadataAggregator {
         return hexEncodedUrls;
     }
 
-    private void deleteMetadataWithMetadataUrl(String metadataUrl) {
+    private void deleteMetadataWithHexEncodedMetadataUrl(String hexEncodedUrl) {
         try {
-            metadataStore.deleteMetadataWithMetadataUrl(metadataUrl);
-        } catch (MetadataStoreException e) {
-            LOGGER.error("Error deleting metadatasource file with metadataUrl: {} Exception: {}", metadataUrl, e.getMessage());
-        }
-    }
-
-    private void deleteMetadataWithHexEncodedUrl(String hexEncodedUrl) {
-        try {
-            metadataStore.deleteMetadataWithHexEncodedUrl(hexEncodedUrl);
+            metadataStore.deleteMetadata(hexEncodedUrl);
         } catch (MetadataStoreException e) {
             LOGGER.error("Error deleting metadatasource file with hexEncodedUrl: {} Exception: {}", hexEncodedUrl, e.getMessage());
         }

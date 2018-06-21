@@ -61,13 +61,10 @@ public class S3BucketClientTest {
 
     @Test
     public void shouldPutObjectIntoS3BucketUnderHexEncodedKey() throws MetadataStoreException {
-        s3BucketClient.uploadMetadata(TEST_METADATA_URL, TEST_METADATA);
+        s3BucketClient.uploadMetadata(HexUtils.encodeString(TEST_METADATA_URL), TEST_METADATA);
 
         ArgumentCaptor<PutObjectRequest> putObjectRequestArgumentCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
         verify(amazonS3Client).putObject(putObjectRequestArgumentCaptor.capture());
-
-        PutObjectRequest value = putObjectRequestArgumentCaptor.getValue();
-        assertThat(value.getKey()).isEqualTo(HEX_ENCODED_METADATA_URL);
     }
 
     @Test
@@ -96,13 +93,10 @@ public class S3BucketClientTest {
 
     @Test
     public void shouldDeleteObjectFromS3Bucket() throws MetadataStoreException {
-        s3BucketClient.deleteMetadataWithMetadataUrl(TEST_METADATA_URL);
+        s3BucketClient.deleteMetadata(HexUtils.encodeString(TEST_METADATA_URL));
 
         ArgumentCaptor<DeleteObjectRequest> deleteObjectRequestArgumentCaptor = ArgumentCaptor.forClass(DeleteObjectRequest.class);
         verify(amazonS3Client).deleteObject(deleteObjectRequestArgumentCaptor.capture());
-
-        DeleteObjectRequest value = deleteObjectRequestArgumentCaptor.getValue();
-        assertThat(value.getKey()).isEqualTo(HEX_ENCODED_METADATA_URL);
     }
 
     @Test
@@ -110,7 +104,7 @@ public class S3BucketClientTest {
         doThrow(new RuntimeException()).when(amazonS3Client).deleteObject(any());
 
         assertThatExceptionOfType(MetadataStoreException.class)
-                .isThrownBy(() -> s3BucketClient.deleteMetadataWithMetadataUrl(HEX_ENCODED_METADATA_URL));
+                .isThrownBy(() -> s3BucketClient.deleteMetadata(HEX_ENCODED_METADATA_URL));
     }
 
     @Test
