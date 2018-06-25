@@ -11,9 +11,12 @@ import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataCurler;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataValidatingResolver;
 import uk.gov.ida.metadataaggregator.metadatasource.MetadataSourceException;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 import static uk.gov.ida.metadataaggregator.LambdaConstants.AWS_ACCESS_KEY;
 import static uk.gov.ida.metadataaggregator.LambdaConstants.AWS_SECRET_KEY;
 import static uk.gov.ida.metadataaggregator.LambdaConstants.BUCKET_NAME;
+import static uk.gov.ida.metadataaggregator.LambdaConstants.SERVER_ERROR_STATUS_CODE;
 import static uk.gov.ida.metadataaggregator.LambdaConstants.SUCCESS_STATUS_CODE;
 import static uk.gov.ida.metadataaggregator.LambdaConstants.TRUST_ANCHOR_PASSCODE;
 import static uk.gov.ida.metadataaggregator.LambdaConstants.TRUST_ANCHOR_URI;
@@ -25,13 +28,23 @@ public class AwsLambdaHandlers {
 
     public ApiGatewayProxyResponse s3BucketLambda(ApiGatewayRequest testObject) {
         S3BucketClient s3BucketClient = getS3BucketClient();
-        new MetadataAggregator(s3BucketClient, new CountryMetadataCurler(), s3BucketClient).aggregateMetadata();
+        try {
+            boolean wasSuccessful = new MetadataAggregator(s3BucketClient, new CountryMetadataCurler(), s3BucketClient).aggregateMetadata();
+            if(!wasSuccessful) LOGGER.error("Metadata Aggregator failed");
+        } catch (ParserConfigurationException e) {
+            return new ApiGatewayProxyResponse(SERVER_ERROR_STATUS_CODE, null, null);
+        }
         return new ApiGatewayProxyResponse(SUCCESS_STATUS_CODE, null, null);
     }
 
     public void s3BucketLambda(AggregatorConfig testObject) {
         S3BucketClient s3BucketClient = getS3BucketClient();
-        new MetadataAggregator(s3BucketClient, new CountryMetadataCurler(), s3BucketClient).aggregateMetadata();
+        try {
+            boolean wasSuccessful = new MetadataAggregator(s3BucketClient, new CountryMetadataCurler(), s3BucketClient).aggregateMetadata();
+            if(!wasSuccessful) LOGGER.error("Metadata Aggregator failed");
+        } catch (ParserConfigurationException e) {
+            LOGGER.error("Unable to create XML parser: {}", e.getMessage());
+        }
     }
 
     public void s3BucketValidatingLambda(AggregatorConfig testObject) {
@@ -47,7 +60,8 @@ public class AwsLambdaHandlers {
         }
 
         S3BucketClient s3BucketClient = getS3BucketClient();
-        new MetadataAggregator(s3BucketClient, validatingResolver, s3BucketClient).aggregateMetadata();
+        boolean wasSuccessful = new MetadataAggregator(s3BucketClient, validatingResolver, s3BucketClient).aggregateMetadata();
+        if(!wasSuccessful) LOGGER.error("Metadata Aggregator failed");
     }
 
     private S3BucketClient getS3BucketClient() {

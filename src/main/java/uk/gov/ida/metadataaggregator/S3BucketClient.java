@@ -12,6 +12,10 @@ import com.amazonaws.util.StringInputStream;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSSerializer;
 import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
 import uk.gov.ida.metadataaggregator.config.ConfigSource;
 import uk.gov.ida.metadataaggregator.config.ConfigSourceException;
@@ -64,12 +68,13 @@ class S3BucketClient implements ConfigSource, MetadataStore {
     }
 
     @Override
-    public void uploadMetadata(String resource, String metadataFile) throws MetadataStoreException {
-        ObjectMetadata objectMetadata = objectMetadata(metadataFile.length());
+    public void uploadMetadata(String resource, Element metadataNode) throws MetadataStoreException {
+        String metadataString = serialise(metadataNode);
+        ObjectMetadata objectMetadata = objectMetadata(metadataString.length());
 
         StringInputStream metadataStream;
         try {
-            metadataStream = new StringInputStream(metadataFile);
+            metadataStream = new StringInputStream(metadataString);
         } catch (UnsupportedEncodingException e) {
             throw new MetadataStoreException("Error opening metadata file stream to store", e);
         }
@@ -113,5 +118,13 @@ class S3BucketClient implements ConfigSource, MetadataStore {
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(contentLength);
         return metadata;
+    }
+
+    private String serialise(Element node) {
+        Document document = node.getOwnerDocument();
+        DOMImplementationLS domImplLS = (DOMImplementationLS) document
+                .getImplementation();
+        LSSerializer serializer = domImplLS.createLSSerializer();
+        return serializer.writeToString(node);
     }
 }

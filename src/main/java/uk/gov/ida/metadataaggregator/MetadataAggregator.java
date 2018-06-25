@@ -2,6 +2,7 @@ package uk.gov.ida.metadataaggregator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Element;
 import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
 import uk.gov.ida.metadataaggregator.config.ConfigSource;
 import uk.gov.ida.metadataaggregator.config.ConfigSourceException;
@@ -30,13 +31,13 @@ public class MetadataAggregator {
         this.countryMetadataCurler = countryMetadataCurler;
     }
 
-    public void aggregateMetadata() {
+    public boolean aggregateMetadata() {
         AggregatorConfig config;
         try {
             config = configSource.downloadConfig();
         } catch (ConfigSourceException e) {
             LOGGER.error("Metadata Aggregator error - Unable to download Aggregator Config file: {}", e.getMessage());
-            return;
+            return false;
         }
 
         LOGGER.info("Processing country metadatasource");
@@ -52,10 +53,12 @@ public class MetadataAggregator {
         }
 
         LOGGER.info("Finished processing country metadatasource with {} successful uploads out of {}", successfulUploads, configMetadataUrls.size());
+
+        return successfulUploads == configMetadataUrls.size();
     }
 
     private boolean processMetadataFrom(String metadataUrl) {
-        String countryMetadataFile;
+        Element countryMetadataFile;
         try {
             countryMetadataFile = countryMetadataCurler.downloadMetadata(metadataUrl);
         } catch (MetadataSourceException e) {

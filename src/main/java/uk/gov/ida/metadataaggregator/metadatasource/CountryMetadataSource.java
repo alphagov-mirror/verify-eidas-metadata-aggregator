@@ -1,5 +1,7 @@
 package uk.gov.ida.metadataaggregator.metadatasource;
 
+import org.w3c.dom.Element;
+
 public interface CountryMetadataSource {
-    String downloadMetadata(String url) throws MetadataSourceException;
+    Element downloadMetadata(String url) throws MetadataSourceException;
 }

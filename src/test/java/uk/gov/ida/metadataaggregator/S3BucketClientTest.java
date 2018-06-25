@@ -12,9 +12,16 @@ import org.apache.commons.codec.binary.Hex;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.opensaml.core.config.InitializationException;
+import org.opensaml.core.config.InitializationService;
+import org.opensaml.saml.saml2.metadata.EntityDescriptor;
+import org.w3c.dom.Element;
 import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
 import uk.gov.ida.metadataaggregator.config.ConfigSourceException;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStoreException;
+import uk.gov.ida.saml.core.test.TestEntityIds;
+import uk.gov.ida.saml.metadata.test.factories.metadata.EntityDescriptorFactory;
+import uk.gov.ida.saml.serializers.XmlObjectToElementTransformer;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -34,22 +41,26 @@ import static uk.gov.ida.metadataaggregator.LambdaConstants.CONFIG_BUCKET_KEY;
 public class S3BucketClientTest {
 
     private static final String TEST_BUCKET_NAME = "testBucketName";
-    private static final String TEST_METADATA_URL = "test.url.com";
-    private static final String HEX_ENCODED_METADATA_URL = String.valueOf(Hex.encodeHex(TEST_METADATA_URL.getBytes()));
-    private static final String TEST_METADATA = "testMetadataString";
+    private static final String STUB_COUNTRY_ENTITY_ID = TestEntityIds.STUB_COUNTRY_ONE;
+    private static final String HEX_ENCODED_METADATA_URL = String.valueOf(Hex.encodeHex(STUB_COUNTRY_ENTITY_ID.getBytes()));
+    private static final EntityDescriptor STUB_COUNTRY_METADATA = new EntityDescriptorFactory().idpEntityDescriptor(STUB_COUNTRY_ENTITY_ID);
+    private Element testMetadata;
+
 
     private AmazonS3Client amazonS3Client;
     private S3BucketClient s3BucketClient;
 
     @Before
-    public void setUp() {
+    public void setUp() throws InitializationException {
+        InitializationService.initialize();
+        testMetadata = new XmlObjectToElementTransformer().apply(STUB_COUNTRY_METADATA);
         amazonS3Client = mock(AmazonS3Client.class);
         s3BucketClient = new S3BucketClient(TEST_BUCKET_NAME, amazonS3Client);
     }
 
     @Test
     public void shouldMapDownloadedConfigIntoObject() throws ConfigSourceException {
-        String testJson = JsonAggregatorConfigBuilder.newConfig().withMetadataUrl(TEST_METADATA_URL).toJson();
+        String testJson = JsonAggregatorConfigBuilder.newConfig().withMetadataUrl(STUB_COUNTRY_ENTITY_ID).toJson();
         S3Object mockS3Object = mockS3ObjectReturning(testJson);
         when(amazonS3Client.getObject(TEST_BUCKET_NAME, CONFIG_BUCKET_KEY)).thenReturn(mockS3Object);
 
@@ -61,7 +72,7 @@ public class S3BucketClientTest {
 
     @Test
     public void shouldPutObjectIntoS3BucketUnderHexEncodedKey() throws MetadataStoreException {
-        s3BucketClient.uploadMetadata(HexUtils.encodeString(TEST_METADATA_URL), TEST_METADATA);
+        s3BucketClient.uploadMetadata(HexUtils.encodeString(STUB_COUNTRY_ENTITY_ID), testMetadata);
 
         ArgumentCaptor<PutObjectRequest> putObjectRequestArgumentCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
         verify(amazonS3Client).putObject(putObjectRequestArgumentCaptor.capture());
@@ -76,7 +87,7 @@ public class S3BucketClientTest {
 
     @Test
     public void shouldConvertExceptionIntoDomainTypeWhenDownloadFails() {
-        String testJson = JsonAggregatorConfigBuilder.newConfig().withMetadataUrl(TEST_METADATA_URL).toInvalidJson();
+        String testJson = JsonAggregatorConfigBuilder.newConfig().withMetadataUrl(STUB_COUNTRY_ENTITY_ID).toInvalidJson();
         S3Object mockS3Object = mockS3ObjectReturning(testJson);
         when(amazonS3Client.getObject(TEST_BUCKET_NAME, CONFIG_BUCKET_KEY)).thenReturn(mockS3Object);
 
@@ -88,12 +99,12 @@ public class S3BucketClientTest {
         when(amazonS3Client.putObject(any())).thenThrow(new RuntimeException());
 
         assertThatExceptionOfType(MetadataStoreException.class)
-                .isThrownBy(() -> s3BucketClient.uploadMetadata(TEST_METADATA_URL, TEST_METADATA));
+                .isThrownBy(() -> s3BucketClient.uploadMetadata(STUB_COUNTRY_ENTITY_ID, testMetadata));
     }
 
     @Test
     public void shouldDeleteObjectFromS3Bucket() throws MetadataStoreException {
-        s3BucketClient.deleteMetadata(HexUtils.encodeString(TEST_METADATA_URL));
+        s3BucketClient.deleteMetadata(HexUtils.encodeString(STUB_COUNTRY_ENTITY_ID));
 
         ArgumentCaptor<DeleteObjectRequest> deleteObjectRequestArgumentCaptor = ArgumentCaptor.forClass(DeleteObjectRequest.class);
         verify(amazonS3Client).deleteObject(deleteObjectRequestArgumentCaptor.capture());
