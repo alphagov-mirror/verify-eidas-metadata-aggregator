@@ -15,13 +15,11 @@ import org.mockito.ArgumentCaptor;
 import org.opensaml.core.config.InitializationException;
 import org.opensaml.core.config.InitializationService;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
-import org.w3c.dom.Element;
 import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
 import uk.gov.ida.metadataaggregator.config.ConfigSourceException;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStoreException;
 import uk.gov.ida.saml.core.test.TestEntityIds;
 import uk.gov.ida.saml.metadata.test.factories.metadata.EntityDescriptorFactory;
-import uk.gov.ida.saml.serializers.XmlObjectToElementTransformer;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -44,7 +42,6 @@ public class S3BucketClientTest {
     private static final String STUB_COUNTRY_ENTITY_ID = TestEntityIds.STUB_COUNTRY_ONE;
     private static final String HEX_ENCODED_METADATA_URL = String.valueOf(Hex.encodeHex(STUB_COUNTRY_ENTITY_ID.getBytes()));
     private static final EntityDescriptor STUB_COUNTRY_METADATA = new EntityDescriptorFactory().idpEntityDescriptor(STUB_COUNTRY_ENTITY_ID);
-    private Element testMetadata;
 
 
     private AmazonS3Client amazonS3Client;
@@ -53,7 +50,6 @@ public class S3BucketClientTest {
     @Before
     public void setUp() throws InitializationException {
         InitializationService.initialize();
-        testMetadata = new XmlObjectToElementTransformer().apply(STUB_COUNTRY_METADATA);
         amazonS3Client = mock(AmazonS3Client.class);
         s3BucketClient = new S3BucketClient(TEST_BUCKET_NAME, amazonS3Client);
     }
@@ -72,7 +68,7 @@ public class S3BucketClientTest {
 
     @Test
     public void shouldPutObjectIntoS3BucketUnderHexEncodedKey() throws MetadataStoreException {
-        s3BucketClient.uploadMetadata(HexUtils.encodeString(STUB_COUNTRY_ENTITY_ID), testMetadata);
+        s3BucketClient.uploadMetadata(HexUtils.encodeString(STUB_COUNTRY_ENTITY_ID), STUB_COUNTRY_METADATA);
 
         ArgumentCaptor<PutObjectRequest> putObjectRequestArgumentCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
         verify(amazonS3Client).putObject(putObjectRequestArgumentCaptor.capture());
@@ -99,7 +95,7 @@ public class S3BucketClientTest {
         when(amazonS3Client.putObject(any())).thenThrow(new RuntimeException());
 
         assertThatExceptionOfType(MetadataStoreException.class)
-                .isThrownBy(() -> s3BucketClient.uploadMetadata(STUB_COUNTRY_ENTITY_ID, testMetadata));
+                .isThrownBy(() -> s3BucketClient.uploadMetadata(STUB_COUNTRY_ENTITY_ID, STUB_COUNTRY_METADATA));
     }
 
     @Test

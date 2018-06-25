@@ -46,14 +46,14 @@ dependencies {
             "com.amazonaws:aws-java-sdk:${awsJavaVersion}",
             "uk.gov.ida:saml-metadata-bindings:${saml_libs_version}",
             "org.slf4j:log4j-over-slf4j:${slf4jVersion}",
-            "uk.gov.ida:common-utils:2.0.0-$ida_utils_version"
+            "uk.gov.ida:common-utils:2.0.0-$ida_utils_version",
+            "uk.gov.ida:saml-serializers:${saml_libs_version}"
     )
 
     testCompile(
             "junit:junit:${junitVersion}",
             "org.mockito:mockito-core:${mockitoVersion}",
             "org.assertj:assertj-core:${assertJVersion}",
-            "uk.gov.ida:saml-serializers:${saml_libs_version}",
             "uk.gov.ida:saml-metadata-bindings-test:${saml_libs_version}"
     )
 }

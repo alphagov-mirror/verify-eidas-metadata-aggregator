@@ -1,7 +1,7 @@
 package uk.gov.ida.metadataaggregator.metadatasource;
 
-import org.w3c.dom.Element;
+import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 
 public interface CountryMetadataSource {
-    Element downloadMetadata(String url) throws MetadataSourceException;
+    EntityDescriptor downloadMetadata(String url) throws MetadataSourceException;
 }

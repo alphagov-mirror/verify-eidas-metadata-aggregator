@@ -1,7 +1,9 @@
 package uk.gov.ida.metadataaggregator.metadatasource;
 
-import org.w3c.dom.Element;
+import org.opensaml.core.xml.io.UnmarshallingException;
+import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.xml.sax.SAXException;
+import uk.gov.ida.saml.deserializers.parser.SamlObjectParser;
 import uk.gov.ida.shared.utils.xml.XmlUtils;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -13,20 +15,21 @@ import java.net.URLConnection;
 
 public class CountryMetadataCurler implements CountryMetadataSource {
 
-    private DocumentBuilder documentBuilder = XmlUtils.newDocumentBuilder();
+    private final DocumentBuilder documentBuilder = XmlUtils.newDocumentBuilder();
+    private final SamlObjectParser samlObjectParser = new SamlObjectParser();
 
     public CountryMetadataCurler() throws ParserConfigurationException {
     }
 
     @Override
-    public Element downloadMetadata(String url) throws MetadataSourceException {
+    public EntityDescriptor downloadMetadata(String url) throws MetadataSourceException {
 
         try {
             URLConnection urlConnection = new URL(url).openConnection();
             InputStream in = urlConnection.getInputStream();
 
-            return documentBuilder.parse(in).getDocumentElement();
-        } catch (IOException | SAXException e) {
+            return samlObjectParser.getSamlObject(documentBuilder.parse(in).getDocumentElement());
+        } catch (IOException | SAXException | UnmarshallingException e) {
             throw new MetadataSourceException("Unable to retrieve metadatasource from " + url, e);
         }
     }

@@ -10,9 +10,9 @@ import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.util.StringInputStream;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
@@ -21,6 +21,7 @@ import uk.gov.ida.metadataaggregator.config.ConfigSource;
 import uk.gov.ida.metadataaggregator.config.ConfigSourceException;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStore;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStoreException;
+import uk.gov.ida.saml.serializers.XmlObjectToElementTransformer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -68,7 +69,7 @@ class S3BucketClient implements ConfigSource, MetadataStore {
     }
 
     @Override
-    public void uploadMetadata(String resource, Element metadataNode) throws MetadataStoreException {
+    public void uploadMetadata(String resource, EntityDescriptor metadataNode) throws MetadataStoreException {
         String metadataString = serialise(metadataNode);
         ObjectMetadata objectMetadata = objectMetadata(metadataString.length());
 
@@ -120,11 +121,12 @@ class S3BucketClient implements ConfigSource, MetadataStore {
         return metadata;
     }
 
-    private String serialise(Element node) {
-        Document document = node.getOwnerDocument();
-        DOMImplementationLS domImplLS = (DOMImplementationLS) document
+    private String serialise(EntityDescriptor node) {
+        XmlObjectToElementTransformer<EntityDescriptor> transformer = new XmlObjectToElementTransformer<>();
+        Element element = transformer.apply(node);
+        DOMImplementationLS domImplLS = (DOMImplementationLS) element.getOwnerDocument()
                 .getImplementation();
         LSSerializer serializer = domImplLS.createLSSerializer();
-        return serializer.writeToString(node);
+        return serializer.writeToString(element);
     }
 }

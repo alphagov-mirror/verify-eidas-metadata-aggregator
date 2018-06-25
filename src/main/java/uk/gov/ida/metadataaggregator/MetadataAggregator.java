@@ -1,8 +1,8 @@
 package uk.gov.ida.metadataaggregator;
 
+import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Element;
 import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
 import uk.gov.ida.metadataaggregator.config.ConfigSource;
 import uk.gov.ida.metadataaggregator.config.ConfigSourceException;
@@ -58,7 +58,7 @@ public class MetadataAggregator {
     }
 
     private boolean processMetadataFrom(String metadataUrl) {
-        Element countryMetadataFile;
+        EntityDescriptor countryMetadataFile;
         try {
             countryMetadataFile = countryMetadataCurler.downloadMetadata(metadataUrl);
         } catch (MetadataSourceException e) {

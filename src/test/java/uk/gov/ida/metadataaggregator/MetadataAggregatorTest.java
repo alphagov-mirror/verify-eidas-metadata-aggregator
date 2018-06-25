@@ -3,7 +3,7 @@ package uk.gov.ida.metadataaggregator;
 import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
 import org.junit.Test;
-import org.w3c.dom.Element;
+import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
 import uk.gov.ida.metadataaggregator.config.ConfigSource;
 import uk.gov.ida.metadataaggregator.config.ConfigSourceException;
@@ -31,14 +31,14 @@ public class MetadataAggregatorTest {
     private MetadataAggregator testAggregator;
 
     String testUrl1 = "testUrl1";
-    Element testMetadata1 = mock(Element.class);
+    EntityDescriptor testMetadata1 = mock(EntityDescriptor.class);
     String testUrl2 = "testUrl2";
-    Element testMetadata2 = mock(Element.class);
+    EntityDescriptor testMetadata2 = mock(EntityDescriptor.class);
     String testUrl3 = "testUrl3";
     String unsuccessfulUrl = "http://www.unsuccessfulUrl.com";
-    Element unsuccessfulMetadata = mock(Element.class);
+    EntityDescriptor unsuccessfulMetadata = mock(EntityDescriptor.class);
     String successfulUrl= "http://www.successfulUrl.com";
-    Element successfulMetadata = mock(Element.class);
+    EntityDescriptor successfulMetadata = mock(EntityDescriptor.class);
 
 
     @Before
@@ -84,7 +84,7 @@ public class MetadataAggregatorTest {
         testAggregator.aggregateMetadata();
 
         verify(testMetadataSource, never()).downloadMetadata(anyString());
-        verify(testMetadataStore, never()).uploadMetadata(anyString(), any(Element.class));
+        verify(testMetadataStore, never()).uploadMetadata(anyString(), any(EntityDescriptor.class));
     }
 
     @Test
@@ -99,7 +99,7 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore, never()).uploadMetadata(anyString(), any(Element.class));
+        verify(testMetadataStore, never()).uploadMetadata(anyString(), any(EntityDescriptor.class));
     }
 
     @Test
@@ -154,7 +154,7 @@ public class MetadataAggregatorTest {
             throws ConfigSourceException, MetadataSourceException, MetadataStoreException {
 
         String unsuccessfulUrl = "http://www.unsuccessfulUrl.com";
-        Element unsuccessfulMetadata = mock(Element.class);
+        EntityDescriptor unsuccessfulMetadata = mock(EntityDescriptor.class);
 
         when(testConfigSource.downloadConfig())
                 .thenReturn(new AggregatorConfig(ImmutableSet.of(unsuccessfulUrl), null));
@@ -193,7 +193,7 @@ public class MetadataAggregatorTest {
 
         String unsuccessfulUrl = "http://www.unsuccessfulUrl.com";
         String successfulUrl = "http://www.successfulUrl.com";
-        Element successfulMetadata = mock(Element.class);
+        EntityDescriptor successfulMetadata = mock(EntityDescriptor.class);
 
         when(testConfigSource.downloadConfig())
                 .thenReturn(new AggregatorConfig(ImmutableSet.of(unsuccessfulUrl, successfulUrl), null));
