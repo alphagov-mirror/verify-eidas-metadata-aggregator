@@ -32,7 +32,7 @@ ext {
     assertJVersion = "3.10.0"
     slf4jVersion = "1.7.12"
     ida_utils_version = '335'
-    saml_libs_version = "${openSamlVersion}-148"
+    saml_libs_version = "${openSamlVersion}-149"
 }
 
 repositories {

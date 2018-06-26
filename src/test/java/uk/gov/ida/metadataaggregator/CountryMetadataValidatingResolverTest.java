@@ -1,10 +1,8 @@
 package uk.gov.ida.metadataaggregator;
 
 import certificates.values.CACertificates;
-import com.google.common.base.Throwables;
 import com.nimbusds.jose.jwk.JWK;
 import org.apache.commons.io.IOUtils;
-import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -13,35 +11,17 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.OngoingStubbing;
 import org.opensaml.core.config.InitializationException;
 import org.opensaml.core.config.InitializationService;
-import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
-import org.opensaml.core.xml.io.MarshallingException;
-import org.opensaml.saml.common.SignableSAMLObject;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
-import org.opensaml.saml.saml2.metadata.IDPSSODescriptor;
-import org.opensaml.saml.saml2.metadata.KeyDescriptor;
-import org.opensaml.security.SecurityException;
-import org.opensaml.xmlsec.signature.KeyInfo;
-import org.opensaml.xmlsec.signature.Signature;
-import org.opensaml.xmlsec.signature.X509Certificate;
-import org.opensaml.xmlsec.signature.X509Data;
-import org.opensaml.xmlsec.signature.support.SignatureException;
-import org.opensaml.xmlsec.signature.support.Signer;
-import org.w3c.dom.Element;
+import org.opensaml.security.credential.Credential;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataValidatingResolver;
 import uk.gov.ida.metadataaggregator.metadatasource.MetadataSourceException;
 import uk.gov.ida.saml.core.test.PemCertificateStrings;
 import uk.gov.ida.saml.core.test.TestCertificateStrings;
 import uk.gov.ida.saml.core.test.TestEntityIds;
-import uk.gov.ida.saml.core.test.builders.metadata.EntityDescriptorBuilder;
-import uk.gov.ida.saml.core.test.builders.metadata.IdpSsoDescriptorBuilder;
-import uk.gov.ida.saml.core.test.builders.metadata.KeyDescriptorBuilder;
-import uk.gov.ida.saml.core.test.builders.metadata.KeyInfoBuilder;
-import uk.gov.ida.saml.core.test.builders.metadata.SignatureBuilder;
-import uk.gov.ida.saml.core.test.builders.metadata.X509CertificateBuilder;
-import uk.gov.ida.saml.core.test.builders.metadata.X509DataBuilder;
+import uk.gov.ida.saml.metadata.KeyStoreLoader;
+import uk.gov.ida.saml.metadata.test.factories.metadata.EntityDescriptorFactory;
 import uk.gov.ida.saml.metadata.test.factories.metadata.MetadataFactory;
 import uk.gov.ida.saml.metadata.test.factories.metadata.TestCredentialFactory;
-import uk.gov.ida.saml.serializers.XmlObjectToElementTransformer;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
@@ -50,7 +30,6 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyStore;
@@ -59,7 +38,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -79,8 +60,14 @@ public class CountryMetadataValidatingResolverTest {
     private Client client = mock(Client.class);
 
     private URL STUB_COUNTRY_ONE_METADATA_LOCATION;
-    private final EntityDescriptor STUB_COUNTRY_ONE_METADATA = idpEntityDescriptor(TestEntityIds.STUB_COUNTRY_ONE);
-    private final EntityDescriptor STUB_COUNTRY_TWO_METADATA = idpEntityDescriptor(TestEntityIds.STUB_COUNTRY_TWO);
+    private final Credential STUB_COUNTRY_ONE_CREDENTIAL = new TestCredentialFactory(
+        TestCertificateStrings.STUB_COUNTRY_PUBLIC_PRIMARY_CERT,
+        TestCertificateStrings.STUB_COUNTRY_PUBLIC_PRIMARY_PRIVATE_KEY).getSigningCredential();
+    private final Credential STUB_COUNTRY_TWO_CREDENTIAL = new TestCredentialFactory(
+        TestCertificateStrings.STUB_COUNTRY_PUBLIC_SECONDARY_CERT,
+        TestCertificateStrings.STUB_COUNTRY_PUBLIC_SECONDARY_PRIVATE_KEY).getSigningCredential();
+    private final EntityDescriptor STUB_COUNTRY_ONE_METADATA = new EntityDescriptorFactory().signedIdpEntityDescriptor(TestEntityIds.STUB_COUNTRY_ONE, STUB_COUNTRY_ONE_CREDENTIAL);
+    private final EntityDescriptor STUB_COUNTRY_TWO_METADATA = new EntityDescriptorFactory().signedIdpEntityDescriptor(TestEntityIds.STUB_COUNTRY_TWO, STUB_COUNTRY_TWO_CREDENTIAL);
 
     @BeforeClass
     public static void classSetUp() throws InitializationException {
@@ -138,48 +125,15 @@ public class CountryMetadataValidatingResolverTest {
                 .isEqualTo(TestCertificateStrings.STUB_COUNTRY_PUBLIC_PRIMARY_CERT);
     }
 
-    private static KeyStore loadKeyStore(String... certificates) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-        keyStore.load(null);
+    private static KeyStore loadKeyStore(String... certificateStrings) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-        for (String certificate : certificates) {
-            Certificate cert = certificateFactory.generateCertificate(IOUtils.toInputStream(certificate));
-            keyStore.setEntry(cert.toString(), new KeyStore.TrustedCertificateEntry(cert), new KeyStore.PasswordProtection(null));
+        KeyStoreLoader keyStoreLoader = new KeyStoreLoader();
+        List<Certificate> certificates = new ArrayList<>(certificateStrings.length);
+
+        for (String certificateString : certificateStrings) {
+            certificates.add(certificateFactory.generateCertificate(IOUtils.toInputStream(certificateString)));
         }
-        return keyStore;
-    }
 
-    public EntityDescriptor idpEntityDescriptor(String idpEntityId) {
-        KeyDescriptor keyDescriptor = buildKeyDescriptor(idpEntityId);
-        IDPSSODescriptor idpssoDescriptor = IdpSsoDescriptorBuilder.anIdpSsoDescriptor().addKeyDescriptor(keyDescriptor).withoutDefaultSigningKey().build();
-        TestCredentialFactory idpCredentialFactory = new TestCredentialFactory(TestCertificateStrings.STUB_COUNTRY_PUBLIC_PRIMARY_CERT, TestCertificateStrings.STUB_COUNTRY_PUBLIC_PRIMARY_PRIVATE_KEY);
-        Signature s = SignatureBuilder.aSignature().withX509Data(TestCertificateStrings.STUB_COUNTRY_PUBLIC_PRIMARY_CERT).withSigningCredential(idpCredentialFactory.getSigningCredential()).build();
-        try {
-            return sign(EntityDescriptorBuilder.anEntityDescriptor()
-                    .withEntityId(idpEntityId)
-                    .withIdpSsoDescriptor(idpssoDescriptor)
-                    .withValidUntil(DateTime.now().plusWeeks(2))
-                    .setAddDefaultSpServiceDescriptor(false)
-                    .build(), s);
-        } catch (MarshallingException | SignatureException | SecurityException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-
-    private KeyDescriptor buildKeyDescriptor(String entityId) {
-        String certificate = TestCertificateStrings.PUBLIC_SIGNING_CERTS.get(entityId);
-        X509Certificate x509Certificate = X509CertificateBuilder.aX509Certificate().withCert(certificate).build();
-        X509Data build = X509DataBuilder.aX509Data().withX509Certificate(x509Certificate).build();
-        KeyInfo signing_one = KeyInfoBuilder.aKeyInfo().withKeyName("signing_one").withX509Data(build).build();
-        return KeyDescriptorBuilder.aKeyDescriptor().withKeyInfo(signing_one).build();
-    }
-
-    public <T extends SignableSAMLObject> T sign(T signableSAMLObject, Signature signature) throws MarshallingException, SignatureException, SecurityException {
-        signableSAMLObject.setSignature(signature);
-        XMLObjectProviderRegistrySupport.getMarshallerFactory().getMarshaller(signableSAMLObject).marshall(signableSAMLObject);
-        Signer.signObject(signableSAMLObject.getSignature());
-
-        return signableSAMLObject;
+        return keyStoreLoader.load(certificates);
     }
 }
