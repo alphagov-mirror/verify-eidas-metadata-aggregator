@@ -99,6 +99,15 @@ public class CountryMetadataValidatingResolverTest {
     }
 
     @Test
+    public void shouldThrowWhenMetadataIsSignedWithDifferentTrustAnchor() throws URISyntaxException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        trustAnchorMap.put(STUB_COUNTRY_ONE_METADATA_LOCATION.toString(), trustAnchor);
+        when(trustAnchor.getKeyStore()).thenReturn(loadKeyStore(CACertificates.TEST_ROOT_CA, CACertificates.TEST_METADATA_CA, PemCertificateStrings.STUB_COUNTRY_PUBLIC_SIGNING_SECONDARY_CERT));
+        whenRequest(STUB_COUNTRY_ONE_METADATA_LOCATION).thenReturn(metadataFactory.singleEntityMetadata(STUB_COUNTRY_ONE_METADATA));
+
+        assertThatThrownBy(() -> metadataValidatingResolver.downloadMetadata(STUB_COUNTRY_ONE_METADATA_LOCATION)).isInstanceOf(MetadataSourceException.class);
+    }
+
+    @Test
     public void shouldThrowWhenUnableToDownload() throws URISyntaxException {
         trustAnchorMap.put(STUB_COUNTRY_ONE_METADATA_LOCATION.toString(), trustAnchor);
         whenRequest(STUB_COUNTRY_ONE_METADATA_LOCATION).thenThrow(WebApplicationException.class);
@@ -125,7 +134,7 @@ public class CountryMetadataValidatingResolverTest {
                 .isEqualTo(TestCertificateStrings.STUB_COUNTRY_PUBLIC_PRIMARY_CERT);
     }
 
-    private static KeyStore loadKeyStore(String... certificateStrings) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+    private static KeyStore loadKeyStore(String... certificateStrings) throws CertificateException {
         CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
         KeyStoreLoader keyStoreLoader = new KeyStoreLoader();
         List<Certificate> certificates = new ArrayList<>(certificateStrings.length);
