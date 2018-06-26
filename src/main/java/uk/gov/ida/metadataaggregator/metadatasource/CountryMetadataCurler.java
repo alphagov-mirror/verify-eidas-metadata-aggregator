@@ -22,10 +22,10 @@ public class CountryMetadataCurler implements CountryMetadataSource {
     }
 
     @Override
-    public EntityDescriptor downloadMetadata(String url) throws MetadataSourceException {
+    public EntityDescriptor downloadMetadata(URL url) throws MetadataSourceException {
 
         try {
-            URLConnection urlConnection = new URL(url).openConnection();
+            URLConnection urlConnection = url.openConnection();
             InputStream in = urlConnection.getInputStream();
 
             return samlObjectParser.getSamlObject(documentBuilder.parse(in).getDocumentElement());

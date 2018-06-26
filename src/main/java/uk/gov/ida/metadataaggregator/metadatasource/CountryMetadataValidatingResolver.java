@@ -13,7 +13,6 @@ import org.opensaml.saml.metadata.resolver.filter.impl.SignatureValidationFilter
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Element;
 
 import ch.qos.logback.core.util.Duration;
 import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
@@ -23,11 +22,12 @@ import uk.gov.ida.saml.metadata.PKIXSignatureValidationFilterProvider;
 import uk.gov.ida.saml.metadata.factories.MetadataResolverFactory;
 
 import javax.inject.Provider;
-import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.text.ParseException;
@@ -85,11 +85,16 @@ public class CountryMetadataValidatingResolver implements CountryMetadataSource 
     }
 
     @Override
-    public EntityDescriptor downloadMetadata(String url) throws MetadataSourceException {
-        MetadataResolver metadataResolver = metadataResolver(url);
+    public EntityDescriptor downloadMetadata(URL url) throws MetadataSourceException {
+        MetadataResolver metadataResolver = null;
+        try {
+            metadataResolver = metadataResolver(url);
+        } catch (URISyntaxException e) {
+            throw new MetadataSourceException("Metadata URL is invalid", e);
+        }
 
         CriteriaSet criteria = new CriteriaSet();
-        criteria.add(new EntityIdCriterion(url));
+        criteria.add(new EntityIdCriterion(url.toString()));
 
         EntityDescriptor entityDescriptor;
         try {
@@ -105,14 +110,14 @@ public class CountryMetadataValidatingResolver implements CountryMetadataSource 
         return entityDescriptor;
     }
 
-    private MetadataResolver metadataResolver(String url) throws MetadataSourceException {
+    private MetadataResolver metadataResolver(URL url) throws MetadataSourceException, URISyntaxException {
 
-        if (trustAnchors.get(url) == null){
+        if (trustAnchors.get(url.toString()) == null){
             throw new MetadataSourceException(String.format("Trust Anchor doesn't contain: %s", url));
         }
 
         Provider<SignatureValidationFilter> pkixSignatureValidationFilterProvider =
-                new PKIXSignatureValidationFilterProvider(trustAnchors.get(url).getKeyStore());
+                new PKIXSignatureValidationFilterProvider(trustAnchors.get(url.toString()).getKeyStore());
 
         List<MetadataFilter> metadataFilters =
                 ImmutableList.of(
@@ -122,7 +127,7 @@ public class CountryMetadataValidatingResolver implements CountryMetadataSource 
 
         return new MetadataResolverFactory().create(
                 clientBuilder.build(),
-                URI.create(url),
+                url.toURI(),
                 metadataFilters,
                 REFRESH_DELAY,
                 REFRESH_DELAY

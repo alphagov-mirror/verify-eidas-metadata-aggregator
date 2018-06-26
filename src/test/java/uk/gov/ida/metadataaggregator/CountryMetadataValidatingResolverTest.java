@@ -51,6 +51,8 @@ import javax.ws.rs.client.WebTarget;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -76,7 +78,7 @@ public class CountryMetadataValidatingResolverTest {
     private ClientBuilder clientBuilder = mock(ClientBuilder.class);
     private Client client = mock(Client.class);
 
-    private static final String STUB_COUNTRY_ONE_METADATA_LOCATION = TestEntityIds.STUB_COUNTRY_ONE;
+    private URL STUB_COUNTRY_ONE_METADATA_LOCATION;
     private final EntityDescriptor STUB_COUNTRY_ONE_METADATA = idpEntityDescriptor(TestEntityIds.STUB_COUNTRY_ONE);
     private final EntityDescriptor STUB_COUNTRY_TWO_METADATA = idpEntityDescriptor(TestEntityIds.STUB_COUNTRY_TWO);
 
@@ -87,45 +89,47 @@ public class CountryMetadataValidatingResolverTest {
 
     @Before
     public void setUp() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        STUB_COUNTRY_ONE_METADATA_LOCATION  = new URL(TestEntityIds.STUB_COUNTRY_ONE);
+
         trustAnchorMap = new HashMap<String, JWK>();
         metadataValidatingResolver = new CountryMetadataValidatingResolver(trustAnchorMap, clientBuilder);
         when(trustAnchor.getKeyStore()).thenReturn(loadKeyStore(CACertificates.TEST_ROOT_CA, CACertificates.TEST_METADATA_CA, PemCertificateStrings.STUB_COUNTRY_PUBLIC_SIGNING_CERT));
         when(clientBuilder.build()).thenReturn(client);
     }
 
-    private OngoingStubbing<String> whenRequest(String metadataUri) {
+    private OngoingStubbing<String> whenRequest(URL metadataUri) throws URISyntaxException {
         WebTarget webTarget = mock(WebTarget.class);
         Invocation.Builder invocationBuilder = mock(Invocation.Builder.class);
-        when(client.target(URI.create(metadataUri))).thenReturn(webTarget);
+        when(client.target(metadataUri.toURI())).thenReturn(webTarget);
         when(webTarget.request()).thenReturn(invocationBuilder);
         return when(invocationBuilder.get(String.class));
     }
 
     @Test
-    public void shouldThrowWhenMetadataUrlIsNotInTrustAnchor() {
+    public void shouldThrowWhenMetadataUrlIsNotInTrustAnchor() throws URISyntaxException {
         whenRequest(STUB_COUNTRY_ONE_METADATA_LOCATION).thenReturn(metadataFactory.singleEntityMetadata(STUB_COUNTRY_ONE_METADATA));
         assertThatThrownBy(() -> metadataValidatingResolver.downloadMetadata(STUB_COUNTRY_ONE_METADATA_LOCATION)).isInstanceOf(MetadataSourceException.class);
     }
 
     @Test
-    public void shouldThrowWhenUnableToDownload() {
-        trustAnchorMap.put(STUB_COUNTRY_ONE_METADATA_LOCATION, trustAnchor);
+    public void shouldThrowWhenUnableToDownload() throws URISyntaxException {
+        trustAnchorMap.put(STUB_COUNTRY_ONE_METADATA_LOCATION.toString(), trustAnchor);
         whenRequest(STUB_COUNTRY_ONE_METADATA_LOCATION).thenThrow(WebApplicationException.class);
 
         assertThatThrownBy(() -> metadataValidatingResolver.downloadMetadata(STUB_COUNTRY_ONE_METADATA_LOCATION)).isInstanceOf(MetadataSourceException.class);
     }
 
     @Test
-    public void shouldThrowIfEntityIdIsNotInDownloadedMetadata() {
-        trustAnchorMap.put(STUB_COUNTRY_ONE_METADATA_LOCATION, trustAnchor);
+    public void shouldThrowIfEntityIdIsNotInDownloadedMetadata() throws URISyntaxException {
+        trustAnchorMap.put(STUB_COUNTRY_ONE_METADATA_LOCATION.toString(), trustAnchor);
         whenRequest(STUB_COUNTRY_ONE_METADATA_LOCATION).thenReturn(metadataFactory.singleEntityMetadata(STUB_COUNTRY_TWO_METADATA));
 
         assertThatThrownBy(() -> metadataValidatingResolver.downloadMetadata(STUB_COUNTRY_ONE_METADATA_LOCATION)).isInstanceOf(MetadataSourceException.class);
     }
 
     @Test
-    public void shouldReturnElementWhenValidEntityDescriptorIsResolved() throws MetadataSourceException {
-        trustAnchorMap.put(STUB_COUNTRY_ONE_METADATA_LOCATION, trustAnchor);
+    public void shouldReturnElementWhenValidEntityDescriptorIsResolved() throws MetadataSourceException, URISyntaxException {
+        trustAnchorMap.put(STUB_COUNTRY_ONE_METADATA_LOCATION.toString(), trustAnchor);
         whenRequest(STUB_COUNTRY_ONE_METADATA_LOCATION).thenReturn(metadataFactory.singleEntityMetadata(STUB_COUNTRY_ONE_METADATA));
         EntityDescriptor returnedElement = metadataValidatingResolver.downloadMetadata(STUB_COUNTRY_ONE_METADATA_LOCATION);
 

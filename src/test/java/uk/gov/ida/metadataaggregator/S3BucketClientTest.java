@@ -22,6 +22,7 @@ import uk.gov.ida.saml.core.test.TestEntityIds;
 import uk.gov.ida.saml.metadata.test.factories.metadata.EntityDescriptorFactory;
 
 import java.io.ByteArrayInputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -62,7 +63,7 @@ public class S3BucketClientTest {
 
         AggregatorConfig aggregatorConfig = new S3BucketClient(TEST_BUCKET_NAME, amazonS3Client).downloadConfig();
 
-        Collection<String> metadataUrls = aggregatorConfig.getMetadataUrls();
+        Collection<URL> metadataUrls = aggregatorConfig.getMetadataUrls();
         assertThat(metadataUrls).hasSize(1);
     }
 

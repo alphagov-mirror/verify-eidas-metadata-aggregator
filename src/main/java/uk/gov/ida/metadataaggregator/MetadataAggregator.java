@@ -11,6 +11,7 @@ import uk.gov.ida.metadataaggregator.metadatasource.MetadataSourceException;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStore;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStoreException;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -43,11 +44,11 @@ public class MetadataAggregator {
         LOGGER.info("Processing country metadatasource");
 
         int successfulUploads = 0;
-        Collection<String> configMetadataUrls = config.getMetadataUrls();
+        Collection<URL> configMetadataUrls = config.getMetadataUrls();
 
         deleteMetadataWhichIsNotInConfig(configMetadataUrls);
 
-        for (String url : configMetadataUrls) {
+        for (URL url : configMetadataUrls) {
             boolean successfulUpload = processMetadataFrom(url);
             if (successfulUpload) successfulUploads++;
         }
@@ -57,31 +58,31 @@ public class MetadataAggregator {
         return successfulUploads == configMetadataUrls.size();
     }
 
-    private boolean processMetadataFrom(String metadataUrl) {
+    private boolean processMetadataFrom(URL metadataUrl) {
         EntityDescriptor countryMetadataFile;
         try {
             countryMetadataFile = countryMetadataCurler.downloadMetadata(metadataUrl);
         } catch (MetadataSourceException e) {
             LOGGER.error("Error downloading metadatasource file {} Exception: {}", metadataUrl, e.getMessage());
-            deleteMetadataWithHexEncodedMetadataUrl(HexUtils.encodeString(metadataUrl));
+            deleteMetadataWithHexEncodedMetadataUrl(HexUtils.encodeString(metadataUrl.toString()));
             return false;
         }
 
         try {
-            metadataStore.uploadMetadata(HexUtils.encodeString(metadataUrl), countryMetadataFile);
+            metadataStore.uploadMetadata(HexUtils.encodeString(metadataUrl.toString()), countryMetadataFile);
         } catch (MetadataStoreException e) {
             LOGGER.error("Error uploading metadatasource file {} Exception: {}", metadataUrl, e.getMessage());
-            deleteMetadataWithHexEncodedMetadataUrl(HexUtils.encodeString(metadataUrl));
+            deleteMetadataWithHexEncodedMetadataUrl(HexUtils.encodeString(metadataUrl.toString()));
             return false;
         }
         return true;
     }
 
-    private void deleteMetadataWhichIsNotInConfig(Collection<String> configMetadataUrls) {
+    private void deleteMetadataWhichIsNotInConfig(Collection<URL> configMetadataUrls) {
         List<String> hexedConfigUrls = new ArrayList<>();
 
-        for (String configMetadataUrl : configMetadataUrls) {
-            hexedConfigUrls.add(HexUtils.encodeString(configMetadataUrl));
+        for (URL configMetadataUrl : configMetadataUrls) {
+            hexedConfigUrls.add(HexUtils.encodeString(configMetadataUrl.toString()));
         }
 
         List<String> toRemoveHexedBucketUrls = getAllHexEncodedUrlsFromS3Bucket();

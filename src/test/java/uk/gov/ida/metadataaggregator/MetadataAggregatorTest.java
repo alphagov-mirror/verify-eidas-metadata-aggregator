@@ -12,6 +12,8 @@ import uk.gov.ida.metadataaggregator.metadatasource.MetadataSourceException;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStore;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStoreException;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,20 +32,22 @@ public class MetadataAggregatorTest {
     private final MetadataStore testMetadataStore = mock(MetadataStore.class);
     private MetadataAggregator testAggregator;
 
-    String testUrl1 = "testUrl1";
-    EntityDescriptor testMetadata1 = mock(EntityDescriptor.class);
-    String testUrl2 = "testUrl2";
-    EntityDescriptor testMetadata2 = mock(EntityDescriptor.class);
-    String testUrl3 = "testUrl3";
-    String unsuccessfulUrl = "http://www.unsuccessfulUrl.com";
-    EntityDescriptor unsuccessfulMetadata = mock(EntityDescriptor.class);
-    String successfulUrl= "http://www.successfulUrl.com";
-    EntityDescriptor successfulMetadata = mock(EntityDescriptor.class);
-
+    URL testUrl1, testUrl2, testUrl3, unsuccessfulUrl, successfulUrl;
+    EntityDescriptor testMetadata1, testMetadata2, unsuccessfulMetadata, successfulMetadata;
 
     @Before
-    public void before() {
+    public void before() throws MalformedURLException {
         testAggregator = new MetadataAggregator(testConfigSource, testMetadataSource, testMetadataStore);
+
+        testUrl1 = new URL("http://testUrl1");
+        testMetadata1 = mock(EntityDescriptor.class);
+        testUrl2 = new URL("http://testUrl2");
+        testMetadata2 = mock(EntityDescriptor.class);
+        testUrl3 = new URL("http://testUrl3");
+        unsuccessfulUrl = new URL("http://www.unsuccessfulUrl.com");
+        unsuccessfulMetadata = mock(EntityDescriptor.class);
+        successfulUrl= new URL("http://www.successfulUrl.com");
+        successfulMetadata = mock(EntityDescriptor.class);
     }
 
     @Test
@@ -57,7 +61,7 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl1), testMetadata1);
+        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl1.toString()), testMetadata1);
     }
 
     @Test
@@ -71,8 +75,8 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl1), testMetadata1);
-        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl2), testMetadata2);
+        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl1.toString()), testMetadata1);
+        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl2.toString()), testMetadata2);
     }
 
     @Test
@@ -83,7 +87,7 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataSource, never()).downloadMetadata(anyString());
+        verify(testMetadataSource, never()).downloadMetadata(any(URL.class));
         verify(testMetadataStore, never()).uploadMetadata(anyString(), any(EntityDescriptor.class));
     }
 
@@ -91,11 +95,9 @@ public class MetadataAggregatorTest {
     public void shouldNotUploadMetadataWhenExceptionThrowByMetadataSource()
             throws ConfigSourceException, MetadataStoreException, MetadataSourceException {
 
-        String invalidMetadata = "invalidMetadata";
-
         when(testConfigSource.downloadConfig())
-                .thenReturn(new AggregatorConfig(ImmutableSet.of(invalidMetadata), null));
-        when(testMetadataSource.downloadMetadata(invalidMetadata)).thenThrow(new MetadataSourceException("Metadata source exception"));
+                .thenReturn(new AggregatorConfig(ImmutableSet.of(unsuccessfulUrl), null));
+        when(testMetadataSource.downloadMetadata(unsuccessfulUrl)).thenThrow(new MetadataSourceException("Metadata source exception"));
 
         testAggregator.aggregateMetadata();
 
@@ -113,7 +115,7 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(successfulUrl), successfulMetadata);
+        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(successfulUrl.toString()), successfulMetadata);
     }
 
     @Test
@@ -126,18 +128,16 @@ public class MetadataAggregatorTest {
         when(testMetadataSource.downloadMetadata(successfulUrl)).thenReturn(successfulMetadata);
 
         doThrow(new MetadataStoreException("Metadata store failed"))
-                .when(testMetadataStore).uploadMetadata(HexUtils.encodeString(unsuccessfulUrl), unsuccessfulMetadata);
+                .when(testMetadataStore).uploadMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()), unsuccessfulMetadata);
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(successfulUrl), successfulMetadata);
+        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(successfulUrl.toString()), successfulMetadata);
     }
 
     @Test
     public void shouldDeleteMetadataWhenDownloadIsUnsuccessful()
             throws ConfigSourceException, MetadataSourceException, MetadataStoreException {
-
-        String unsuccessfulUrl = "http://www.unsuccessfulUrl.com";
 
         when(testConfigSource.downloadConfig())
                 .thenReturn(new AggregatorConfig(ImmutableSet.of(unsuccessfulUrl),null));
@@ -146,14 +146,13 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl));
+        verify(testMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()));
     }
 
     @Test
     public void shouldDeleteMetadataWhenUploadIsUnsuccessful()
             throws ConfigSourceException, MetadataSourceException, MetadataStoreException {
 
-        String unsuccessfulUrl = "http://www.unsuccessfulUrl.com";
         EntityDescriptor unsuccessfulMetadata = mock(EntityDescriptor.class);
 
         when(testConfigSource.downloadConfig())
@@ -161,18 +160,16 @@ public class MetadataAggregatorTest {
         when(testMetadataSource.downloadMetadata(unsuccessfulUrl)).thenReturn(unsuccessfulMetadata);
 
         doThrow(new MetadataStoreException("Metadata store failed"))
-                .when(testMetadataStore).uploadMetadata(HexUtils.encodeString(unsuccessfulUrl),unsuccessfulMetadata);
+                .when(testMetadataStore).uploadMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()),unsuccessfulMetadata);
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl));
+        verify(testMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()));
     }
 
     @Test
     public void shouldThrowExceptionWhenDeleteMetadataFails()
             throws MetadataSourceException, ConfigSourceException, MetadataStoreException {
-
-        String unsuccessfulUrl = "http://www.unsuccessfulUrl.com";
 
         when(testConfigSource.downloadConfig())
                 .thenReturn(new AggregatorConfig(ImmutableSet.of(unsuccessfulUrl), null));
@@ -180,19 +177,17 @@ public class MetadataAggregatorTest {
         doThrow(new MetadataSourceException("Download metadata has failed"))
                 .when(testMetadataSource).downloadMetadata(unsuccessfulUrl);
         doThrow(new MetadataStoreException("Delete metadata has failed"))
-                .when(testMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl));
+                .when(testMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()));
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl));
+        verify(testMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()));
     }
 
     @Test
     public void shouldUploadValidMetadataWhenDeleteOfPreviousMetadataFails()
             throws MetadataStoreException, MetadataSourceException, ConfigSourceException {
 
-        String unsuccessfulUrl = "http://www.unsuccessfulUrl.com";
-        String successfulUrl = "http://www.successfulUrl.com";
         EntityDescriptor successfulMetadata = mock(EntityDescriptor.class);
 
         when(testConfigSource.downloadConfig())
@@ -202,11 +197,11 @@ public class MetadataAggregatorTest {
         doThrow(new MetadataSourceException("Download metadata has failed"))
                 .when(testMetadataSource).downloadMetadata(unsuccessfulUrl);
         doThrow(new MetadataStoreException("Delete metadata has failed"))
-                .when(testMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl));
+                .when(testMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()));
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(successfulUrl), successfulMetadata);
+        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(successfulUrl.toString()), successfulMetadata);
     }
 
     @Test
@@ -214,9 +209,9 @@ public class MetadataAggregatorTest {
             throws ConfigSourceException, MetadataSourceException, MetadataStoreException {
 
         List<String> s3BucketUrls = new ArrayList<>();
-        s3BucketUrls.add(HexUtils.encodeString(testUrl1));
-        s3BucketUrls.add(HexUtils.encodeString(testUrl2));
-        s3BucketUrls.add(HexUtils.encodeString(testUrl3));
+        s3BucketUrls.add(HexUtils.encodeString(testUrl1.toString()));
+        s3BucketUrls.add(HexUtils.encodeString(testUrl2.toString()));
+        s3BucketUrls.add(HexUtils.encodeString(testUrl3.toString()));
 
         when(testConfigSource.downloadConfig())
                 .thenReturn(new AggregatorConfig(ImmutableSet.of(testUrl1, testUrl2), null));
@@ -226,9 +221,9 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).deleteMetadata(HexUtils.encodeString(testUrl3));
-        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl1), testMetadata1);
-        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl2), testMetadata2);
+        verify(testMetadataStore).deleteMetadata(HexUtils.encodeString(testUrl3.toString()));
+        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl1.toString()), testMetadata1);
+        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl2.toString()), testMetadata2);
     }
 
     @Test
@@ -243,7 +238,7 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl1), testMetadata1);
-        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl2), testMetadata2);
+        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl1.toString()), testMetadata1);
+        verify(testMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl2.toString()), testMetadata2);
     }
 }
