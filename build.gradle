@@ -5,7 +5,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'uk.gov.ida:ida-gradle:1.1.0-15'
+        classpath 'uk.gov.ida:ida-gradle:1.1.0-20'
     }
 }
 
@@ -32,7 +32,7 @@ ext {
     assertJVersion = "3.10.0"
     slf4jVersion = "1.7.12"
     ida_utils_version = '335'
-    saml_libs_version = "${openSamlVersion}-149"
+    saml_libs_version = "${openSamlVersion}-151"
 }
 
 repositories {
