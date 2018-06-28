@@ -86,7 +86,7 @@ public class CountryMetadataValidatingResolver implements CountryMetadataSource 
 
     @Override
     public EntityDescriptor downloadMetadata(URL url) throws MetadataSourceException {
-        MetadataResolver metadataResolver = null;
+        MetadataResolver metadataResolver;
         try {
             metadataResolver = metadataResolver(url);
         } catch (URISyntaxException e) {
@@ -103,7 +103,7 @@ public class CountryMetadataValidatingResolver implements CountryMetadataSource 
             throw new MetadataSourceException("Unable to resolve metadatasource from " + url, e);
         }
 
-        if (entityDescriptor == null){
+        if (entityDescriptor == null) {
             throw new MetadataSourceException(String.format("Entity Descriptor: %s could not be found in metadata file", url));
         }
 
@@ -112,7 +112,7 @@ public class CountryMetadataValidatingResolver implements CountryMetadataSource 
 
     private MetadataResolver metadataResolver(URL url) throws MetadataSourceException, URISyntaxException {
 
-        if (trustAnchors.get(url.toString()) == null){
+        if (trustAnchors.get(url.toString()) == null) {
             throw new MetadataSourceException(String.format("Trust Anchor doesn't contain: %s", url));
         }
 

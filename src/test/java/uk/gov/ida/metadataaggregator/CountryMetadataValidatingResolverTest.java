@@ -3,6 +3,7 @@ package uk.gov.ida.metadataaggregator;
 import certificates.values.CACertificates;
 import com.nimbusds.jose.jwk.JWK;
 import org.apache.commons.io.IOUtils;
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -33,8 +34,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -66,8 +65,21 @@ public class CountryMetadataValidatingResolverTest {
     private final Credential STUB_COUNTRY_TWO_CREDENTIAL = new TestCredentialFactory(
         TestCertificateStrings.STUB_COUNTRY_PUBLIC_SECONDARY_CERT,
         TestCertificateStrings.STUB_COUNTRY_PUBLIC_SECONDARY_PRIVATE_KEY).getSigningCredential();
-    private final EntityDescriptor STUB_COUNTRY_ONE_METADATA = new EntityDescriptorFactory().signedIdpEntityDescriptor(TestEntityIds.STUB_COUNTRY_ONE, STUB_COUNTRY_ONE_CREDENTIAL);
-    private final EntityDescriptor STUB_COUNTRY_TWO_METADATA = new EntityDescriptorFactory().signedIdpEntityDescriptor(TestEntityIds.STUB_COUNTRY_TWO, STUB_COUNTRY_TWO_CREDENTIAL);
+
+    private final EntityDescriptor STUB_COUNTRY_ONE_METADATA_SIGNED = new EntityDescriptorFactory().signedIdpEntityDescriptor(
+            TestEntityIds.STUB_COUNTRY_ONE,
+            STUB_COUNTRY_ONE_CREDENTIAL,
+            DateTime.now().plusWeeks(2));
+    private final EntityDescriptor STUB_COUNTRY_ONE_METADATA_UNSIGNED = new EntityDescriptorFactory().idpEntityDescriptor(
+            TestEntityIds.STUB_COUNTRY_ONE);
+    private final EntityDescriptor STUB_COUNTRY_ONE_METADATA_EXPIRED = new EntityDescriptorFactory().signedIdpEntityDescriptor(
+            TestEntityIds.STUB_COUNTRY_ONE,
+            STUB_COUNTRY_ONE_CREDENTIAL,
+            DateTime.now().minusWeeks(2));
+    private final EntityDescriptor STUB_COUNTRY_TWO_METADATA_SIGNED = new EntityDescriptorFactory().signedIdpEntityDescriptor(
+            TestEntityIds.STUB_COUNTRY_TWO,
+            STUB_COUNTRY_TWO_CREDENTIAL,
+            DateTime.now().plusWeeks(2));
 
     @BeforeClass
     public static void classSetUp() throws InitializationException {
@@ -75,7 +87,7 @@ public class CountryMetadataValidatingResolverTest {
     }
 
     @Before
-    public void setUp() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+    public void setUp() throws CertificateException, IOException {
         STUB_COUNTRY_ONE_METADATA_LOCATION  = new URL(TestEntityIds.STUB_COUNTRY_ONE);
 
         trustAnchorMap = new HashMap<String, JWK>();
@@ -94,15 +106,32 @@ public class CountryMetadataValidatingResolverTest {
 
     @Test
     public void shouldThrowWhenMetadataUrlIsNotInTrustAnchor() throws URISyntaxException {
-        whenRequest(STUB_COUNTRY_ONE_METADATA_LOCATION).thenReturn(metadataFactory.singleEntityMetadata(STUB_COUNTRY_ONE_METADATA));
+        whenRequest(STUB_COUNTRY_ONE_METADATA_LOCATION).thenReturn(metadataFactory.singleEntityMetadata(STUB_COUNTRY_ONE_METADATA_SIGNED));
         assertThatThrownBy(() -> metadataValidatingResolver.downloadMetadata(STUB_COUNTRY_ONE_METADATA_LOCATION)).isInstanceOf(MetadataSourceException.class);
     }
 
     @Test
-    public void shouldThrowWhenMetadataIsSignedWithDifferentTrustAnchor() throws URISyntaxException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+    public void shouldThrowWhenMetadataIsSignedWithDifferentTrustAnchor() throws URISyntaxException, CertificateException {
         trustAnchorMap.put(STUB_COUNTRY_ONE_METADATA_LOCATION.toString(), trustAnchor);
         when(trustAnchor.getKeyStore()).thenReturn(loadKeyStore(CACertificates.TEST_ROOT_CA, CACertificates.TEST_METADATA_CA, PemCertificateStrings.STUB_COUNTRY_PUBLIC_SIGNING_SECONDARY_CERT));
-        whenRequest(STUB_COUNTRY_ONE_METADATA_LOCATION).thenReturn(metadataFactory.singleEntityMetadata(STUB_COUNTRY_ONE_METADATA));
+        whenRequest(STUB_COUNTRY_ONE_METADATA_LOCATION).thenReturn(metadataFactory.singleEntityMetadata(STUB_COUNTRY_ONE_METADATA_SIGNED));
+
+        assertThatThrownBy(() -> metadataValidatingResolver.downloadMetadata(STUB_COUNTRY_ONE_METADATA_LOCATION)).isInstanceOf(MetadataSourceException.class);
+    }
+
+    @Test
+    public void shouldThrowWhenMetadataIsNotSigned() throws URISyntaxException {
+
+        trustAnchorMap.put(STUB_COUNTRY_ONE_METADATA_LOCATION.toString(), trustAnchor);
+        whenRequest(STUB_COUNTRY_ONE_METADATA_LOCATION).thenReturn(metadataFactory.singleEntityMetadata(STUB_COUNTRY_ONE_METADATA_UNSIGNED));
+
+        assertThatThrownBy(() -> metadataValidatingResolver.downloadMetadata(STUB_COUNTRY_ONE_METADATA_LOCATION)).isInstanceOf(MetadataSourceException.class);
+    }
+
+    @Test
+    public void shouldThrowWhenMetadataIsExpired() throws URISyntaxException {
+        trustAnchorMap.put(STUB_COUNTRY_ONE_METADATA_LOCATION.toString(), trustAnchor);
+        whenRequest(STUB_COUNTRY_ONE_METADATA_LOCATION).thenReturn(metadataFactory.singleEntityMetadata(STUB_COUNTRY_ONE_METADATA_EXPIRED));
 
         assertThatThrownBy(() -> metadataValidatingResolver.downloadMetadata(STUB_COUNTRY_ONE_METADATA_LOCATION)).isInstanceOf(MetadataSourceException.class);
     }
@@ -118,7 +147,7 @@ public class CountryMetadataValidatingResolverTest {
     @Test
     public void shouldThrowIfEntityIdIsNotInDownloadedMetadata() throws URISyntaxException {
         trustAnchorMap.put(STUB_COUNTRY_ONE_METADATA_LOCATION.toString(), trustAnchor);
-        whenRequest(STUB_COUNTRY_ONE_METADATA_LOCATION).thenReturn(metadataFactory.singleEntityMetadata(STUB_COUNTRY_TWO_METADATA));
+        whenRequest(STUB_COUNTRY_ONE_METADATA_LOCATION).thenReturn(metadataFactory.singleEntityMetadata(STUB_COUNTRY_TWO_METADATA_SIGNED));
 
         assertThatThrownBy(() -> metadataValidatingResolver.downloadMetadata(STUB_COUNTRY_ONE_METADATA_LOCATION)).isInstanceOf(MetadataSourceException.class);
     }
@@ -126,10 +155,10 @@ public class CountryMetadataValidatingResolverTest {
     @Test
     public void shouldReturnElementWhenValidEntityDescriptorIsResolved() throws MetadataSourceException, URISyntaxException {
         trustAnchorMap.put(STUB_COUNTRY_ONE_METADATA_LOCATION.toString(), trustAnchor);
-        whenRequest(STUB_COUNTRY_ONE_METADATA_LOCATION).thenReturn(metadataFactory.singleEntityMetadata(STUB_COUNTRY_ONE_METADATA));
+        whenRequest(STUB_COUNTRY_ONE_METADATA_LOCATION).thenReturn(metadataFactory.singleEntityMetadata(STUB_COUNTRY_ONE_METADATA_SIGNED));
         EntityDescriptor returnedElement = metadataValidatingResolver.downloadMetadata(STUB_COUNTRY_ONE_METADATA_LOCATION);
 
-        assertThat(returnedElement.getEntityID()).isEqualTo(STUB_COUNTRY_ONE_METADATA.getEntityID());
+        assertThat(returnedElement.getEntityID()).isEqualTo(STUB_COUNTRY_ONE_METADATA_SIGNED.getEntityID());
         assertThat(returnedElement.getSignature().getKeyInfo().getX509Datas().get(0).getX509Certificates().get(0).getValue())
                 .isEqualTo(TestCertificateStrings.STUB_COUNTRY_PUBLIC_PRIMARY_CERT);
     }
