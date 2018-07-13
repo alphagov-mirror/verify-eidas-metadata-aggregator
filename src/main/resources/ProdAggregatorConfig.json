@@ -1,0 +1,9 @@
+{
+  "metadataUrls": {
+    "Poland metadata": "https://plnode.eidas.gov.pl/EidasNode/ServiceMetadata",
+    "Italy metadata": "https://service.eid.gov.it/ServiceMetadata",
+    "Spain metadata": "https://se-eidas.redsara.es/EidasNode/ServiceMetadata",
+    "Netherlands metadata": "https://acc-eidas.minez.nl/EidasNodeP/ServiceMetadata",
+    "Belgium metadata": "https://idp-poc2.iamfas.qa.belgium.be/EidasNode/ServiceMetadata"
+  }
+}
