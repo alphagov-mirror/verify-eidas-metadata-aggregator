@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 public class DistributionArchiveConfigSource implements ConfigSource {
 
     private String environment;
+    private final static String FILE_EXTENSION = "AggregatorConfig.json";
 
     public DistributionArchiveConfigSource(String environment) {
         this.environment = environment;
@@ -19,7 +20,11 @@ public class DistributionArchiveConfigSource implements ConfigSource {
     @Override
     public AggregatorConfig downloadConfig() throws ConfigSourceException {
 
-        InputStream configFile = getClass().getClassLoader().getResourceAsStream(environment + "AggregatorConfig.json");
+        InputStream configFile = getClass().getClassLoader().getResourceAsStream(environment + FILE_EXTENSION);
+
+        if (configFile == null) {
+            throw new ConfigSourceException("Config file could not be located for the following environment: " + environment);
+        }
 
         String result = new BufferedReader(new InputStreamReader(configFile))
                 .lines().collect(Collectors.joining("\n"));
@@ -28,7 +33,7 @@ public class DistributionArchiveConfigSource implements ConfigSource {
         try {
             return mapper.readValue(result, AggregatorConfig.class);
         } catch (IOException e) {
-            throw new ConfigSourceException("Unable to deserialise downloaded config", e);
+            throw new ConfigSourceException("Unable to deserialise config file", e);
         }
     }
 }

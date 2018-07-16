@@ -44,7 +44,7 @@ public class MetadataAggregator {
         LOGGER.info("Processing country metadatasource");
 
         int successfulUploads = 0;
-        Collection<URL> configMetadataUrls = config.getMetadataUrls();
+        Collection<URL> configMetadataUrls = config.getMetadataUrls().values();
 
         deleteMetadataWhichIsNotInConfig(configMetadataUrls);
 
