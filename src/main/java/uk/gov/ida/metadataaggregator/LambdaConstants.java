@@ -8,4 +8,6 @@ public class LambdaConstants {
     public static final int SERVER_ERROR_STATUS_CODE = 500;
     public static final String TRUST_ANCHOR_PASSCODE = "TRUST_ANCHOR_PASSCODE";
     public static final String TRUST_ANCHOR_URI = "TRUST_ANCHOR_URI";
+    public static final String AGGREGATOR_CONFIG_FILE_NAME = "/AggregatorConfig.json";
+    public static final String ENVIRONMENT = "ENVIRONMENT";
 }

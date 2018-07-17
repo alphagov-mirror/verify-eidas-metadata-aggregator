@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import uk.gov.ida.metadataaggregator.apigateway.ApiGatewayProxyResponse;
 import uk.gov.ida.metadataaggregator.apigateway.ApiGatewayRequest;
 import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
-import uk.gov.ida.metadataaggregator.config.DistributionArchiveConfigSource;
+import uk.gov.ida.metadataaggregator.config.EnvironmentFileConfigSource;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataCurler;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataValidatingResolver;
 import uk.gov.ida.metadataaggregator.metadatasource.MetadataSourceException;
@@ -17,6 +17,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import static uk.gov.ida.metadataaggregator.LambdaConstants.AWS_ACCESS_KEY;
 import static uk.gov.ida.metadataaggregator.LambdaConstants.AWS_SECRET_KEY;
 import static uk.gov.ida.metadataaggregator.LambdaConstants.BUCKET_NAME;
+import static uk.gov.ida.metadataaggregator.LambdaConstants.ENVIRONMENT;
 import static uk.gov.ida.metadataaggregator.LambdaConstants.SERVER_ERROR_STATUS_CODE;
 import static uk.gov.ida.metadataaggregator.LambdaConstants.SUCCESS_STATUS_CODE;
 import static uk.gov.ida.metadataaggregator.LambdaConstants.TRUST_ANCHOR_PASSCODE;
@@ -29,9 +30,9 @@ public class AwsLambdaHandlers {
 
     public ApiGatewayProxyResponse s3BucketLambda(ApiGatewayRequest testObject) {
         S3BucketClient s3BucketClient = getS3BucketClient();
-        DistributionArchiveConfigSource distributionArchiveConfigSource = new DistributionArchiveConfigSource("");
+        EnvironmentFileConfigSource environmentFileConfigSource = new EnvironmentFileConfigSource(getEnvironmentVariable(ENVIRONMENT));
         try {
-            boolean wasSuccessful = new MetadataAggregator(distributionArchiveConfigSource, new CountryMetadataCurler(), s3BucketClient).aggregateMetadata();
+            boolean wasSuccessful = new MetadataAggregator(environmentFileConfigSource, new CountryMetadataCurler(), s3BucketClient).aggregateMetadata();
             if(!wasSuccessful) LOGGER.error("Metadata Aggregator failed");
         } catch (ParserConfigurationException e) {
             return new ApiGatewayProxyResponse(SERVER_ERROR_STATUS_CODE, null, null);
@@ -41,9 +42,9 @@ public class AwsLambdaHandlers {
 
     public void s3BucketLambda(AggregatorConfig testObject) {
         S3BucketClient s3BucketClient = getS3BucketClient();
-        DistributionArchiveConfigSource distributionArchiveConfigSource = new DistributionArchiveConfigSource("");
+        EnvironmentFileConfigSource environmentFileConfigSource = new EnvironmentFileConfigSource(ENVIRONMENT);
         try {
-            boolean wasSuccessful = new MetadataAggregator(distributionArchiveConfigSource, new CountryMetadataCurler(), s3BucketClient).aggregateMetadata();
+            boolean wasSuccessful = new MetadataAggregator(environmentFileConfigSource, new CountryMetadataCurler(), s3BucketClient).aggregateMetadata();
             if(!wasSuccessful) LOGGER.error("Metadata Aggregator failed");
         } catch (ParserConfigurationException e) {
             LOGGER.error("Unable to create XML parser: {}", e.getMessage());
@@ -63,8 +64,8 @@ public class AwsLambdaHandlers {
         }
 
         S3BucketClient s3BucketClient = getS3BucketClient();
-        DistributionArchiveConfigSource distributionArchiveConfigSource = new DistributionArchiveConfigSource("");
-        boolean wasSuccessful = new MetadataAggregator(distributionArchiveConfigSource, validatingResolver, s3BucketClient).aggregateMetadata();
+        EnvironmentFileConfigSource environmentFileConfigSource = new EnvironmentFileConfigSource(ENVIRONMENT);
+        boolean wasSuccessful = new MetadataAggregator(environmentFileConfigSource, validatingResolver, s3BucketClient).aggregateMetadata();
         if(!wasSuccessful) LOGGER.error("Metadata Aggregator failed");
     }
 

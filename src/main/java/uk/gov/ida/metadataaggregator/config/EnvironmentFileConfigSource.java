@@ -8,19 +8,20 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
-public class DistributionArchiveConfigSource implements ConfigSource {
+import static uk.gov.ida.metadataaggregator.LambdaConstants.AGGREGATOR_CONFIG_FILE_NAME;
+
+public class EnvironmentFileConfigSource implements ConfigSource {
 
     private String environment;
-    private final static String FILE_EXTENSION = "AggregatorConfig.json";
 
-    public DistributionArchiveConfigSource(String environment) {
+    public EnvironmentFileConfigSource(String environment) {
         this.environment = environment;
     }
 
     @Override
     public AggregatorConfig downloadConfig() throws ConfigSourceException {
 
-        InputStream configFile = getClass().getClassLoader().getResourceAsStream(environment + FILE_EXTENSION);
+        InputStream configFile = getClass().getClassLoader().getResourceAsStream(environment + AGGREGATOR_CONFIG_FILE_NAME);
 
         if (configFile == null) {
             throw new ConfigSourceException("Config file could not be located for the following environment: " + environment);
