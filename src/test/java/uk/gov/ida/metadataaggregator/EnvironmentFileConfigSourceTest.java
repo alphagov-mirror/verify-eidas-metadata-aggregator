@@ -59,23 +59,21 @@ public class EnvironmentFileConfigSourceTest {
     }
 
     @Test
-    @Ignore("PROD not yet implemented")
     public void shouldLocateProdConfigFileAndSuccessfullyDeserialize() throws ConfigSourceException {
         AggregatorConfig aggregatorConfig = new EnvironmentFileConfigSource(PROD).downloadConfig();
 
         Collection<URL> metadataUrls = aggregatorConfig.getMetadataUrls().values();
 
-        assertThat(metadataUrls).isNotEmpty();
+        assertThat(metadataUrls).isEmpty();
     }
 
     @Test
-    @Ignore("STAGING not yet implemented")
     public void shouldLocateStagingConfigFileAndSuccessfullyDeserialize() throws ConfigSourceException {
         AggregatorConfig aggregatorConfig = new EnvironmentFileConfigSource(STAGING).downloadConfig();
 
         Collection<URL> metadataUrls = aggregatorConfig.getMetadataUrls().values();
 
-        assertThat(metadataUrls).isNotEmpty();
+        assertThat(metadataUrls).isEmpty();
     }
 
     @Test

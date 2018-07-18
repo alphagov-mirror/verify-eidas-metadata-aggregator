@@ -29,32 +29,66 @@ public class AwsLambdaHandlers {
     private static final Logger LOGGER = LoggerFactory.getLogger(AwsLambdaHandlers.class);
 
     public ApiGatewayProxyResponse s3BucketLambda(ApiGatewayRequest testObject) {
-        S3BucketClient s3BucketClient = getS3BucketClient();
-        EnvironmentFileConfigSource environmentFileConfigSource = new EnvironmentFileConfigSource(getEnvironmentVariable(ENVIRONMENT));
+        S3BucketClient s3BucketClient;
+        String environmentVariable;
         try {
-            boolean wasSuccessful = new MetadataAggregator(environmentFileConfigSource, new CountryMetadataCurler(), s3BucketClient).aggregateMetadata();
-            if(!wasSuccessful) LOGGER.error("Metadata Aggregator failed");
-        } catch (ParserConfigurationException e) {
+            environmentVariable = getEnvironmentVariable(ENVIRONMENT);
+            s3BucketClient = getS3BucketClient();
+        } catch (EnvironmentVariableException e) {
+            LOGGER.error("Environment variable is not defined", e);
             return new ApiGatewayProxyResponse(SERVER_ERROR_STATUS_CODE, null, null);
         }
+        EnvironmentFileConfigSource environmentFileConfigSource = new EnvironmentFileConfigSource(environmentVariable);
+
+        CountryMetadataCurler countryMetadataCurler;
+        try {
+            countryMetadataCurler = new CountryMetadataCurler();
+        } catch (ParserConfigurationException e) {
+            LOGGER.error("Unable to create XML parser", e);
+            return new ApiGatewayProxyResponse(SERVER_ERROR_STATUS_CODE, null, null);
+        }
+
+        boolean wasSuccessful = new MetadataAggregator(environmentFileConfigSource, countryMetadataCurler, s3BucketClient).aggregateMetadata();
+        if (!wasSuccessful) LOGGER.error("Metadata Aggregator failed");
         return new ApiGatewayProxyResponse(SUCCESS_STATUS_CODE, null, null);
     }
 
     public void s3BucketLambda(AggregatorConfig testObject) {
-        S3BucketClient s3BucketClient = getS3BucketClient();
-        EnvironmentFileConfigSource environmentFileConfigSource = new EnvironmentFileConfigSource(ENVIRONMENT);
+        S3BucketClient s3BucketClient;
         try {
-            boolean wasSuccessful = new MetadataAggregator(environmentFileConfigSource, new CountryMetadataCurler(), s3BucketClient).aggregateMetadata();
-            if(!wasSuccessful) LOGGER.error("Metadata Aggregator failed");
+            s3BucketClient = getS3BucketClient();
+        } catch (EnvironmentVariableException e) {
+            LOGGER.error("Environment variable is not defined", e);
+            return;
+        }
+        EnvironmentFileConfigSource environmentFileConfigSource = new EnvironmentFileConfigSource(ENVIRONMENT);
+
+        CountryMetadataCurler countryMetadataCurler;
+        try {
+            countryMetadataCurler = new CountryMetadataCurler();
         } catch (ParserConfigurationException e) {
             LOGGER.error("Unable to create XML parser: {}", e.getMessage());
+            return;
         }
+
+        boolean wasSuccessful = new MetadataAggregator(environmentFileConfigSource, countryMetadataCurler, s3BucketClient).aggregateMetadata();
+        if (!wasSuccessful) LOGGER.error("Metadata Aggregator failed");
     }
 
     public void s3BucketValidatingLambda(AggregatorConfig testObject) {
-        String password = getEnvironmentVariable(TRUST_ANCHOR_PASSCODE);
-        String eidasTrustAnchorUriString = getEnvironmentVariable(TRUST_ANCHOR_URI);
+        String password;
+        String eidasTrustAnchorUriString;
+        S3BucketClient s3BucketClient;
 
+        try {
+            s3BucketClient = getS3BucketClient();
+
+            password = getEnvironmentVariable(TRUST_ANCHOR_PASSCODE);
+            eidasTrustAnchorUriString = getEnvironmentVariable(TRUST_ANCHOR_URI);
+        } catch (EnvironmentVariableException e) {
+            LOGGER.error("Environment variable is not defined", e);
+            return;
+        }
         CountryMetadataValidatingResolver validatingResolver;
         try {
             validatingResolver = CountryMetadataValidatingResolver.build(testObject, password, eidasTrustAnchorUriString);
@@ -63,13 +97,12 @@ public class AwsLambdaHandlers {
             return;
         }
 
-        S3BucketClient s3BucketClient = getS3BucketClient();
         EnvironmentFileConfigSource environmentFileConfigSource = new EnvironmentFileConfigSource(ENVIRONMENT);
         boolean wasSuccessful = new MetadataAggregator(environmentFileConfigSource, validatingResolver, s3BucketClient).aggregateMetadata();
-        if(!wasSuccessful) LOGGER.error("Metadata Aggregator failed");
+        if (!wasSuccessful) LOGGER.error("Metadata Aggregator failed");
     }
 
-    private S3BucketClient getS3BucketClient() {
+    private S3BucketClient getS3BucketClient() throws EnvironmentVariableException {
         String awsAccessKey = getEnvironmentVariable(AWS_ACCESS_KEY);
         String awsSecretKey = getEnvironmentVariable(AWS_SECRET_KEY);
         String bucketName = getEnvironmentVariable(BUCKET_NAME);
@@ -83,11 +116,12 @@ public class AwsLambdaHandlers {
         );
     }
 
-    private String getEnvironmentVariable(String envKey) {
+    private String getEnvironmentVariable(String envKey) throws EnvironmentVariableException {
         String awsAccessKey = System.getenv(envKey);
-        if(awsAccessKey == null) {
-            throw new IllegalStateException(envKey+" is not defined");
+        if (awsAccessKey == null) {
+            throw new EnvironmentVariableException(envKey + " is not defined");
         }
+        LOGGER.info("Environment variable set for {} is {}", envKey, awsAccessKey);
         return awsAccessKey;
     }
 }
