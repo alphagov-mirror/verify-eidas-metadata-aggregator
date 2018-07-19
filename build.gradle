@@ -1,3 +1,5 @@
+apply from: 'publish.gradle'
+
 buildscript {
     repositories {
         maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
@@ -11,18 +13,6 @@ buildscript {
 
 apply plugin: 'java'
 
-
-group = "uk.gov.ida"
-version = "0.1.$version"
-
-jar {
-    from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-}
-
-sourceCompatibility = 1.8
-
 ext {
     awsLambdaVersion = '1.1.0'
     awsJavaVersion = '1.9.2'
@@ -33,7 +23,20 @@ ext {
     slf4jVersion = "1.7.12"
     ida_utils_version = '335'
     saml_libs_version = "${openSamlVersion}-151"
+    build_version = "${System.env.BUILD_NUMBER ?: 'SNAPSHOT'}"
 }
+
+
+group = "uk.gov.ida"
+version = "0.1.$build_version"
+
+jar {
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+sourceCompatibility = 1.8
 
 repositories {
     maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
