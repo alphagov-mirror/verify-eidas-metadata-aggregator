@@ -12,6 +12,7 @@ buildscript {
 }
 
 apply plugin: 'java'
+apply plugin: 'maven-publish'
 
 ext {
     awsLambdaVersion = '1.1.0'
