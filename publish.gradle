@@ -20,7 +20,8 @@ configure(subprojects.findAll {it.name != 'buildSrc'}) {
         publications {
             mavenJava(MavenPublication) {
                 from components.java
-                groupId = "uk.gov.ida"
+                groupId = "uk.gov.ida.eidas"
+                artifactId = 'metadata-aggregator'
 
                 artifact sourceJar {
                     classifier "sources"
