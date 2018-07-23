@@ -15,10 +15,12 @@ import java.net.URLConnection;
 
 public class CountryMetadataCurler implements CountryMetadataSource {
 
-    private final DocumentBuilder documentBuilder = XmlUtils.newDocumentBuilder();
-    private final SamlObjectParser samlObjectParser = new SamlObjectParser();
+    private final DocumentBuilder documentBuilder;
+    private final SamlObjectParser samlObjectParser;
 
     public CountryMetadataCurler() throws ParserConfigurationException {
+        samlObjectParser = new SamlObjectParser();
+        documentBuilder = XmlUtils.newDocumentBuilder();
     }
 
     @Override

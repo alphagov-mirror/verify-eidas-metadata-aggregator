@@ -12,7 +12,6 @@ import java.net.URL;
 import java.util.Collection;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.assertj.core.api.Java6Assertions.assertThatThrownBy;
 
 public class EnvironmentConfigTest {
 

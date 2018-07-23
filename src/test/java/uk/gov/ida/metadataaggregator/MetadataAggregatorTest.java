@@ -31,11 +31,11 @@ public class MetadataAggregatorTest {
     private final CountryMetadataSource testMetadataSource = mock(CountryMetadataSource.class);
     private final MetadataStore testMetadataStore = mock(MetadataStore.class);
     private MetadataAggregator testAggregator;
-    private HashMap<String,URL> urlList;
+    private HashMap<String, URL> urlList;
 
-    URL testUrl1, testUrl2, testUrl3, unsuccessfulUrl, successfulUrl;
-    String testKey1, testKey2, testKey3, unsuccessfulKey, successfulKey;
-    EntityDescriptor testMetadata1, testMetadata2, unsuccessfulMetadata, successfulMetadata;
+    private URL testUrl1, testUrl2, testUrl3, unsuccessfulUrl, successfulUrl;
+    private String testKey1, testKey2, unsuccessfulKey, successfulKey;
+    private EntityDescriptor testMetadata1, testMetadata2, unsuccessfulMetadata, successfulMetadata;
 
     @Before
     public void before() throws MalformedURLException {
@@ -48,11 +48,10 @@ public class MetadataAggregatorTest {
         testKey2 = "testKey2";
         testMetadata2 = mock(EntityDescriptor.class);
         testUrl3 = new URL("http://testUrl3");
-        testKey3 = "testKey3";
         unsuccessfulUrl = new URL("http://www.unsuccessfulUrl.com");
         unsuccessfulKey = "unsuccessfulKey";
         unsuccessfulMetadata = mock(EntityDescriptor.class);
-        successfulUrl= new URL("http://www.successfulUrl.com");
+        successfulUrl = new URL("http://www.successfulUrl.com");
         successfulKey = "successfulKey";
         successfulMetadata = mock(EntityDescriptor.class);
     }
@@ -61,7 +60,7 @@ public class MetadataAggregatorTest {
     public void shouldUploadMetadataDownloadedFromSourceToStore()
             throws MetadataSourceException, ConfigSourceException, MetadataStoreException {
 
-        urlList.put(testKey1,testUrl1);
+        urlList.put(testKey1, testUrl1);
 
         when(testConfigSource.downloadConfig())
                 .thenReturn(new AggregatorConfig(urlList, null));
@@ -161,7 +160,7 @@ public class MetadataAggregatorTest {
         urlList.put(unsuccessfulKey, unsuccessfulUrl);
 
         when(testConfigSource.downloadConfig())
-                .thenReturn(new AggregatorConfig(urlList,null));
+                .thenReturn(new AggregatorConfig(urlList, null));
         doThrow(new MetadataSourceException("Metadata source failed"))
                 .when(testMetadataSource).downloadMetadata(unsuccessfulUrl);
 
@@ -183,7 +182,7 @@ public class MetadataAggregatorTest {
         when(testMetadataSource.downloadMetadata(unsuccessfulUrl)).thenReturn(unsuccessfulMetadata);
 
         doThrow(new MetadataStoreException("Metadata store failed"))
-                .when(testMetadataStore).uploadMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()),unsuccessfulMetadata);
+                .when(testMetadataStore).uploadMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()), unsuccessfulMetadata);
 
         testAggregator.aggregateMetadata();
 

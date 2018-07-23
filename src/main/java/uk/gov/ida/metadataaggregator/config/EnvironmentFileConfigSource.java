@@ -21,7 +21,7 @@ public class EnvironmentFileConfigSource implements ConfigSource {
     @Override
     public AggregatorConfig downloadConfig() throws ConfigSourceException {
 
-        InputStream configFile = getClass().getClassLoader().getResourceAsStream(environment + AGGREGATOR_CONFIG_FILE_NAME);
+        InputStream configFile = getClass().getClassLoader().getResourceAsStream(environment + "/" + AGGREGATOR_CONFIG_FILE_NAME);
 
         if (configFile == null) {
             throw new ConfigSourceException("Config file could not be located for the following environment: " + environment);
@@ -29,10 +29,9 @@ public class EnvironmentFileConfigSource implements ConfigSource {
 
         String result = new BufferedReader(new InputStreamReader(configFile))
                 .lines().collect(Collectors.joining("\n"));
-        ObjectMapper mapper = new ObjectMapper();
 
         try {
-            return mapper.readValue(result, AggregatorConfig.class);
+            return new ObjectMapper().readValue(result, AggregatorConfig.class);
         } catch (IOException e) {
             throw new ConfigSourceException("Unable to deserialise config file", e);
         }

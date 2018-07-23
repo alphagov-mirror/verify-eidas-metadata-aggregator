@@ -7,24 +7,25 @@ import java.util.Map;
 
 public class AggregatorConfig implements Serializable {
 
-    private Map<String,URL> metadataUrls;
+    private Map<String, URL> metadataUrls;
     private String keyStore;
 
     @SuppressWarnings("unused")
-    public AggregatorConfig() {}
+    public AggregatorConfig() {
+    }
 
     @SuppressWarnings("unused")
-    public AggregatorConfig(Map<String,URL> metadataUrls,
+    public AggregatorConfig(Map<String, URL> metadataUrls,
                             String keyStore) {
         this.metadataUrls = metadataUrls;
         this.keyStore = keyStore;
     }
 
-    public Map<String,URL> getMetadataUrls() {
+    public Map<String, URL> getMetadataUrls() {
         return metadataUrls;
     }
 
-    public void setMetadataUrls(Map<String,URL> metadataUrls) {
+    public void setMetadataUrls(Map<String, URL> metadataUrls) {
         this.metadataUrls = metadataUrls;
     }
 

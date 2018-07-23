@@ -66,7 +66,7 @@ class S3BucketClient implements MetadataStore {
         List<String> bucketKeyList = new ArrayList<>();
         List<S3ObjectSummary> bucketObjects;
 
-        try{
+        try {
             bucketObjects = s3Client.listObjects(bucketName).getObjectSummaries();
         } catch (RuntimeException e) {
             throw new MetadataStoreException("Error retrieving objects from S3 Bucket", e);
