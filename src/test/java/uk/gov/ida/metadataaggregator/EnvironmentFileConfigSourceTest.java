@@ -1,7 +1,6 @@
 package uk.gov.ida.metadataaggregator;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.opensaml.core.config.InitializationException;
 import org.opensaml.core.config.InitializationService;
@@ -20,10 +19,6 @@ public class EnvironmentFileConfigSourceTest {
     private static final String TEST_JSON_FILE = "testJson";
     private static final String ERROR_JSON_FILE = "errorJson";
     private static final String MISSING_JSON_FILE = "missingJson";
-    private static final String JOINT = "joint";
-    private static final String PROD = "production";
-    private static final String INTEGRATION = "integration";
-    private static final String STAGING = "staging";
 
     @Before
     public void setUp() throws InitializationException {
@@ -47,41 +42,5 @@ public class EnvironmentFileConfigSourceTest {
         Collection<URL> metadataUrls = aggregatorConfig.getMetadataUrls().values();
 
         assertThat(metadataUrls).hasSize(4);
-    }
-
-    @Test
-    public void shouldLocateJointConfigFileAndSuccessfullyDeserialize() throws ConfigSourceException {
-        AggregatorConfig aggregatorConfig = new EnvironmentFileConfigSource(JOINT).downloadConfig();
-
-        Collection<URL> metadataUrls = aggregatorConfig.getMetadataUrls().values();
-
-        assertThat(metadataUrls).isNotEmpty();
-    }
-
-    @Test
-    public void shouldLocateProdConfigFileAndSuccessfullyDeserialize() throws ConfigSourceException {
-        AggregatorConfig aggregatorConfig = new EnvironmentFileConfigSource(PROD).downloadConfig();
-
-        Collection<URL> metadataUrls = aggregatorConfig.getMetadataUrls().values();
-
-        assertThat(metadataUrls).isEmpty();
-    }
-
-    @Test
-    public void shouldLocateStagingConfigFileAndSuccessfullyDeserialize() throws ConfigSourceException {
-        AggregatorConfig aggregatorConfig = new EnvironmentFileConfigSource(STAGING).downloadConfig();
-
-        Collection<URL> metadataUrls = aggregatorConfig.getMetadataUrls().values();
-
-        assertThat(metadataUrls).isEmpty();
-    }
-
-    @Test
-    public void shouldLocateIntegrationConfigFileAndSuccessfullyDeserialize() throws ConfigSourceException {
-        AggregatorConfig aggregatorConfig = new EnvironmentFileConfigSource(INTEGRATION).downloadConfig();
-
-        Collection<URL> metadataUrls = aggregatorConfig.getMetadataUrls().values();
-
-        assertThat(metadataUrls).isNotEmpty();
     }
 }
