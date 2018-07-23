@@ -1,3 +1,4 @@
+apply from: 'publish.gradle'
 buildscript {
     repositories {
         maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
@@ -11,7 +12,6 @@ buildscript {
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
-apply from: 'publish.gradle'
 
 ext {
     awsLambdaVersion = '1.1.0'
@@ -28,7 +28,7 @@ ext {
 
 
 group = "uk.gov.ida.eidas"
-version = "0.1.$build_version"
+version = "0.1-$build_version"
 
 jar {
     from {
