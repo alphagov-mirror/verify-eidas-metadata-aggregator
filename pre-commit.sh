@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-./gradlew --daemon --parallel clean build test
+./gradlew --daemon --parallel clean build test configTest

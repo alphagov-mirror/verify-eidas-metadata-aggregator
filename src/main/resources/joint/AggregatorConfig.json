@@ -1,0 +1,6 @@
+{
+  "metadataUrls": {
+    "CEF Proxy Node metadata": "https://cef-proxy-node-eidas-joint.cloudapps.digital/ServiceMetadata",
+    "Stub Country metadata": "https://idp-stub-joint.ida.digital.cabinet-office.gov.uk/stub-country/ServiceMetadata"
+  }
+}

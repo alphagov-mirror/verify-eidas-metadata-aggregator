@@ -1,12 +1,9 @@
 package uk.gov.ida.metadataaggregator;
 
-import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.Before;
@@ -15,27 +12,20 @@ import org.mockito.ArgumentCaptor;
 import org.opensaml.core.config.InitializationException;
 import org.opensaml.core.config.InitializationService;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
-import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
-import uk.gov.ida.metadataaggregator.config.ConfigSourceException;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStoreException;
 import uk.gov.ida.saml.core.test.TestEntityIds;
 import uk.gov.ida.saml.metadata.test.factories.metadata.EntityDescriptorFactory;
 
-import java.io.ByteArrayInputStream;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.ida.metadataaggregator.LambdaConstants.CONFIG_BUCKET_KEY;
 
 public class S3BucketClientTest {
 
@@ -56,39 +46,11 @@ public class S3BucketClientTest {
     }
 
     @Test
-    public void shouldMapDownloadedConfigIntoObject() throws ConfigSourceException {
-        String testJson = JsonAggregatorConfigBuilder.newConfig().withMetadataUrl(STUB_COUNTRY_ENTITY_ID).toJson();
-        S3Object mockS3Object = mockS3ObjectReturning(testJson);
-        when(amazonS3Client.getObject(TEST_BUCKET_NAME, CONFIG_BUCKET_KEY)).thenReturn(mockS3Object);
-
-        AggregatorConfig aggregatorConfig = new S3BucketClient(TEST_BUCKET_NAME, amazonS3Client).downloadConfig();
-
-        Collection<URL> metadataUrls = aggregatorConfig.getMetadataUrls();
-        assertThat(metadataUrls).hasSize(1);
-    }
-
-    @Test
     public void shouldPutObjectIntoS3BucketUnderHexEncodedKey() throws MetadataStoreException {
         s3BucketClient.uploadMetadata(HexUtils.encodeString(STUB_COUNTRY_ENTITY_ID), STUB_COUNTRY_METADATA);
 
         ArgumentCaptor<PutObjectRequest> putObjectRequestArgumentCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
         verify(amazonS3Client).putObject(putObjectRequestArgumentCaptor.capture());
-    }
-
-    @Test
-    public void shouldConvertExceptionIntoDomainTypeWhenDownloadMappingFails() {
-        when(amazonS3Client.getObject(anyString(), anyString())).thenThrow(new AmazonClientException(""));
-
-        assertThatExceptionOfType(ConfigSourceException.class).isThrownBy(s3BucketClient::downloadConfig);
-    }
-
-    @Test
-    public void shouldConvertExceptionIntoDomainTypeWhenDownloadFails() {
-        String testJson = JsonAggregatorConfigBuilder.newConfig().withMetadataUrl(STUB_COUNTRY_ENTITY_ID).toInvalidJson();
-        S3Object mockS3Object = mockS3ObjectReturning(testJson);
-        when(amazonS3Client.getObject(TEST_BUCKET_NAME, CONFIG_BUCKET_KEY)).thenReturn(mockS3Object);
-
-        assertThatExceptionOfType(ConfigSourceException.class).isThrownBy(s3BucketClient::downloadConfig);
     }
 
     @Test
@@ -151,12 +113,5 @@ public class S3BucketClientTest {
         s3ObjectSummary.setKey(key);
 
         return s3ObjectSummary;
-    }
-
-    private S3Object mockS3ObjectReturning(String testJson) {
-        S3Object mockS3Object = mock(S3Object.class);
-        when(mockS3Object.getObjectContent())
-                .thenReturn(new S3ObjectInputStream(new ByteArrayInputStream(testJson.getBytes()), null));
-        return mockS3Object;
     }
 }

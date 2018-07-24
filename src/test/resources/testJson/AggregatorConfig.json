@@ -1,0 +1,8 @@
+{
+  "metadataUrls": {
+    "Test metadata1": "https://test.metadata.one/ServiceMetadata",
+    "Test metadata2": "https://test.metadata.two/ServiceMetadata",
+    "Test metadata3": "https://test.metadata.three/ServiceMetadata",
+    "Test metadata4": "https://test.metadata.four/ServiceMetadata"
+  }
+}

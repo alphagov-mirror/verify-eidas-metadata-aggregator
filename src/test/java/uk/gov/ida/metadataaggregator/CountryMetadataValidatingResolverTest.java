@@ -60,11 +60,11 @@ public class CountryMetadataValidatingResolverTest {
 
     private URL STUB_COUNTRY_ONE_METADATA_LOCATION;
     private final Credential STUB_COUNTRY_ONE_CREDENTIAL = new TestCredentialFactory(
-        TestCertificateStrings.STUB_COUNTRY_PUBLIC_PRIMARY_CERT,
-        TestCertificateStrings.STUB_COUNTRY_PUBLIC_PRIMARY_PRIVATE_KEY).getSigningCredential();
+            TestCertificateStrings.STUB_COUNTRY_PUBLIC_PRIMARY_CERT,
+            TestCertificateStrings.STUB_COUNTRY_PUBLIC_PRIMARY_PRIVATE_KEY).getSigningCredential();
     private final Credential STUB_COUNTRY_TWO_CREDENTIAL = new TestCredentialFactory(
-        TestCertificateStrings.STUB_COUNTRY_PUBLIC_SECONDARY_CERT,
-        TestCertificateStrings.STUB_COUNTRY_PUBLIC_SECONDARY_PRIVATE_KEY).getSigningCredential();
+            TestCertificateStrings.STUB_COUNTRY_PUBLIC_SECONDARY_CERT,
+            TestCertificateStrings.STUB_COUNTRY_PUBLIC_SECONDARY_PRIVATE_KEY).getSigningCredential();
 
     private final EntityDescriptor STUB_COUNTRY_ONE_METADATA_SIGNED = new EntityDescriptorFactory().signedIdpEntityDescriptor(
             TestEntityIds.STUB_COUNTRY_ONE,
@@ -88,7 +88,7 @@ public class CountryMetadataValidatingResolverTest {
 
     @Before
     public void setUp() throws CertificateException, IOException {
-        STUB_COUNTRY_ONE_METADATA_LOCATION  = new URL(TestEntityIds.STUB_COUNTRY_ONE);
+        STUB_COUNTRY_ONE_METADATA_LOCATION = new URL(TestEntityIds.STUB_COUNTRY_ONE);
 
         trustAnchorMap = new HashMap<String, JWK>();
         metadataValidatingResolver = new CountryMetadataValidatingResolver(trustAnchorMap, clientBuilder);

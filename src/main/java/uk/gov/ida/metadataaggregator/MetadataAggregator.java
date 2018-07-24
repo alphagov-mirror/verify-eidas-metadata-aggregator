@@ -37,14 +37,14 @@ public class MetadataAggregator {
         try {
             config = configSource.downloadConfig();
         } catch (ConfigSourceException e) {
-            LOGGER.error("Metadata Aggregator error - Unable to download Aggregator Config file: {}", e.getMessage());
+            LOGGER.error("Metadata Aggregator error - Unable to download Aggregator Config file", e);
             return false;
         }
 
         LOGGER.info("Processing country metadatasource");
 
         int successfulUploads = 0;
-        Collection<URL> configMetadataUrls = config.getMetadataUrls();
+        Collection<URL> configMetadataUrls = config.getMetadataUrls().values();
 
         deleteMetadataWhichIsNotInConfig(configMetadataUrls);
 
@@ -63,7 +63,7 @@ public class MetadataAggregator {
         try {
             countryMetadataFile = countryMetadataCurler.downloadMetadata(metadataUrl);
         } catch (MetadataSourceException e) {
-            LOGGER.error("Error downloading metadatasource file {} Exception: {}", metadataUrl, e.getMessage());
+            LOGGER.error("Error downloading metadatasource file {}", metadataUrl, e);
             deleteMetadataWithHexEncodedMetadataUrl(HexUtils.encodeString(metadataUrl.toString()));
             return false;
         }
@@ -71,7 +71,7 @@ public class MetadataAggregator {
         try {
             metadataStore.uploadMetadata(HexUtils.encodeString(metadataUrl.toString()), countryMetadataFile);
         } catch (MetadataStoreException e) {
-            LOGGER.error("Error uploading metadatasource file {} Exception: {}", metadataUrl, e.getMessage());
+            LOGGER.error("Error uploading metadatasource file {}", metadataUrl, e);
             deleteMetadataWithHexEncodedMetadataUrl(HexUtils.encodeString(metadataUrl.toString()));
             return false;
         }
@@ -99,7 +99,7 @@ public class MetadataAggregator {
         try {
             hexEncodedUrls = metadataStore.getAllHexEncodedUrlsFromS3Bucket();
         } catch (MetadataStoreException e) {
-            LOGGER.error("Metadata Aggregator error - Unable to retrieve keys from S3 bucket", e.getMessage());
+            LOGGER.error("Metadata Aggregator error - Unable to retrieve keys from S3 bucket", e);
         }
         return hexEncodedUrls;
     }
@@ -108,7 +108,7 @@ public class MetadataAggregator {
         try {
             metadataStore.deleteMetadata(hexEncodedUrl);
         } catch (MetadataStoreException e) {
-            LOGGER.error("Error deleting metadatasource file with hexEncodedUrl: {} Exception: {}", hexEncodedUrl, e.getMessage());
+            LOGGER.error("Error deleting metadatasource file with hexEncodedUrl: {}", hexEncodedUrl, e);
         }
     }
 }
