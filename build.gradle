@@ -3,7 +3,6 @@ apply from: 'publish.gradle'
 buildscript {
     repositories {
         maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
-        mavenCentral()
     }
 
     dependencies {
@@ -15,14 +14,7 @@ apply plugin: 'java'
 apply plugin: 'maven-publish'
 
 ext {
-    awsLambdaVersion = '1.1.0'
-    awsJavaVersion = '1.9.2'
     openSamlVersion = '3.3.0'
-    junitVersion = '4.12'
-    mockitoVersion = '2.12.0'
-    assertJVersion = "3.10.0"
-    slf4jVersion = "1.7.12"
-    ida_utils_version = '335'
     saml_libs_version = "${openSamlVersion}-151"
     build_version = "${System.env.BUILD_NUMBER ?: 'SNAPSHOT'}"
 }
@@ -41,23 +33,22 @@ sourceCompatibility = 1.8
 
 repositories {
     maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
-    mavenCentral()
 }
 
 dependencies {
     compile (
-            "com.amazonaws:aws-lambda-java-core:${awsLambdaVersion}",
-            "com.amazonaws:aws-java-sdk:${awsJavaVersion}",
+            'com.nimbusds:nimbus-jose-jwt:5.4',
+            'com.amazonaws:aws-java-sdk-s3:1.11.277',
             "uk.gov.ida:saml-metadata-bindings:${saml_libs_version}",
-            "org.slf4j:log4j-over-slf4j:${slf4jVersion}",
-            "uk.gov.ida:common-utils:2.0.0-$ida_utils_version",
+            'org.slf4j:log4j-over-slf4j:1.7.12',
+            'uk.gov.ida:common-utils:2.0.0-335',
             "uk.gov.ida:saml-serializers:${saml_libs_version}"
     )
 
     testCompile(
-            "junit:junit:${junitVersion}",
-            "org.mockito:mockito-core:${mockitoVersion}",
-            "org.assertj:assertj-core:${assertJVersion}",
+            'junit:junit:4.12',
+            'org.mockito:mockito-core:2.12.0',
+            'org.assertj:assertj-core:3.10.0',
             "uk.gov.ida:saml-metadata-bindings-test:${saml_libs_version}"
     )
 }
