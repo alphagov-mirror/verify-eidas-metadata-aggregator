@@ -3,14 +3,10 @@ package uk.gov.ida.metadataaggregator.apigateway;
 import java.util.Map;
 
 /*
-    See: https://willhamill.com/2016/12/12/aws-api-gateway-lambda-proxy-request-and-response-objects
-
-    API Gateway Request object defined [mostly] as per AWS documentation:
-    http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-set-up-simple-proxy.html#api-gateway-simple-proxy-for-lambda-input-format
-    **WARNING** The AWS docs appear to be somewhat inaccurate in the following way:
-    - message property does not exist on request
-      ( I suspect a copy/paste error, as this is a response property of the example API in the docs)
-    - input property contents is the top level object
+    This source code file was derived from Will Hamill’s open source work
+    “AWS Lambda HelloWorld web application with config“, which is licensed under the
+    MIT open source license and which is available at:
+    https://github.com/willh/lambda-helloworld-config
  */
 public class ApiGatewayRequest {
 

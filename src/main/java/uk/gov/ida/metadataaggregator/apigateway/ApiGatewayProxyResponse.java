@@ -3,14 +3,11 @@ package uk.gov.ida.metadataaggregator.apigateway;
 import java.util.Map;
 
 /*
-    See: https://willhamill.com/2016/12/12/aws-api-gateway-lambda-proxy-request-and-response-objects
-
-    Response class for an API Gateway proxied lambda
-    Must conform to these three properties as per AWS docs
-    https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-set-up-simple-proxy.html#api-gateway-simple-proxy-for-lambda-output-format
-    Headers map will be merged with whichever header AWS sets, e.g. X-Amzn-Trace-Id
+    This source code file was derived from Will Hamill’s open source work
+    “AWS Lambda HelloWorld web application with config“, which is licensed under the
+    MIT open source license and which is available at:
+    https://github.com/willh/lambda-helloworld-config
  */
-
 public class ApiGatewayProxyResponse {
 
     private int statusCode;
