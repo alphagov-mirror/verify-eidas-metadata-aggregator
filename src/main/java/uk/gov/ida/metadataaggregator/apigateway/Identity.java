@@ -1,11 +1,5 @@
 package uk.gov.ida.metadataaggregator.apigateway;
 
-/*
-    This source code file was derived from Will Hamill’s open source work
-    “AWS Lambda HelloWorld web application with config“, which is licensed under the
-    MIT open source license and which is available at:
-    https://github.com/willh/lambda-helloworld-config
- */
 public class Identity {
 
     private String cognitoIdentityPoolId;
