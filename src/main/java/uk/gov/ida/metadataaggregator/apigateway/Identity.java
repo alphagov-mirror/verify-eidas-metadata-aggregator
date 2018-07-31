@@ -1,6 +1,19 @@
 package uk.gov.ida.metadataaggregator.apigateway;
 
 /**
+
+ This source code file was derived from Will Hamill’s open source work
+ “AWS Lambda HelloWorld web application with config“ and is licenced under
+ the MIT open source licence.
+
+ Blog Post:
+ https://willhamill.com/2016/12/12/aws-api-gateway-lambda-proxy-request-and-response-objects
+
+ Original Source Code:
+ https://github.com/willh/lambda-helloworld-config
+
+ We are required to include this text as well:
+
  MIT License
 
  Copyright (c) 2016 Will Hamill
