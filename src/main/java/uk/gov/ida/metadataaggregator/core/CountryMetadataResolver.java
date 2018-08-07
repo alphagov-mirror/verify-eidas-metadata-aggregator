@@ -1,5 +1,6 @@
 package uk.gov.ida.metadataaggregator.core;
 
+import ch.qos.logback.core.util.Duration;
 import com.google.common.collect.ImmutableList;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
@@ -12,8 +13,6 @@ import org.opensaml.saml.metadata.resolver.filter.impl.SignatureValidationFilter
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import ch.qos.logback.core.util.Duration;
 import uk.gov.ida.metadataaggregator.exceptions.MetadataSourceException;
 import uk.gov.ida.saml.metadata.EidasTrustAnchorResolver;
 import uk.gov.ida.saml.metadata.ExpiredCertificateMetadataFilter;
@@ -51,10 +50,10 @@ public class CountryMetadataResolver {
         Map<String, JWK> trustAnchors;
         try {
             trustAnchors =
-                trustAnchorResolver
-                    .getTrustAnchors()
-                    .stream()
-                    .collect(Collectors.toMap(JWK::getKeyID, identity()));
+                    trustAnchorResolver
+                            .getTrustAnchors()
+                            .stream()
+                            .collect(Collectors.toMap(JWK::getKeyID, identity()));
         } catch (GeneralSecurityException | ParseException | JOSEException e) {
             LOGGER.error("Error creating CountryMetadataResolver", e);
             throw new MetadataSourceException("Error creating CountryMetadataResolver", e);
@@ -95,20 +94,20 @@ public class CountryMetadataResolver {
         }
 
         Provider<SignatureValidationFilter> pkixSignatureValidationFilterProvider =
-            new PKIXSignatureValidationFilterProvider(trustAnchors.get(url.toString()).getKeyStore());
+                new PKIXSignatureValidationFilterProvider(trustAnchors.get(url.toString()).getKeyStore());
 
         List<MetadataFilter> metadataFilters =
-            ImmutableList.of(
-                pkixSignatureValidationFilterProvider.get(),
-                new ExpiredCertificateMetadataFilter()
-            );
+                ImmutableList.of(
+                        pkixSignatureValidationFilterProvider.get(),
+                        new ExpiredCertificateMetadataFilter()
+                );
 
         return new MetadataResolverFactory().create(
-            clientBuilder.build(),
-            url.toURI(),
-            metadataFilters,
-            REFRESH_DELAY,
-            REFRESH_DELAY
+                clientBuilder.build(),
+                url.toURI(),
+                metadataFilters,
+                REFRESH_DELAY,
+                REFRESH_DELAY
         );
     }
 }

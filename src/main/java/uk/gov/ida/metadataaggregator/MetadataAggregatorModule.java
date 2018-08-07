@@ -1,15 +1,18 @@
 package uk.gov.ida.metadataaggregator;
 
+import ch.qos.logback.core.util.Duration;
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.name.Named;
-import uk.gov.ida.metadataaggregator.core.S3BucketMetadataStore;
-import uk.gov.ida.metadataaggregator.exceptions.ConfigSourceException;
+import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfigurationLoader;
+import uk.gov.ida.metadataaggregator.core.S3BucketMetadataStore;
+import uk.gov.ida.metadataaggregator.managed.MetadataAggregationTaskRunner;
+import uk.gov.ida.metadataaggregator.exceptions.ConfigSourceException;
 import uk.gov.ida.saml.metadata.EidasTrustAnchorResolver;
 
 import javax.ws.rs.client.ClientBuilder;
@@ -20,7 +23,7 @@ class MetadataAggregatorModule extends AbstractModule {
 
     @Override
     protected void configure() {
- 
+        bind(MetadataAggregationTaskRunner.class);
     }
 
     @Provides
@@ -30,19 +33,25 @@ class MetadataAggregatorModule extends AbstractModule {
     }
 
     @Provides
+    @Named("ScheduleFrequency")
+    public Duration getScheduleFrequency(AggregatorConfig configuration) {
+        return Duration.buildByMilliseconds(configuration.getScheduleMilliseconds());
+    }
+
+    @Provides
     public KeyStore getTrustStoreForTrustAnchor(MetadataAggregatorConfiguration configuration) {
         return configuration.getTrustStore();
     }
 
     @Provides
     public EidasTrustAnchorResolver getEidasTrustAnchorResolver(
-        @Named("TrustAnchorURI") URI eidasTrustAnchorUriString,
-        KeyStore trustStore
+            @Named("TrustAnchorURI") URI eidasTrustAnchorUriString,
+            KeyStore trustStore
     ) {
         return new EidasTrustAnchorResolver(
-            eidasTrustAnchorUriString,
-            ClientBuilder.newClient(),
-            trustStore);
+                eidasTrustAnchorUriString,
+                ClientBuilder.newClient(),
+                trustStore);
     }
 
     @Provides
@@ -63,7 +72,7 @@ class MetadataAggregatorModule extends AbstractModule {
     @Provides
     private AmazonS3 getAmazonS3Client() {
         return AmazonS3ClientBuilder.standard()
-            .withCredentials(new EnvironmentVariableCredentialsProvider())
-            .build();
+                .withCredentials(new EnvironmentVariableCredentialsProvider())
+                .build();
     }
 }

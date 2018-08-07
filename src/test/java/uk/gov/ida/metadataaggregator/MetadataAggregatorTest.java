@@ -5,10 +5,10 @@ import org.junit.Test;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.core.CountryMetadataResolver;
-import uk.gov.ida.metadataaggregator.exceptions.MetadataSourceException;
-import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
 import uk.gov.ida.metadataaggregator.core.MetadataAggregator;
 import uk.gov.ida.metadataaggregator.core.S3BucketMetadataStore;
+import uk.gov.ida.metadataaggregator.exceptions.MetadataSourceException;
+import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
 import uk.gov.ida.metadataaggregator.util.HexUtils;
 
 import java.net.MalformedURLException;

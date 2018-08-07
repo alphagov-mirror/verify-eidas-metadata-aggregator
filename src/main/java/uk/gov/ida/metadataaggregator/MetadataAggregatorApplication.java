@@ -1,10 +1,13 @@
 package uk.gov.ida.metadataaggregator;
 
-import com.hubspot.dropwizard.guicier.GuiceBundle;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.squarespace.jersey2.guice.JerseyGuiceUtils;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import uk.gov.ida.metadataaggregator.cli.MetadataAggregatorCommand;
+import com.hubspot.dropwizard.guicier.GuiceBundle;
+import uk.gov.ida.metadataaggregator.managed.ScheduledMetadataAggregator;
 
 public class MetadataAggregatorApplication extends Application<MetadataAggregatorConfiguration> {
 
@@ -27,13 +30,16 @@ public class MetadataAggregatorApplication extends Application<MetadataAggregato
         super.initialize(bootstrap);
 
         guiceBundle = GuiceBundle.defaultBuilder(MetadataAggregatorConfiguration.class)
-            .modules(new MetadataAggregatorModule())
-            .build();
+                .modules(new MetadataAggregatorModule())
+                .build();
 
         bootstrap.addBundle(guiceBundle);
+        bootstrap.addCommand(guiceBundle.getInjector().getInstance(MetadataAggregatorCommand.class));
     }
 
     @Override
     public final void run(MetadataAggregatorConfiguration configuration, Environment environment) {
+        environment.getObjectMapper().setDateFormat(StdDateFormat.getDateInstance());
+        environment.lifecycle().manage(guiceBundle.getInjector().getInstance(ScheduledMetadataAggregator.class));
     }
 }
