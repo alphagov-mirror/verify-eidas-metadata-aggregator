@@ -1,6 +1,6 @@
 package uk.gov.ida.metadataaggregator;
 
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -25,9 +25,9 @@ class S3BucketClient implements MetadataStore {
     private static final Logger LOGGER = LoggerFactory.getLogger(S3BucketClient.class);
 
     private final String bucketName;
-    private final AmazonS3Client s3Client;
+    private final AmazonS3 s3Client;
 
-    public S3BucketClient(String configBucket, AmazonS3Client s3Client) {
+    public S3BucketClient(String configBucket, AmazonS3 s3Client) {
         this.bucketName = configBucket;
         this.s3Client = s3Client;
     }

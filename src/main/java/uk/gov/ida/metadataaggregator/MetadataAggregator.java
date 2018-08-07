@@ -21,15 +21,15 @@ public class MetadataAggregator {
     private static final Logger LOGGER = LoggerFactory.getLogger(MetadataAggregator.class);
 
     private final ConfigSource configSource;
-    private final CountryMetadataSource countryMetadataCurler;
+    private final CountryMetadataSource countryMetadataSource;
     private final MetadataStore metadataStore;
 
     public MetadataAggregator(ConfigSource configSource,
-                              CountryMetadataSource countryMetadataCurler,
+                              CountryMetadataSource countryMetadataSource,
                               MetadataStore metadataStore) {
         this.configSource = configSource;
         this.metadataStore = metadataStore;
-        this.countryMetadataCurler = countryMetadataCurler;
+        this.countryMetadataSource = countryMetadataSource;
     }
 
     public boolean aggregateMetadata() {
@@ -61,7 +61,7 @@ public class MetadataAggregator {
     private boolean processMetadataFrom(URL metadataUrl) {
         EntityDescriptor countryMetadataFile;
         try {
-            countryMetadataFile = countryMetadataCurler.downloadMetadata(metadataUrl);
+            countryMetadataFile = countryMetadataSource.downloadMetadata(metadataUrl);
         } catch (MetadataSourceException e) {
             LOGGER.error("Error downloading metadatasource file {}", metadataUrl, e);
             deleteMetadataWithHexEncodedMetadataUrl(HexUtils.encodeString(metadataUrl.toString()));

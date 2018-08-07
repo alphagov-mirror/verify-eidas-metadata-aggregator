@@ -1,39 +1,53 @@
 package uk.gov.ida.metadataaggregator.config;
 
-import java.io.Serializable;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AggregatorConfig implements Serializable {
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
-    private Map<String, URL> metadataUrls;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import io.dropwizard.Configuration;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class AggregatorConfig extends Configuration {
+
+    @Valid
+    @JsonProperty
+    private Map<String, URL> metadataUrls = new HashMap<String, URL>(0);
+
+    @Valid
+    @JsonProperty
+    @NotNull
     private String keyStore;
 
-    @SuppressWarnings("unused")
+    @Valid
+    @JsonProperty
+    @NotNull
+    private URI trustAnchorUri;
+
+    @Valid
+    @JsonProperty
+    private long scheduleMilliseconds = 0;
+
     public AggregatorConfig() {
     }
 
-    @SuppressWarnings("unused")
     public AggregatorConfig(Map<String, URL> metadataUrls,
                             String keyStore) {
         this.metadataUrls = metadataUrls;
         this.keyStore = keyStore;
     }
 
-    public Map<String, URL> getMetadataUrls() {
-        return metadataUrls;
-    }
+    public Map<String, URL> getMetadataUrls() { return metadataUrls; }
 
-    public void setMetadataUrls(Map<String, URL> metadataUrls) {
-        this.metadataUrls = metadataUrls;
-    }
+    public String getKeyStore() { return keyStore; }
 
-    public String getKeyStore() {
-        return keyStore;
-    }
+    public URI getTrustAnchorUri() { return trustAnchorUri; }
 
-    public void setKeyStore(String keyStore) {
-        this.keyStore = keyStore;
-    }
+    public long getScheduleMilliseconds() { return scheduleMilliseconds; }
 }

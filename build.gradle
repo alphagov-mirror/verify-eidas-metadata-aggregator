@@ -1,16 +1,26 @@
 apply from: 'publish.gradle'
 buildscript {
     repositories {
-        maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
+        if (System.getenv('VERIFY_USE_PUBLIC_BINARIES') == 'true') {
+            logger.warn('Production builds MUST NOT be built with public binaries.\nUse artifactory/whitelisted-repos for production builds.\n\n')
+            maven { url 'https://dl.bintray.com/alphagov/maven-test' }
+            jcenter()
+        }
+        else {
+            maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
+        }
     }
 
     dependencies {
-        classpath 'uk.gov.ida:ida-gradle:1.1.0-20'
+        classpath 'com.github.ben-manes:gradle-versions-plugin:0.11.3'
     }
 }
 
 apply plugin: 'java'
+apply plugin: 'application'
 apply plugin: 'maven-publish'
+
+mainClassName = 'uk.gov.ida.metadataaggregator.MetadataAggregatorApplication'
 
 ext {
     openSamlVersion = '3.3.0'
@@ -26,46 +36,41 @@ jar {
     from {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
 }
 
 sourceCompatibility = 1.8
 
 repositories {
-    maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
+    if (System.getenv('VERIFY_USE_PUBLIC_BINARIES') == 'true') {
+        logger.warn('Production builds MUST NOT be built with public binaries.\nUse artifactory/whitelisted-repos for production builds.\n\n')
+        maven { url 'https://dl.bintray.com/alphagov/maven' } // For dropwizard-logstash
+        maven { url 'https://dl.bintray.com/alphagov/maven-test' } // For other public verify binaries
+        jcenter()
+    }
+    else {
+        maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
+    }
 }
 
 dependencies {
     compile (
             'com.nimbusds:nimbus-jose-jwt:5.4',
             'com.amazonaws:aws-java-sdk-s3:1.11.277',
-            "uk.gov.ida:saml-metadata-bindings:${saml_libs_version}",
+            "uk.gov.ida:saml-metadata-bindings:$saml_libs_version",
             'org.slf4j:log4j-over-slf4j:1.7.12',
+            'com.squarespace.jersey2-guice:jersey2-guice-impl:1.0.6',
+            'com.hubspot.dropwizard:dropwizard-guicier:1.0.0.6',
             'uk.gov.ida:common-utils:2.0.0-335',
-            "uk.gov.ida:saml-serializers:${saml_libs_version}"
+            "uk.gov.ida:saml-serializers:$saml_libs_version"
     )
 
     testCompile(
             'junit:junit:4.12',
             'org.mockito:mockito-core:2.12.0',
             'org.assertj:assertj-core:3.10.0',
-            "uk.gov.ida:saml-metadata-bindings-test:${saml_libs_version}"
+            "uk.gov.ida:saml-metadata-bindings-test:$saml_libs_version"
     )
-
-sourceSets {
-    configTest {
-        java {
-            srcDir 'src/config-test/java'
-        }
-        compileClasspath += sourceSets.main.runtimeClasspath
-        compileClasspath += sourceSets.test.runtimeClasspath
-        compileClasspath += sourceSets.test.output
-    }
-}
-
-task configTest(type: Test) {
-    setTestClassesDirs sourceSets.configTest.output.classesDirs
-    classpath += sourceSets.configTest.runtimeClasspath
-}
-
-tasks.check.dependsOn(configTest)
 }

@@ -1,6 +1,6 @@
 package uk.gov.ida.metadataaggregator;
 
-public class LambdaConstants {
+public class Constants {
     public static final String AWS_ACCESS_KEY = "AWS_ACCESS_KEY";
     public static final String AWS_SECRET_KEY = "AWS_SECRET_KEY";
     public static final String BUCKET_NAME = "METADATA_BUCKET";
