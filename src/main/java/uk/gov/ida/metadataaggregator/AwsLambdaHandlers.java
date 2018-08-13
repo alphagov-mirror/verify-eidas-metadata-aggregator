@@ -12,7 +12,9 @@ import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataCurler;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataSource;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataValidatingResolver;
 import uk.gov.ida.metadataaggregator.metadatasource.MetadataSourceException;
+import uk.gov.ida.saml.metadata.EidasTrustAnchorResolver;
 
+import javax.inject.Inject;
 import javax.xml.parsers.ParserConfigurationException;
 
 import static uk.gov.ida.metadataaggregator.LambdaConstants.BUCKET_NAME;
@@ -26,6 +28,12 @@ import static uk.gov.ida.metadataaggregator.LambdaConstants.TRUST_ANCHOR_URI;
 public class AwsLambdaHandlers {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AwsLambdaHandlers.class);
+    private EidasTrustAnchorResolver trustAnchorResolver;
+
+    @Inject
+    public AwsLambdaHandlers(EidasTrustAnchorResolver trustAnchorResolver) {
+        this.trustAnchorResolver = trustAnchorResolver;
+    }
 
     public ApiGatewayProxyResponse s3BucketLambda(ApiGatewayRequest testObject) {
 
@@ -86,10 +94,7 @@ public class AwsLambdaHandlers {
     }
 
     private CountryMetadataValidatingResolver getValidatingResolver(MetadataSourceConfiguration configObject) throws EnvironmentVariableException, MetadataSourceException {
-        String password = getEnvironmentVariable(TRUST_ANCHOR_PASSCODE);
-        String eidasTrustAnchorUriString = getEnvironmentVariable(TRUST_ANCHOR_URI);
-
-        return CountryMetadataValidatingResolver.build(configObject, password, eidasTrustAnchorUriString);
+        return CountryMetadataValidatingResolver.fromTrustAnchor(trustAnchorResolver);
     }
 
     private S3BucketClient getS3BucketClient() throws EnvironmentVariableException {

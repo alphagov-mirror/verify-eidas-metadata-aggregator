@@ -37,3 +37,11 @@ logging:
     - type: logstash-syslog
       facility: local2
       tag: metadata-aggregator
+
+trustAnchorUri: ${TRUST_ANCHOR_URI}
+trustStore:
+  type: ${TRUSTSTORE_TYPE:-file}
+  store: ${TRUSTSTORE}
+  password: ${TRUSTSTORE_PASSWORD}
+
+s3BucketName: ${S3_BUCKET_NAME}

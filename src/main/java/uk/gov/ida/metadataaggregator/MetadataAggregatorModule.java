@@ -1,11 +1,57 @@
 package uk.gov.ida.metadataaggregator;
 
-import com.google.inject.Binder;
-import com.google.inject.Module;
+import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
+import com.google.inject.name.Named;
+import uk.gov.ida.metadataaggregator.config.MetadataAggregatorConfiguration;
+import uk.gov.ida.metadataaggregator.metadatastore.MetadataStore;
+import uk.gov.ida.saml.metadata.EidasTrustAnchorResolver;
 
-public class MetadataAggregatorModule implements Module {
+import javax.ws.rs.client.ClientBuilder;
+import java.net.URI;
+import java.security.KeyStore;
+
+class MetadataAggregatorModule extends AbstractModule {
+
     @Override
-    public void configure(Binder binder) {
+    protected void configure() {
+        bind(MetadataStore.class).to(S3BucketClient.class);
+    }
 
+    @Provides
+    @Named("TrustAnchorURI")
+    public URI getTrustAnchorURI(MetadataAggregatorConfiguration configuration) {
+        return configuration.getTrustAnchorUri();
+    }
+
+    @Provides
+    public KeyStore getTrustStoreForTrustAnchor(MetadataAggregatorConfiguration configuration) {
+        return configuration.getTrustStore();
+    }
+
+    @Provides
+    public EidasTrustAnchorResolver getEidasTrustAnchorResolver(
+        @Named("TrustAnchorURI") URI eidasTrustAnchorUriString,
+        KeyStore trustStore
+    ) {
+        return new EidasTrustAnchorResolver(
+            eidasTrustAnchorUriString,
+            ClientBuilder.newClient(),
+            trustStore);
+    }
+
+    @Provides
+    private S3BucketClient getS3BucketClient(MetadataAggregatorConfiguration configuration, AmazonS3 amazonS3Client) {
+        return new S3BucketClient(configuration.getS3BucketName(), amazonS3Client);
+    }
+
+    @Provides
+    private AmazonS3 getAmazonS3Client() {
+        return AmazonS3ClientBuilder.standard()
+            .withCredentials(new EnvironmentVariableCredentialsProvider())
+            .build();
     }
 }
