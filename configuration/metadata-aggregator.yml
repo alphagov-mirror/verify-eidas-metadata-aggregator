@@ -1,0 +1,39 @@
+server:
+  applicationConnectors:
+    - type: http
+      port: ${PORT:-51200}
+  adminConnectors:
+    - type: http
+      port: 51201
+
+  requestLog:
+    type: classic
+    appenders:
+      - type: console
+      - type: file
+        currentLogFilename: ${LOG_PATH}/debug/metadata-aggregator_access.log
+        archivedLogFilenamePattern: ${LOG_PATH}/debug/metadata-aggregator_access.log.%d.gz
+        archivedFileCount: 7
+      - type: logstash-file
+        currentLogFilename: ${LOG_PATH}/metadata-aggregator_access.log
+        archivedLogFilenamePattern: ${LOG_PATH}/metadata-aggregator_access.log.%d.gz
+        archivedFileCount: 7
+      - type: logstash-syslog
+        facility: local2
+        tag: metadata-aggregator
+
+logging:
+  level: ${LOG_LEVEL:-INFO}
+  appenders:
+    - type: console
+    - type: file
+      currentLogFilename: ${LOG_PATH}/debug/metadata-aggregator.log
+      archivedLogFilenamePattern: ${LOG_PATH}/debug/metadata-aggregator.log.%d.gz
+      archivedFileCount: 7
+    - type: logstash-file
+      currentLogFilename: ${LOG_PATH}/metadata-aggregator.log
+      archivedLogFilenamePattern: ${LOG_PATH}/metadata-aggregator.log.%d.gz
+      archivedFileCount: 7
+    - type: logstash-syslog
+      facility: local2
+      tag: metadata-aggregator
