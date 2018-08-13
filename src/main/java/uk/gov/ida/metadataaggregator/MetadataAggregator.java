@@ -4,8 +4,6 @@ import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.metadataaggregator.config.MetadataSourceConfiguration;
-import uk.gov.ida.metadataaggregator.config.ConfigSource;
-import uk.gov.ida.metadataaggregator.config.ConfigSourceException;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataSource;
 import uk.gov.ida.metadataaggregator.metadatasource.MetadataSourceException;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStore;
@@ -20,31 +18,23 @@ public class MetadataAggregator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MetadataAggregator.class);
 
-    private final ConfigSource configSource;
+    private final MetadataSourceConfiguration configuration;
     private final CountryMetadataSource countryMetadataCurler;
     private final MetadataStore metadataStore;
 
-    public MetadataAggregator(ConfigSource configSource,
+    public MetadataAggregator(MetadataSourceConfiguration configuration,
                               CountryMetadataSource countryMetadataCurler,
                               MetadataStore metadataStore) {
-        this.configSource = configSource;
+        this.configuration = configuration;
         this.metadataStore = metadataStore;
         this.countryMetadataCurler = countryMetadataCurler;
     }
 
     public boolean aggregateMetadata() {
-        MetadataSourceConfiguration config;
-        try {
-            config = configSource.downloadConfig();
-        } catch (ConfigSourceException e) {
-            LOGGER.error("Metadata Aggregator error - Unable to download Aggregator Config file", e);
-            return false;
-        }
-
         LOGGER.info("Processing country metadatasource");
 
         int successfulUploads = 0;
-        Collection<URL> configMetadataUrls = config.getMetadataUrls().values();
+        Collection<URL> configMetadataUrls = configuration.getMetadataUrls().values();
 
         deleteMetadataWhichIsNotInConfig(configMetadataUrls);
 

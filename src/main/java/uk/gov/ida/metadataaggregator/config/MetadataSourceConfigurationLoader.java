@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 import static uk.gov.ida.metadataaggregator.Constants.AGGREGATOR_CONFIG_FILE_NAME;
 
-public class MetadataSourceConfigurationLoader implements ConfigSource {
+public class MetadataSourceConfigurationLoader {
 
     private String environment;
 
@@ -18,7 +18,6 @@ public class MetadataSourceConfigurationLoader implements ConfigSource {
         this.environment = environment;
     }
 
-    @Override
     public MetadataSourceConfiguration downloadConfig() throws ConfigSourceException {
         InputStream configFile = getClass().getClassLoader().getResourceAsStream(environment + "/" + AGGREGATOR_CONFIG_FILE_NAME);
 
