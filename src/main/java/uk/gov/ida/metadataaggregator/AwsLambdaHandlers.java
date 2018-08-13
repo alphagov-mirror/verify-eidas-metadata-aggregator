@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.metadataaggregator.apigateway.ApiGatewayProxyResponse;
 import uk.gov.ida.metadataaggregator.apigateway.ApiGatewayRequest;
-import uk.gov.ida.metadataaggregator.config.EnvironmentFileConfigSource;
+import uk.gov.ida.metadataaggregator.config.MetadataSourceConfigurationLoader;
 import uk.gov.ida.metadataaggregator.config.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataCurler;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataSource;
@@ -80,7 +80,7 @@ public class AwsLambdaHandlers {
     private boolean isMetadataAggregatorSuccessful(CountryMetadataSource countryMetadataSource) throws EnvironmentVariableException {
         S3BucketClient s3BucketClient = getS3BucketClient();
         String environmentVariable = getEnvironmentVariable(ENVIRONMENT_KEY);
-        EnvironmentFileConfigSource environmentFileConfigSource = new EnvironmentFileConfigSource(environmentVariable);
+        MetadataSourceConfigurationLoader environmentFileConfigSource = new MetadataSourceConfigurationLoader(environmentVariable);
 
         return new MetadataAggregator(environmentFileConfigSource, countryMetadataSource, s3BucketClient).aggregateMetadata();
     }

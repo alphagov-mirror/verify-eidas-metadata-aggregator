@@ -10,17 +10,16 @@ import java.util.stream.Collectors;
 
 import static uk.gov.ida.metadataaggregator.LambdaConstants.AGGREGATOR_CONFIG_FILE_NAME;
 
-public class EnvironmentFileConfigSource implements ConfigSource {
+public class MetadataSourceConfigurationLoader implements ConfigSource {
 
     private String environment;
 
-    public EnvironmentFileConfigSource(String environment) {
+    public MetadataSourceConfigurationLoader(String environment) {
         this.environment = environment;
     }
 
     @Override
     public MetadataSourceConfiguration downloadConfig() throws ConfigSourceException {
-
         InputStream configFile = getClass().getClassLoader().getResourceAsStream(environment + "/" + AGGREGATOR_CONFIG_FILE_NAME);
 
         if (configFile == null) {
