@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.core.util.Duration;
-import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
+import uk.gov.ida.metadataaggregator.config.MetadataSourceConfiguration;
 import uk.gov.ida.saml.metadata.EidasTrustAnchorResolver;
 import uk.gov.ida.saml.metadata.ExpiredCertificateMetadataFilter;
 import uk.gov.ida.saml.metadata.PKIXSignatureValidationFilterProvider;
@@ -53,7 +53,7 @@ public class CountryMetadataValidatingResolver implements CountryMetadataSource 
         this.clientBuilder = clientBuilder;
     }
 
-    public static CountryMetadataValidatingResolver build(AggregatorConfig testObject, String password, String eidasTrustAnchorUriString) throws MetadataSourceException {
+    public static CountryMetadataValidatingResolver build(MetadataSourceConfiguration testObject, String password, String eidasTrustAnchorUriString) throws MetadataSourceException {
         KeyStore trustStore;
         try (InputStream stream = new StringInputStream(testObject.getKeyStore())) {
             trustStore = KeyStore.getInstance(JKS);

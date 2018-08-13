@@ -3,7 +3,7 @@ package uk.gov.ida.metadataaggregator;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
+import uk.gov.ida.metadataaggregator.config.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.config.ConfigSource;
 import uk.gov.ida.metadataaggregator.config.ConfigSourceException;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataSource;
@@ -33,7 +33,7 @@ public class MetadataAggregator {
     }
 
     public boolean aggregateMetadata() {
-        AggregatorConfig config;
+        MetadataSourceConfiguration config;
         try {
             config = configSource.downloadConfig();
         } catch (ConfigSourceException e) {

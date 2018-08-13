@@ -19,7 +19,7 @@ public class EnvironmentFileConfigSource implements ConfigSource {
     }
 
     @Override
-    public AggregatorConfig downloadConfig() throws ConfigSourceException {
+    public MetadataSourceConfiguration downloadConfig() throws ConfigSourceException {
 
         InputStream configFile = getClass().getClassLoader().getResourceAsStream(environment + "/" + AGGREGATOR_CONFIG_FILE_NAME);
 
@@ -31,7 +31,7 @@ public class EnvironmentFileConfigSource implements ConfigSource {
                 .lines().collect(Collectors.joining("\n"));
 
         try {
-            return new ObjectMapper().readValue(result, AggregatorConfig.class);
+            return new ObjectMapper().readValue(result, MetadataSourceConfiguration.class);
         } catch (IOException e) {
             throw new ConfigSourceException("Unable to deserialise config file", e);
         }

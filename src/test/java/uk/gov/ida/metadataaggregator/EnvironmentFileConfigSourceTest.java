@@ -4,7 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.opensaml.core.config.InitializationException;
 import org.opensaml.core.config.InitializationService;
-import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
+import uk.gov.ida.metadataaggregator.config.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.config.ConfigSourceException;
 import uk.gov.ida.metadataaggregator.config.EnvironmentFileConfigSource;
 
@@ -37,7 +37,7 @@ public class EnvironmentFileConfigSourceTest {
 
     @Test
     public void shouldLocateTestConfigFileAndMapIntoConfigObject() throws ConfigSourceException {
-        AggregatorConfig aggregatorConfig = new EnvironmentFileConfigSource(TEST_JSON_DIRECTORY).downloadConfig();
+        MetadataSourceConfiguration aggregatorConfig = new EnvironmentFileConfigSource(TEST_JSON_DIRECTORY).downloadConfig();
 
         Collection<URL> metadataUrls = aggregatorConfig.getMetadataUrls().values();
 

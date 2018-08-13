@@ -4,7 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.opensaml.core.config.InitializationException;
 import org.opensaml.core.config.InitializationService;
-import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
+import uk.gov.ida.metadataaggregator.config.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.config.ConfigSourceException;
 import uk.gov.ida.metadataaggregator.config.EnvironmentFileConfigSource;
 
@@ -27,7 +27,7 @@ public class EnvironmentConfigTest {
 
     @Test
     public void shouldLocateJointConfigFileAndSuccessfullyDeserialize() throws ConfigSourceException {
-        AggregatorConfig aggregatorConfig = new EnvironmentFileConfigSource(JOINT).downloadConfig();
+        MetadataSourceConfiguration aggregatorConfig = new EnvironmentFileConfigSource(JOINT).downloadConfig();
 
         Collection<URL> metadataUrls = aggregatorConfig.getMetadataUrls().values();
 
@@ -36,7 +36,7 @@ public class EnvironmentConfigTest {
 
     @Test
     public void shouldLocateProdConfigFileAndSuccessfullyDeserialize() throws ConfigSourceException {
-        AggregatorConfig aggregatorConfig = new EnvironmentFileConfigSource(PROD).downloadConfig();
+        MetadataSourceConfiguration aggregatorConfig = new EnvironmentFileConfigSource(PROD).downloadConfig();
 
         Collection<URL> metadataUrls = aggregatorConfig.getMetadataUrls().values();
 
@@ -45,7 +45,7 @@ public class EnvironmentConfigTest {
 
     @Test
     public void shouldLocateStagingConfigFileAndSuccessfullyDeserialize() throws ConfigSourceException {
-        AggregatorConfig aggregatorConfig = new EnvironmentFileConfigSource(STAGING).downloadConfig();
+        MetadataSourceConfiguration aggregatorConfig = new EnvironmentFileConfigSource(STAGING).downloadConfig();
 
         Collection<URL> metadataUrls = aggregatorConfig.getMetadataUrls().values();
 
@@ -54,7 +54,7 @@ public class EnvironmentConfigTest {
 
     @Test
     public void shouldLocateIntegrationConfigFileAndSuccessfullyDeserialize() throws ConfigSourceException {
-        AggregatorConfig aggregatorConfig = new EnvironmentFileConfigSource(INTEGRATION).downloadConfig();
+        MetadataSourceConfiguration aggregatorConfig = new EnvironmentFileConfigSource(INTEGRATION).downloadConfig();
 
         Collection<URL> metadataUrls = aggregatorConfig.getMetadataUrls().values();
 

@@ -4,5 +4,6 @@
     "Test metadata2": "https://test.metadata.two/ServiceMetadata",
     "Test metadata3": "https://test.metadata.three/ServiceMetadata",
     "Test metadata4": "https://test.metadata.four/ServiceMetadata"
-  }
+  },
+  "keyStore": ""
 }

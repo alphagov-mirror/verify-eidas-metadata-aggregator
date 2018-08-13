@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.metadataaggregator.apigateway.ApiGatewayProxyResponse;
 import uk.gov.ida.metadataaggregator.apigateway.ApiGatewayRequest;
-import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
+import uk.gov.ida.metadataaggregator.config.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.config.EnvironmentFileConfigSource;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataCurler;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataSource;
@@ -49,7 +49,7 @@ public class AwsLambdaHandlers {
         }
     }
 
-    public void s3BucketLambda(AggregatorConfig testObject) {
+    public void s3BucketLambda(MetadataSourceConfiguration testObject) {
 
         try {
             CountryMetadataCurler countryMetadataCurler = new CountryMetadataCurler();
@@ -64,7 +64,7 @@ public class AwsLambdaHandlers {
         }
     }
 
-    public void s3BucketValidatingLambda(AggregatorConfig configObject) {
+    public void s3BucketValidatingLambda(MetadataSourceConfiguration configObject) {
 
         try {
             CountryMetadataValidatingResolver validatingResolver = getValidatingResolver(configObject);
@@ -87,7 +87,7 @@ public class AwsLambdaHandlers {
         return new MetadataAggregator(environmentFileConfigSource, countryMetadataSource, s3BucketClient).aggregateMetadata();
     }
 
-    private CountryMetadataValidatingResolver getValidatingResolver(AggregatorConfig configObject) throws EnvironmentVariableException, MetadataSourceException {
+    private CountryMetadataValidatingResolver getValidatingResolver(MetadataSourceConfiguration configObject) throws EnvironmentVariableException, MetadataSourceException {
         String password = getEnvironmentVariable(TRUST_ANCHOR_PASSCODE);
         String eidasTrustAnchorUriString = getEnvironmentVariable(TRUST_ANCHOR_URI);
 

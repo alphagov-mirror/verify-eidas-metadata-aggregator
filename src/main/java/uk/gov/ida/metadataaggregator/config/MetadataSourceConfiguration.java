@@ -2,21 +2,20 @@ package uk.gov.ida.metadataaggregator.config;
 
 import java.io.Serializable;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
 
-public class AggregatorConfig implements Serializable {
+public class MetadataSourceConfiguration implements Serializable {
 
     private Map<String, URL> metadataUrls;
     private String keyStore;
 
     @SuppressWarnings("unused")
-    public AggregatorConfig() {
+    public MetadataSourceConfiguration() {
     }
 
     @SuppressWarnings("unused")
-    public AggregatorConfig(Map<String, URL> metadataUrls,
-                            String keyStore) {
+    public MetadataSourceConfiguration(Map<String, URL> metadataUrls,
+                                       String keyStore) {
         this.metadataUrls = metadataUrls;
         this.keyStore = keyStore;
     }

@@ -3,7 +3,7 @@ package uk.gov.ida.metadataaggregator;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
-import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
+import uk.gov.ida.metadataaggregator.config.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.config.ConfigSource;
 import uk.gov.ida.metadataaggregator.config.ConfigSourceException;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataSource;
@@ -63,7 +63,7 @@ public class MetadataAggregatorTest {
         urlList.put(testKey1, testUrl1);
 
         when(testConfigSource.downloadConfig())
-                .thenReturn(new AggregatorConfig(urlList, null));
+                .thenReturn(new MetadataSourceConfiguration(urlList, null));
         when(testMetadataSource.downloadMetadata(testUrl1)).thenReturn(testMetadata1);
 
         testAggregator.aggregateMetadata();
@@ -79,7 +79,7 @@ public class MetadataAggregatorTest {
         urlList.put(testKey2, testUrl2);
 
         when(testConfigSource.downloadConfig())
-                .thenReturn(new AggregatorConfig(urlList, null));
+                .thenReturn(new MetadataSourceConfiguration(urlList, null));
         when(testMetadataSource.downloadMetadata(testUrl1)).thenReturn(testMetadata1);
         when(testMetadataSource.downloadMetadata(testUrl2)).thenReturn(testMetadata2);
 
@@ -108,7 +108,7 @@ public class MetadataAggregatorTest {
         urlList.put(unsuccessfulKey, unsuccessfulUrl);
 
         when(testConfigSource.downloadConfig())
-                .thenReturn(new AggregatorConfig(urlList, null));
+                .thenReturn(new MetadataSourceConfiguration(urlList, null));
         when(testMetadataSource.downloadMetadata(unsuccessfulUrl)).thenThrow(new MetadataSourceException("Metadata source exception"));
 
         testAggregator.aggregateMetadata();
@@ -124,7 +124,7 @@ public class MetadataAggregatorTest {
         urlList.put(successfulKey, successfulUrl);
 
         when(testConfigSource.downloadConfig())
-                .thenReturn(new AggregatorConfig(urlList, null));
+                .thenReturn(new MetadataSourceConfiguration(urlList, null));
         when(testMetadataSource.downloadMetadata(unsuccessfulUrl)).thenThrow(new MetadataSourceException("Metadata source exception"));
         when(testMetadataSource.downloadMetadata(successfulUrl)).thenReturn(successfulMetadata);
 
@@ -141,7 +141,7 @@ public class MetadataAggregatorTest {
         urlList.put(successfulKey, successfulUrl);
 
         when(testConfigSource.downloadConfig())
-                .thenReturn(new AggregatorConfig(urlList, null));
+                .thenReturn(new MetadataSourceConfiguration(urlList, null));
         when(testMetadataSource.downloadMetadata(unsuccessfulUrl)).thenReturn(unsuccessfulMetadata);
         when(testMetadataSource.downloadMetadata(successfulUrl)).thenReturn(successfulMetadata);
 
@@ -160,7 +160,7 @@ public class MetadataAggregatorTest {
         urlList.put(unsuccessfulKey, unsuccessfulUrl);
 
         when(testConfigSource.downloadConfig())
-                .thenReturn(new AggregatorConfig(urlList, null));
+                .thenReturn(new MetadataSourceConfiguration(urlList, null));
         doThrow(new MetadataSourceException("Metadata source failed"))
                 .when(testMetadataSource).downloadMetadata(unsuccessfulUrl);
 
@@ -178,7 +178,7 @@ public class MetadataAggregatorTest {
         EntityDescriptor unsuccessfulMetadata = mock(EntityDescriptor.class);
 
         when(testConfigSource.downloadConfig())
-                .thenReturn(new AggregatorConfig(urlList, null));
+                .thenReturn(new MetadataSourceConfiguration(urlList, null));
         when(testMetadataSource.downloadMetadata(unsuccessfulUrl)).thenReturn(unsuccessfulMetadata);
 
         doThrow(new MetadataStoreException("Metadata store failed"))
@@ -196,7 +196,7 @@ public class MetadataAggregatorTest {
         urlList.put(unsuccessfulKey, unsuccessfulUrl);
 
         when(testConfigSource.downloadConfig())
-                .thenReturn(new AggregatorConfig(urlList, null));
+                .thenReturn(new MetadataSourceConfiguration(urlList, null));
 
         doThrow(new MetadataSourceException("Download metadata has failed"))
                 .when(testMetadataSource).downloadMetadata(unsuccessfulUrl);
@@ -218,7 +218,7 @@ public class MetadataAggregatorTest {
         EntityDescriptor successfulMetadata = mock(EntityDescriptor.class);
 
         when(testConfigSource.downloadConfig())
-                .thenReturn(new AggregatorConfig(urlList, null));
+                .thenReturn(new MetadataSourceConfiguration(urlList, null));
         when(testMetadataSource.downloadMetadata(successfulUrl)).thenReturn(successfulMetadata);
 
         doThrow(new MetadataSourceException("Download metadata has failed"))
@@ -244,7 +244,7 @@ public class MetadataAggregatorTest {
         s3BucketUrls.add(HexUtils.encodeString(testUrl3.toString()));
 
         when(testConfigSource.downloadConfig())
-                .thenReturn(new AggregatorConfig(urlList, null));
+                .thenReturn(new MetadataSourceConfiguration(urlList, null));
         when(testMetadataSource.downloadMetadata(testUrl1)).thenReturn(testMetadata1);
         when(testMetadataSource.downloadMetadata(testUrl2)).thenReturn(testMetadata2);
         when(testMetadataStore.getAllHexEncodedUrlsFromS3Bucket()).thenReturn(s3BucketUrls);
@@ -263,7 +263,7 @@ public class MetadataAggregatorTest {
         urlList.put(testKey2, testUrl2);
 
         when(testConfigSource.downloadConfig())
-                .thenReturn(new AggregatorConfig(urlList, null));
+                .thenReturn(new MetadataSourceConfiguration(urlList, null));
         doThrow(new MetadataStoreException("Unable to retrieve keys from S3 Bucket"))
                 .when(testMetadataStore).getAllHexEncodedUrlsFromS3Bucket();
         when(testMetadataSource.downloadMetadata(testUrl1)).thenReturn(testMetadata1);
