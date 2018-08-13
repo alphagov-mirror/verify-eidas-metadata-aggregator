@@ -4,7 +4,7 @@ import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.metadataaggregator.config.MetadataSourceConfiguration;
-import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataSource;
+import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataResolver;
 import uk.gov.ida.metadataaggregator.metadatasource.MetadataSourceException;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStore;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStoreException;
@@ -19,15 +19,15 @@ public class MetadataAggregator {
     private static final Logger LOGGER = LoggerFactory.getLogger(MetadataAggregator.class);
 
     private final MetadataSourceConfiguration configuration;
-    private final CountryMetadataSource countryMetadataCurler;
+    private final CountryMetadataResolver countryMetadataResolver;
     private final MetadataStore metadataStore;
 
     public MetadataAggregator(MetadataSourceConfiguration configuration,
-                              CountryMetadataSource countryMetadataCurler,
+                              CountryMetadataResolver countryMetadataResolver,
                               MetadataStore metadataStore) {
         this.configuration = configuration;
         this.metadataStore = metadataStore;
-        this.countryMetadataCurler = countryMetadataCurler;
+        this.countryMetadataResolver = countryMetadataResolver;
     }
 
     public boolean aggregateMetadata() {
@@ -51,7 +51,7 @@ public class MetadataAggregator {
     private boolean processMetadataFrom(URL metadataUrl) {
         EntityDescriptor countryMetadataFile;
         try {
-            countryMetadataFile = countryMetadataCurler.downloadMetadata(metadataUrl);
+            countryMetadataFile = countryMetadataResolver.downloadMetadata(metadataUrl);
         } catch (MetadataSourceException e) {
             LOGGER.error("Error downloading metadatasource file {}", metadataUrl, e);
             deleteMetadataWithHexEncodedMetadataUrl(HexUtils.encodeString(metadataUrl.toString()));

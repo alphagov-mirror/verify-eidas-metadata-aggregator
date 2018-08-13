@@ -4,8 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import uk.gov.ida.metadataaggregator.config.MetadataSourceConfiguration;
-import uk.gov.ida.metadataaggregator.config.MetadataSourceConfigurationLoader;
-import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataSource;
+import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataResolver;
 import uk.gov.ida.metadataaggregator.metadatasource.MetadataSourceException;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStore;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStoreException;
@@ -27,7 +26,7 @@ import static org.mockito.Mockito.when;
 public class MetadataAggregatorTest {
 
     private final MetadataSourceConfiguration testMetadataSourceConfiguration = mock(MetadataSourceConfiguration.class);
-    private final CountryMetadataSource testMetadataSource = mock(CountryMetadataSource.class);
+    private final CountryMetadataResolver testMetadataSource = mock(CountryMetadataResolver.class);
     private final MetadataStore testMetadataStore = mock(MetadataStore.class);
     private MetadataAggregator testAggregator;
     private HashMap<String, URL> urlList;

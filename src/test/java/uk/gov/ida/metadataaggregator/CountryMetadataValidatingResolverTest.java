@@ -14,7 +14,7 @@ import org.opensaml.core.config.InitializationException;
 import org.opensaml.core.config.InitializationService;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.opensaml.security.credential.Credential;
-import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataValidatingResolver;
+import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataResolver;
 import uk.gov.ida.metadataaggregator.metadatasource.MetadataSourceException;
 import uk.gov.ida.saml.core.test.PemCertificateStrings;
 import uk.gov.ida.saml.core.test.TestCertificateStrings;
@@ -50,7 +50,7 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class CountryMetadataValidatingResolverTest {
 
-    private CountryMetadataValidatingResolver metadataValidatingResolver;
+    private CountryMetadataResolver metadataValidatingResolver;
     private JWK trustAnchor = mock(JWK.class);
     private Map<String, JWK> trustAnchorMap;
 
@@ -91,7 +91,7 @@ public class CountryMetadataValidatingResolverTest {
         STUB_COUNTRY_ONE_METADATA_LOCATION = new URL(TestEntityIds.STUB_COUNTRY_ONE);
 
         trustAnchorMap = new HashMap<String, JWK>();
-        metadataValidatingResolver = new CountryMetadataValidatingResolver(trustAnchorMap, clientBuilder);
+        metadataValidatingResolver = new CountryMetadataResolver(trustAnchorMap, clientBuilder);
         when(trustAnchor.getKeyStore()).thenReturn(loadKeyStore(CACertificates.TEST_ROOT_CA, CACertificates.TEST_METADATA_CA, PemCertificateStrings.STUB_COUNTRY_PUBLIC_SIGNING_CERT));
         when(clientBuilder.build()).thenReturn(client);
     }

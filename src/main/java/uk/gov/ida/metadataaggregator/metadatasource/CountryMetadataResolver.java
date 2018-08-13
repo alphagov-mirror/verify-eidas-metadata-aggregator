@@ -31,8 +31,8 @@ import java.util.stream.Collectors;
 
 import static com.google.common.base.Functions.identity;
 
-public class CountryMetadataValidatingResolver implements CountryMetadataSource {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CountryMetadataValidatingResolver.class);
+public class CountryMetadataResolver {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CountryMetadataResolver.class);
 
     // We don't want to refresh ever, but cannot specify zero milliseconds as it can lead to negative durations
     // and also can't specify Long.MAX_VALUE because it'll give bad values when subtracted. So just specify a long time.
@@ -41,12 +41,12 @@ public class CountryMetadataValidatingResolver implements CountryMetadataSource 
     private final Map<String, JWK> trustAnchors;
     private ClientBuilder clientBuilder;
 
-    public CountryMetadataValidatingResolver(Map<String, JWK> trustAnchors, ClientBuilder clientBuilder) {
+    public CountryMetadataResolver(Map<String, JWK> trustAnchors, ClientBuilder clientBuilder) {
         this.trustAnchors = trustAnchors;
         this.clientBuilder = clientBuilder;
     }
 
-    public static CountryMetadataValidatingResolver fromTrustAnchor(EidasTrustAnchorResolver trustAnchorResolver) throws MetadataSourceException {
+    public static CountryMetadataResolver fromTrustAnchor(EidasTrustAnchorResolver trustAnchorResolver) throws MetadataSourceException {
         Map<String, JWK> trustAnchors;
         try {
             trustAnchors =
@@ -55,14 +55,13 @@ public class CountryMetadataValidatingResolver implements CountryMetadataSource 
                     .stream()
                     .collect(Collectors.toMap(JWK::getKeyID, identity()));
         } catch (GeneralSecurityException | ParseException | JOSEException e) {
-            LOGGER.error("Error creating CountryMetadataValidatingResolver", e);
-            throw new MetadataSourceException("Error creating CountryMetadataValidatingResolver", e);
+            LOGGER.error("Error creating CountryMetadataResolver", e);
+            throw new MetadataSourceException("Error creating CountryMetadataResolver", e);
         }
 
-        return new CountryMetadataValidatingResolver(trustAnchors, ClientBuilder.newBuilder());
+        return new CountryMetadataResolver(trustAnchors, ClientBuilder.newBuilder());
     }
 
-    @Override
     public EntityDescriptor downloadMetadata(URL url) throws MetadataSourceException {
         MetadataResolver metadataResolver;
         try {
