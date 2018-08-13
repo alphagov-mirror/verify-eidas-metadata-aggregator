@@ -1,13 +1,13 @@
 package uk.gov.ida.metadataaggregator;
 
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.metadataaggregator.apigateway.ApiGatewayProxyResponse;
 import uk.gov.ida.metadataaggregator.apigateway.ApiGatewayRequest;
-import uk.gov.ida.metadataaggregator.config.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.config.EnvironmentFileConfigSource;
+import uk.gov.ida.metadataaggregator.config.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataCurler;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataSource;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataValidatingResolver;
@@ -15,8 +15,6 @@ import uk.gov.ida.metadataaggregator.metadatasource.MetadataSourceException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import static uk.gov.ida.metadataaggregator.LambdaConstants.AWS_ACCESS_KEY;
-import static uk.gov.ida.metadataaggregator.LambdaConstants.AWS_SECRET_KEY;
 import static uk.gov.ida.metadataaggregator.LambdaConstants.BUCKET_NAME;
 import static uk.gov.ida.metadataaggregator.LambdaConstants.ENVIRONMENT_KEY;
 import static uk.gov.ida.metadataaggregator.LambdaConstants.SERVER_ERROR_STATUS_CODE;
@@ -95,16 +93,13 @@ public class AwsLambdaHandlers {
     }
 
     private S3BucketClient getS3BucketClient() throws EnvironmentVariableException {
-        String awsAccessKey = getEnvironmentVariable(AWS_ACCESS_KEY);
-        String awsSecretKey = getEnvironmentVariable(AWS_SECRET_KEY);
         String bucketName = getEnvironmentVariable(BUCKET_NAME);
 
         return new S3BucketClient(
                 bucketName,
-                new AmazonS3Client(new BasicAWSCredentials(
-                        awsAccessKey,
-                        awsSecretKey)
-                )
+                AmazonS3ClientBuilder.standard()
+                    .withCredentials(new EnvironmentVariableCredentialsProvider())
+                    .build()
         );
     }
 
