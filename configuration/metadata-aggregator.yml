@@ -45,3 +45,5 @@ trustStore:
   password: ${TRUSTSTORE_PASSWORD}
 
 s3BucketName: ${S3_BUCKET_NAME}
+
+metadataSourcesFile: ${METADATA_SOURCES_FILE}

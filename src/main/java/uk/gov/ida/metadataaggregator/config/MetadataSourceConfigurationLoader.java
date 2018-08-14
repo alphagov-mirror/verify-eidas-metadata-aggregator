@@ -1,6 +1,7 @@
 package uk.gov.ida.metadataaggregator.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,6 +15,7 @@ public class MetadataSourceConfigurationLoader {
 
     private String environment;
 
+    @Inject
     public MetadataSourceConfigurationLoader(String environment) {
         this.environment = environment;
     }

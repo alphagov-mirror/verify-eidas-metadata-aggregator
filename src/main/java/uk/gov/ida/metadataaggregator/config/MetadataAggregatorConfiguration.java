@@ -27,6 +27,10 @@ public class MetadataAggregatorConfiguration extends Configuration {
     @JsonProperty
     private String s3BucketName;
 
+    @Valid
+    @JsonProperty
+    private String metadataSourcesFile;
+
     protected MetadataAggregatorConfiguration() { }
 
     public URI getTrustAnchorUri() {
@@ -40,4 +44,6 @@ public class MetadataAggregatorConfiguration extends Configuration {
     public String getS3BucketName() {
         return s3BucketName;
     }
+
+    public String getMetadataSourcesFile() { return metadataSourcesFile; }
 }
