@@ -1,0 +1,7 @@
+{
+  "metadataUrls": {
+    "Test metadata1": "https://test.metadata.one/ServiceMetadata",
+    "Test metadata2": "https://test.metadata.two/ServiceMetadata"
+  },
+  "keyStore": ""
+}

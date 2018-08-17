@@ -1,6 +1,5 @@
 package uk.gov.ida.metadataaggregator.metadatasource;
 
-import com.amazonaws.util.StringInputStream;
 import com.google.common.collect.ImmutableList;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
@@ -15,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.core.util.Duration;
-import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
 import uk.gov.ida.saml.metadata.EidasTrustAnchorResolver;
 import uk.gov.ida.saml.metadata.ExpiredCertificateMetadataFilter;
 import uk.gov.ida.saml.metadata.PKIXSignatureValidationFilterProvider;
@@ -23,13 +21,9 @@ import uk.gov.ida.saml.metadata.factories.MetadataResolverFactory;
 
 import javax.inject.Provider;
 import javax.ws.rs.client.ClientBuilder;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
-import java.security.KeyStore;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
@@ -37,9 +31,8 @@ import java.util.stream.Collectors;
 
 import static com.google.common.base.Functions.identity;
 
-public class CountryMetadataValidatingResolver implements CountryMetadataSource {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CountryMetadataValidatingResolver.class);
-    private static final String JKS = "JKS";
+public class CountryMetadataResolver {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CountryMetadataResolver.class);
 
     // We don't want to refresh ever, but cannot specify zero milliseconds as it can lead to negative durations
     // and also can't specify Long.MAX_VALUE because it'll give bad values when subtracted. So just specify a long time.
@@ -48,43 +41,27 @@ public class CountryMetadataValidatingResolver implements CountryMetadataSource 
     private final Map<String, JWK> trustAnchors;
     private ClientBuilder clientBuilder;
 
-    public CountryMetadataValidatingResolver(Map<String, JWK> trustAnchors, ClientBuilder clientBuilder) {
+    public CountryMetadataResolver(Map<String, JWK> trustAnchors, ClientBuilder clientBuilder) {
         this.trustAnchors = trustAnchors;
         this.clientBuilder = clientBuilder;
     }
 
-    public static CountryMetadataValidatingResolver build(AggregatorConfig testObject, String password, String eidasTrustAnchorUriString) throws MetadataSourceException {
-        KeyStore trustStore;
-        try (InputStream stream = new StringInputStream(testObject.getKeyStore())) {
-            trustStore = KeyStore.getInstance(JKS);
-            trustStore.load(stream, password.toCharArray());
-        } catch (IOException e) {
-            throw new MetadataSourceException("Unable to read key store string", e);
-        } catch (GeneralSecurityException e) {
-            throw new MetadataSourceException("Error building trust store", e);
-        }
-
-        EidasTrustAnchorResolver trustAnchorResolver = new EidasTrustAnchorResolver(
-                URI.create(eidasTrustAnchorUriString),
-                ClientBuilder.newClient(),
-                trustStore);
-
+    public static CountryMetadataResolver fromTrustAnchor(EidasTrustAnchorResolver trustAnchorResolver) throws MetadataSourceException {
         Map<String, JWK> trustAnchors;
         try {
             trustAnchors =
-                    trustAnchorResolver
-                            .getTrustAnchors()
-                            .stream()
-                            .collect(Collectors.toMap(JWK::getKeyID, identity()));
+                trustAnchorResolver
+                    .getTrustAnchors()
+                    .stream()
+                    .collect(Collectors.toMap(JWK::getKeyID, identity()));
         } catch (GeneralSecurityException | ParseException | JOSEException e) {
-            LOGGER.error("Error creating CountryMetadataValidatingResolver. Exception: %s. Message: %s.", e.getClass(), e.getMessage());
-            throw new MetadataSourceException("Error creating CountryMetadataValidatingResolver", e);
+            LOGGER.error("Error creating CountryMetadataResolver", e);
+            throw new MetadataSourceException("Error creating CountryMetadataResolver", e);
         }
 
-        return new CountryMetadataValidatingResolver(trustAnchors, ClientBuilder.newBuilder());
+        return new CountryMetadataResolver(trustAnchors, ClientBuilder.newBuilder());
     }
 
-    @Override
     public EntityDescriptor downloadMetadata(URL url) throws MetadataSourceException {
         MetadataResolver metadataResolver;
         try {
@@ -117,20 +94,20 @@ public class CountryMetadataValidatingResolver implements CountryMetadataSource 
         }
 
         Provider<SignatureValidationFilter> pkixSignatureValidationFilterProvider =
-                new PKIXSignatureValidationFilterProvider(trustAnchors.get(url.toString()).getKeyStore());
+            new PKIXSignatureValidationFilterProvider(trustAnchors.get(url.toString()).getKeyStore());
 
         List<MetadataFilter> metadataFilters =
-                ImmutableList.of(
-                        pkixSignatureValidationFilterProvider.get(),
-                        new ExpiredCertificateMetadataFilter()
-                );
+            ImmutableList.of(
+                pkixSignatureValidationFilterProvider.get(),
+                new ExpiredCertificateMetadataFilter()
+            );
 
         return new MetadataResolverFactory().create(
-                clientBuilder.build(),
-                url.toURI(),
-                metadataFilters,
-                REFRESH_DELAY,
-                REFRESH_DELAY
+            clientBuilder.build(),
+            url.toURI(),
+            metadataFilters,
+            REFRESH_DELAY,
+            REFRESH_DELAY
         );
     }
 }

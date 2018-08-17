@@ -3,10 +3,8 @@ package uk.gov.ida.metadataaggregator;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
-import uk.gov.ida.metadataaggregator.config.ConfigSource;
-import uk.gov.ida.metadataaggregator.config.ConfigSourceException;
-import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataSource;
+import uk.gov.ida.metadataaggregator.config.MetadataSourceConfiguration;
+import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataResolver;
 import uk.gov.ida.metadataaggregator.metadatasource.MetadataSourceException;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStore;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStoreException;
@@ -20,31 +18,23 @@ public class MetadataAggregator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MetadataAggregator.class);
 
-    private final ConfigSource configSource;
-    private final CountryMetadataSource countryMetadataCurler;
+    private final MetadataSourceConfiguration configuration;
+    private final CountryMetadataResolver countryMetadataResolver;
     private final MetadataStore metadataStore;
 
-    public MetadataAggregator(ConfigSource configSource,
-                              CountryMetadataSource countryMetadataCurler,
+    public MetadataAggregator(MetadataSourceConfiguration configuration,
+                              CountryMetadataResolver countryMetadataResolver,
                               MetadataStore metadataStore) {
-        this.configSource = configSource;
+        this.configuration = configuration;
         this.metadataStore = metadataStore;
-        this.countryMetadataCurler = countryMetadataCurler;
+        this.countryMetadataResolver = countryMetadataResolver;
     }
 
     public boolean aggregateMetadata() {
-        AggregatorConfig config;
-        try {
-            config = configSource.downloadConfig();
-        } catch (ConfigSourceException e) {
-            LOGGER.error("Metadata Aggregator error - Unable to download Aggregator Config file", e);
-            return false;
-        }
-
         LOGGER.info("Processing country metadatasource");
 
         int successfulUploads = 0;
-        Collection<URL> configMetadataUrls = config.getMetadataUrls().values();
+        Collection<URL> configMetadataUrls = configuration.getMetadataUrls().values();
 
         deleteMetadataWhichIsNotInConfig(configMetadataUrls);
 
@@ -61,7 +51,7 @@ public class MetadataAggregator {
     private boolean processMetadataFrom(URL metadataUrl) {
         EntityDescriptor countryMetadataFile;
         try {
-            countryMetadataFile = countryMetadataCurler.downloadMetadata(metadataUrl);
+            countryMetadataFile = countryMetadataResolver.downloadMetadata(metadataUrl);
         } catch (MetadataSourceException e) {
             LOGGER.error("Error downloading metadatasource file {}", metadataUrl, e);
             deleteMetadataWithHexEncodedMetadataUrl(HexUtils.encodeString(metadataUrl.toString()));

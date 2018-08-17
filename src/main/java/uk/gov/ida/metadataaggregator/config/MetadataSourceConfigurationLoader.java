@@ -1,6 +1,7 @@
 package uk.gov.ida.metadataaggregator.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Inject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,19 +9,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
-import static uk.gov.ida.metadataaggregator.LambdaConstants.AGGREGATOR_CONFIG_FILE_NAME;
+import static uk.gov.ida.metadataaggregator.Constants.AGGREGATOR_CONFIG_FILE_NAME;
 
-public class EnvironmentFileConfigSource implements ConfigSource {
+public class MetadataSourceConfigurationLoader {
 
     private String environment;
 
-    public EnvironmentFileConfigSource(String environment) {
+    @Inject
+    public MetadataSourceConfigurationLoader(String environment) {
         this.environment = environment;
     }
 
-    @Override
-    public AggregatorConfig downloadConfig() throws ConfigSourceException {
-
+    public MetadataSourceConfiguration downloadConfig() throws ConfigSourceException {
         InputStream configFile = getClass().getClassLoader().getResourceAsStream(environment + "/" + AGGREGATOR_CONFIG_FILE_NAME);
 
         if (configFile == null) {
@@ -31,7 +31,7 @@ public class EnvironmentFileConfigSource implements ConfigSource {
                 .lines().collect(Collectors.joining("\n"));
 
         try {
-            return new ObjectMapper().readValue(result, AggregatorConfig.class);
+            return new ObjectMapper().readValue(result, MetadataSourceConfiguration.class);
         } catch (IOException e) {
             throw new ConfigSourceException("Unable to deserialise config file", e);
         }
