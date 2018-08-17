@@ -2,5 +2,3 @@ CEF Proxy Node:
   url: https://cef-proxy-node-eidas-joint.cloudapps.digital/ServiceMetadata
 Stub Country:
   url: https://ida-stub-idp-joint.cloudapps.digital/stub-country/ServiceMetadata
-German Middleware:
-  url: https://18.130.232.23:8443/eidas-middleware/Metadata
