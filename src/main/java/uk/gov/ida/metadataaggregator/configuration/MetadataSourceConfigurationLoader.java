@@ -10,7 +10,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
-import static uk.gov.ida.metadataaggregator.Constants.AGGREGATOR_CONFIG_FILE_NAME;
+import static uk.gov.ida.metadataaggregator.util.Constants.AGGREGATOR_CONFIG_FILE_NAME;
 
 public class MetadataSourceConfigurationLoader {
 

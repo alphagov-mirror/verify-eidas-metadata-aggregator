@@ -7,6 +7,7 @@ import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataResolver;
 import uk.gov.ida.metadataaggregator.exceptions.MetadataSourceException;
 import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
+import uk.gov.ida.metadataaggregator.util.HexUtils;
 
 import java.net.URL;
 import java.util.ArrayList;

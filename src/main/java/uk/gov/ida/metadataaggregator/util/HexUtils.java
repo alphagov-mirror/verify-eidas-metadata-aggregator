@@ -1,4 +1,4 @@
-package uk.gov.ida.metadataaggregator;
+package uk.gov.ida.metadataaggregator.util;
 
 import org.apache.commons.codec.binary.Hex;
 
