@@ -27,7 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class S3BucketClientTest {
+public class S3BucketMetadataStoreTest {
 
     private static final String TEST_BUCKET_NAME = "testBucketName";
     private static final String STUB_COUNTRY_ENTITY_ID = TestEntityIds.STUB_COUNTRY_ONE;
@@ -36,18 +36,18 @@ public class S3BucketClientTest {
 
 
     private AmazonS3 amazonS3Client;
-    private S3BucketClient s3BucketClient;
+    private S3BucketMetadataStore s3BucketMetadataStore;
 
     @Before
     public void setUp() throws InitializationException {
         InitializationService.initialize();
         amazonS3Client = mock(AmazonS3.class);
-        s3BucketClient = new S3BucketClient(TEST_BUCKET_NAME, amazonS3Client);
+        s3BucketMetadataStore = new S3BucketMetadataStore(TEST_BUCKET_NAME, amazonS3Client);
     }
 
     @Test
     public void shouldPutObjectIntoS3BucketUnderHexEncodedKey() throws MetadataStoreException {
-        s3BucketClient.uploadMetadata(HexUtils.encodeString(STUB_COUNTRY_ENTITY_ID), STUB_COUNTRY_METADATA);
+        s3BucketMetadataStore.uploadMetadata(HexUtils.encodeString(STUB_COUNTRY_ENTITY_ID), STUB_COUNTRY_METADATA);
 
         ArgumentCaptor<PutObjectRequest> putObjectRequestArgumentCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
         verify(amazonS3Client).putObject(putObjectRequestArgumentCaptor.capture());
@@ -58,12 +58,12 @@ public class S3BucketClientTest {
         when(amazonS3Client.putObject(any())).thenThrow(new RuntimeException());
 
         assertThatExceptionOfType(MetadataStoreException.class)
-                .isThrownBy(() -> s3BucketClient.uploadMetadata(STUB_COUNTRY_ENTITY_ID, STUB_COUNTRY_METADATA));
+                .isThrownBy(() -> s3BucketMetadataStore.uploadMetadata(STUB_COUNTRY_ENTITY_ID, STUB_COUNTRY_METADATA));
     }
 
     @Test
     public void shouldDeleteObjectFromS3Bucket() throws MetadataStoreException {
-        s3BucketClient.deleteMetadata(HexUtils.encodeString(STUB_COUNTRY_ENTITY_ID));
+        s3BucketMetadataStore.deleteMetadata(HexUtils.encodeString(STUB_COUNTRY_ENTITY_ID));
 
         ArgumentCaptor<DeleteObjectRequest> deleteObjectRequestArgumentCaptor = ArgumentCaptor.forClass(DeleteObjectRequest.class);
         verify(amazonS3Client).deleteObject(deleteObjectRequestArgumentCaptor.capture());
@@ -74,7 +74,7 @@ public class S3BucketClientTest {
         doThrow(new RuntimeException()).when(amazonS3Client).deleteObject(any());
 
         assertThatExceptionOfType(MetadataStoreException.class)
-                .isThrownBy(() -> s3BucketClient.deleteMetadata(HEX_ENCODED_METADATA_URL));
+                .isThrownBy(() -> s3BucketMetadataStore.deleteMetadata(HEX_ENCODED_METADATA_URL));
     }
 
     @Test
@@ -93,7 +93,7 @@ public class S3BucketClientTest {
         when(amazonS3Client.listObjects(TEST_BUCKET_NAME)).thenReturn(objectListing);
         when(objectListing.getObjectSummaries()).thenReturn(s3ObjectSummaries);
 
-        List<String> s3BucketKeys = s3BucketClient.getAllHexEncodedUrlsFromS3Bucket();
+        List<String> s3BucketKeys = s3BucketMetadataStore.getAllHexEncodedUrlsFromS3Bucket();
 
         assertThat(s3BucketKeys.get(0).contains(kid1));
         assertThat(s3BucketKeys.get(1).contains(kid2));
@@ -104,7 +104,7 @@ public class S3BucketClientTest {
         doThrow(new RuntimeException()).when(amazonS3Client).listObjects(TEST_BUCKET_NAME);
 
         assertThatExceptionOfType(MetadataStoreException.class)
-                .isThrownBy(() -> s3BucketClient.getAllHexEncodedUrlsFromS3Bucket());
+                .isThrownBy(() -> s3BucketMetadataStore.getAllHexEncodedUrlsFromS3Bucket());
     }
 
     private S3ObjectSummary createS3ObjectSummary(String key) {

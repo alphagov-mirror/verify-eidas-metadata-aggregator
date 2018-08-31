@@ -19,14 +19,14 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-class S3BucketClient {
+class S3BucketMetadataStore {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(S3BucketClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(S3BucketMetadataStore.class);
 
     private final String bucketName;
     private final AmazonS3 s3Client;
 
-    public S3BucketClient(String configBucket, AmazonS3 s3Client) {
+    public S3BucketMetadataStore(String configBucket, AmazonS3 s3Client) {
         this.bucketName = configBucket;
         this.s3Client = s3Client;
     }

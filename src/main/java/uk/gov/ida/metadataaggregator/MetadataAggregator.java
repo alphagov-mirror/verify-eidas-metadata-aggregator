@@ -19,13 +19,13 @@ public class MetadataAggregator {
 
     private final MetadataSourceConfiguration configuration;
     private final CountryMetadataResolver countryMetadataResolver;
-    private final S3BucketClient s3BucketClient;
+    private final S3BucketMetadataStore s3BucketMetadataStore;
 
     public MetadataAggregator(MetadataSourceConfiguration configuration,
                               CountryMetadataResolver countryMetadataResolver,
-                              S3BucketClient s3BucketClient) {
+                              S3BucketMetadataStore s3BucketMetadataStore) {
         this.configuration = configuration;
-        this.s3BucketClient = s3BucketClient;
+        this.s3BucketMetadataStore = s3BucketMetadataStore;
         this.countryMetadataResolver = countryMetadataResolver;
     }
 
@@ -58,7 +58,7 @@ public class MetadataAggregator {
         }
 
         try {
-            s3BucketClient.uploadMetadata(HexUtils.encodeString(metadataUrl.toString()), countryMetadataFile);
+            s3BucketMetadataStore.uploadMetadata(HexUtils.encodeString(metadataUrl.toString()), countryMetadataFile);
         } catch (MetadataStoreException e) {
             LOGGER.error("Error uploading metadatasource file {}", metadataUrl, e);
             deleteMetadataWithHexEncodedMetadataUrl(HexUtils.encodeString(metadataUrl.toString()));
@@ -86,7 +86,7 @@ public class MetadataAggregator {
     private List<String> getAllHexEncodedUrlsFromS3Bucket() {
         List<String> hexEncodedUrls = new ArrayList<>();
         try {
-            hexEncodedUrls = s3BucketClient.getAllHexEncodedUrlsFromS3Bucket();
+            hexEncodedUrls = s3BucketMetadataStore.getAllHexEncodedUrlsFromS3Bucket();
         } catch (MetadataStoreException e) {
             LOGGER.error("Metadata Aggregator error - Unable to retrieve keys from S3 bucket", e);
         }
@@ -95,7 +95,7 @@ public class MetadataAggregator {
 
     private void deleteMetadataWithHexEncodedMetadataUrl(String hexEncodedUrl) {
         try {
-            s3BucketClient.deleteMetadata(hexEncodedUrl);
+            s3BucketMetadataStore.deleteMetadata(hexEncodedUrl);
         } catch (MetadataStoreException e) {
             LOGGER.error("Error deleting metadatasource file with hexEncodedUrl: {}", hexEncodedUrl, e);
         }

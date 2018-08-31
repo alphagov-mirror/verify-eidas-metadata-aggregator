@@ -20,7 +20,7 @@ class MetadataAggregatorModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(S3BucketClient.class).to(uk.gov.ida.metadataaggregator.S3BucketClient.class);
+        bind(S3BucketMetadataStore.class).to(S3BucketMetadataStore.class);
     }
 
     @Provides
@@ -56,8 +56,8 @@ class MetadataAggregatorModule extends AbstractModule {
     }
 
     @Provides
-    private uk.gov.ida.metadataaggregator.S3BucketClient getS3BucketClient(MetadataAggregatorConfiguration configuration, AmazonS3 amazonS3Client) {
-        return new uk.gov.ida.metadataaggregator.S3BucketClient(configuration.getS3BucketName(), amazonS3Client);
+    private S3BucketMetadataStore getS3BucketClient(MetadataAggregatorConfiguration configuration, AmazonS3 amazonS3Client) {
+        return new S3BucketMetadataStore(configuration.getS3BucketName(), amazonS3Client);
     }
 
     @Provides
