@@ -1,4 +1,4 @@
-package uk.gov.ida.metadataaggregator.config;
+package uk.gov.ida.metadataaggregator.configuration;
 
 public class ConfigSourceException extends Exception {
     public ConfigSourceException(String s, Throwable e) {

@@ -1,4 +1,4 @@
-package uk.gov.ida.metadataaggregator.config;
+package uk.gov.ida.metadataaggregator.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;

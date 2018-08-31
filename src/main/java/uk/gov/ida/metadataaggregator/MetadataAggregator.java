@@ -3,7 +3,7 @@ package uk.gov.ida.metadataaggregator;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.ida.metadataaggregator.config.MetadataSourceConfiguration;
+import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataResolver;
 import uk.gov.ida.metadataaggregator.metadatasource.MetadataSourceException;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStore;

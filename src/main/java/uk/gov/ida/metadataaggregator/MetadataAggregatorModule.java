@@ -6,10 +6,10 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.name.Named;
-import uk.gov.ida.metadataaggregator.config.ConfigSourceException;
-import uk.gov.ida.metadataaggregator.config.MetadataAggregatorConfiguration;
-import uk.gov.ida.metadataaggregator.config.MetadataSourceConfiguration;
-import uk.gov.ida.metadataaggregator.config.MetadataSourceConfigurationLoader;
+import uk.gov.ida.metadataaggregator.configuration.ConfigSourceException;
+import uk.gov.ida.metadataaggregator.configuration.MetadataAggregatorConfiguration;
+import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
+import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfigurationLoader;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStore;
 import uk.gov.ida.saml.metadata.EidasTrustAnchorResolver;
 
