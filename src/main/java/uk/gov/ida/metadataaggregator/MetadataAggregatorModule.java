@@ -20,7 +20,7 @@ class MetadataAggregatorModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(S3BucketMetadataStore.class).to(S3BucketMetadataStore.class);
+ 
     }
 
     @Provides
