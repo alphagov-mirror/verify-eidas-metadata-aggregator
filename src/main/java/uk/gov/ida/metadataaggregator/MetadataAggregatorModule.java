@@ -10,7 +10,6 @@ import uk.gov.ida.metadataaggregator.exceptions.ConfigSourceException;
 import uk.gov.ida.metadataaggregator.configuration.MetadataAggregatorConfiguration;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfigurationLoader;
-import uk.gov.ida.metadataaggregator.metadatastore.MetadataStore;
 import uk.gov.ida.saml.metadata.EidasTrustAnchorResolver;
 
 import javax.ws.rs.client.ClientBuilder;
@@ -21,7 +20,7 @@ class MetadataAggregatorModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(MetadataStore.class).to(S3BucketClient.class);
+        bind(S3BucketClient.class).to(uk.gov.ida.metadataaggregator.S3BucketClient.class);
     }
 
     @Provides
@@ -57,8 +56,8 @@ class MetadataAggregatorModule extends AbstractModule {
     }
 
     @Provides
-    private S3BucketClient getS3BucketClient(MetadataAggregatorConfiguration configuration, AmazonS3 amazonS3Client) {
-        return new S3BucketClient(configuration.getS3BucketName(), amazonS3Client);
+    private uk.gov.ida.metadataaggregator.S3BucketClient getS3BucketClient(MetadataAggregatorConfiguration configuration, AmazonS3 amazonS3Client) {
+        return new uk.gov.ida.metadataaggregator.S3BucketClient(configuration.getS3BucketName(), amazonS3Client);
     }
 
     @Provides

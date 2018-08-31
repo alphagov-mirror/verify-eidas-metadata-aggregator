@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
-import uk.gov.ida.metadataaggregator.metadatastore.MetadataStore;
 import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
 import uk.gov.ida.saml.serializers.XmlObjectToElementTransformer;
 
@@ -20,7 +19,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-class S3BucketClient implements MetadataStore {
+class S3BucketClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(S3BucketClient.class);
 
@@ -32,7 +31,6 @@ class S3BucketClient implements MetadataStore {
         this.s3Client = s3Client;
     }
 
-    @Override
     public void uploadMetadata(String resource, EntityDescriptor metadataNode) throws MetadataStoreException {
         String metadataString = serialise(metadataNode);
         ObjectMetadata objectMetadata = objectMetadata(metadataString.length());
@@ -51,7 +49,6 @@ class S3BucketClient implements MetadataStore {
         }
     }
 
-    @Override
     public void deleteMetadata(String resource) throws MetadataStoreException {
         try {
             LOGGER.info("Deleting metadata with key: {} from S3 bucket: {}", resource, bucketName);
@@ -61,7 +58,6 @@ class S3BucketClient implements MetadataStore {
         }
     }
 
-    @Override
     public List<String> getAllHexEncodedUrlsFromS3Bucket() throws MetadataStoreException {
         List<String> bucketKeyList = new ArrayList<>();
         List<S3ObjectSummary> bucketObjects;

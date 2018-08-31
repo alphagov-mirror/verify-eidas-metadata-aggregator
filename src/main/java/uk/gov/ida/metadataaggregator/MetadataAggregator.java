@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataResolver;
 import uk.gov.ida.metadataaggregator.exceptions.MetadataSourceException;
-import uk.gov.ida.metadataaggregator.metadatastore.MetadataStore;
 import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
 
 import java.net.URL;
@@ -20,13 +19,13 @@ public class MetadataAggregator {
 
     private final MetadataSourceConfiguration configuration;
     private final CountryMetadataResolver countryMetadataResolver;
-    private final MetadataStore metadataStore;
+    private final S3BucketClient s3BucketClient;
 
     public MetadataAggregator(MetadataSourceConfiguration configuration,
                               CountryMetadataResolver countryMetadataResolver,
-                              MetadataStore metadataStore) {
+                              S3BucketClient s3BucketClient) {
         this.configuration = configuration;
-        this.metadataStore = metadataStore;
+        this.s3BucketClient = s3BucketClient;
         this.countryMetadataResolver = countryMetadataResolver;
     }
 
@@ -59,7 +58,7 @@ public class MetadataAggregator {
         }
 
         try {
-            metadataStore.uploadMetadata(HexUtils.encodeString(metadataUrl.toString()), countryMetadataFile);
+            s3BucketClient.uploadMetadata(HexUtils.encodeString(metadataUrl.toString()), countryMetadataFile);
         } catch (MetadataStoreException e) {
             LOGGER.error("Error uploading metadatasource file {}", metadataUrl, e);
             deleteMetadataWithHexEncodedMetadataUrl(HexUtils.encodeString(metadataUrl.toString()));
@@ -87,7 +86,7 @@ public class MetadataAggregator {
     private List<String> getAllHexEncodedUrlsFromS3Bucket() {
         List<String> hexEncodedUrls = new ArrayList<>();
         try {
-            hexEncodedUrls = metadataStore.getAllHexEncodedUrlsFromS3Bucket();
+            hexEncodedUrls = s3BucketClient.getAllHexEncodedUrlsFromS3Bucket();
         } catch (MetadataStoreException e) {
             LOGGER.error("Metadata Aggregator error - Unable to retrieve keys from S3 bucket", e);
         }
@@ -96,7 +95,7 @@ public class MetadataAggregator {
 
     private void deleteMetadataWithHexEncodedMetadataUrl(String hexEncodedUrl) {
         try {
-            metadataStore.deleteMetadata(hexEncodedUrl);
+            s3BucketClient.deleteMetadata(hexEncodedUrl);
         } catch (MetadataStoreException e) {
             LOGGER.error("Error deleting metadatasource file with hexEncodedUrl: {}", hexEncodedUrl, e);
         }
