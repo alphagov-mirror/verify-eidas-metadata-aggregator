@@ -12,7 +12,7 @@ import org.mockito.ArgumentCaptor;
 import org.opensaml.core.config.InitializationException;
 import org.opensaml.core.config.InitializationService;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
-import uk.gov.ida.metadataaggregator.metadatastore.MetadataStoreException;
+import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
 import uk.gov.ida.saml.core.test.TestEntityIds;
 import uk.gov.ida.saml.metadata.test.factories.metadata.EntityDescriptorFactory;
 

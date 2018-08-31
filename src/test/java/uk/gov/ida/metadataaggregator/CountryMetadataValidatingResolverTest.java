@@ -15,7 +15,7 @@ import org.opensaml.core.config.InitializationService;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.opensaml.security.credential.Credential;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataResolver;
-import uk.gov.ida.metadataaggregator.metadatasource.MetadataSourceException;
+import uk.gov.ida.metadataaggregator.exceptions.MetadataSourceException;
 import uk.gov.ida.saml.core.test.PemCertificateStrings;
 import uk.gov.ida.saml.core.test.TestCertificateStrings;
 import uk.gov.ida.saml.core.test.TestEntityIds;

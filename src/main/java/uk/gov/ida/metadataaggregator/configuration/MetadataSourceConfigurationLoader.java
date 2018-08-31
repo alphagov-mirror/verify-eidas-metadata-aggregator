@@ -2,6 +2,7 @@ package uk.gov.ida.metadataaggregator.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import uk.gov.ida.metadataaggregator.exceptions.ConfigSourceException;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.opensaml.core.config.InitializationException;
 import org.opensaml.core.config.InitializationService;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
-import uk.gov.ida.metadataaggregator.configuration.ConfigSourceException;
+import uk.gov.ida.metadataaggregator.exceptions.ConfigSourceException;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfigurationLoader;
 
 import java.net.URL;

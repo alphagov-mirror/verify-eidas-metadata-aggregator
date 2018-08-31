@@ -5,9 +5,9 @@ import org.junit.Test;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataResolver;
-import uk.gov.ida.metadataaggregator.metadatasource.MetadataSourceException;
+import uk.gov.ida.metadataaggregator.exceptions.MetadataSourceException;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStore;
-import uk.gov.ida.metadataaggregator.metadatastore.MetadataStoreException;
+import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
 
 import java.net.MalformedURLException;
 import java.net.URL;

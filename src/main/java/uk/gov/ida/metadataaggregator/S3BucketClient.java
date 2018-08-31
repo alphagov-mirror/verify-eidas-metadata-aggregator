@@ -13,7 +13,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
 import uk.gov.ida.metadataaggregator.metadatastore.MetadataStore;
-import uk.gov.ida.metadataaggregator.metadatastore.MetadataStoreException;
+import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
 import uk.gov.ida.saml.serializers.XmlObjectToElementTransformer;
 
 import java.io.UnsupportedEncodingException;

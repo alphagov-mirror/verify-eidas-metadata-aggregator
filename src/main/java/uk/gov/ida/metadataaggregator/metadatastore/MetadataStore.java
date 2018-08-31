@@ -1,6 +1,7 @@
 package uk.gov.ida.metadataaggregator.metadatastore;
 
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
+import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
 
 import java.util.List;
 
