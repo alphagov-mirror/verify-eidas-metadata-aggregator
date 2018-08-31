@@ -1,10 +1,9 @@
-package uk.gov.ida.metadataaggregator;
+package uk.gov.ida.metadataaggregator.core;
 
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
-import uk.gov.ida.metadataaggregator.metadatasource.CountryMetadataResolver;
 import uk.gov.ida.metadataaggregator.exceptions.MetadataSourceException;
 import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
 import uk.gov.ida.metadataaggregator.util.HexUtils;

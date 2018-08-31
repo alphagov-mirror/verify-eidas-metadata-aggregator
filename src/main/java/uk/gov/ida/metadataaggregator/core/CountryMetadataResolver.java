@@ -1,4 +1,4 @@
-package uk.gov.ida.metadataaggregator.metadatasource;
+package uk.gov.ida.metadataaggregator.core;
 
 import com.google.common.collect.ImmutableList;
 import com.nimbusds.jose.JOSEException;

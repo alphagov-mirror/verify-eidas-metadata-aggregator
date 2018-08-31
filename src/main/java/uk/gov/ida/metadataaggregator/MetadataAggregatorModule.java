@@ -6,6 +6,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.name.Named;
+import uk.gov.ida.metadataaggregator.core.S3BucketMetadataStore;
 import uk.gov.ida.metadataaggregator.exceptions.ConfigSourceException;
 import uk.gov.ida.metadataaggregator.configuration.MetadataAggregatorConfiguration;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;

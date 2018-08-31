@@ -1,4 +1,4 @@
-package uk.gov.ida.metadataaggregator;
+package uk.gov.ida.metadataaggregator.core;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
@@ -19,7 +19,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-class S3BucketMetadataStore {
+public class S3BucketMetadataStore {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(S3BucketMetadataStore.class);
 
