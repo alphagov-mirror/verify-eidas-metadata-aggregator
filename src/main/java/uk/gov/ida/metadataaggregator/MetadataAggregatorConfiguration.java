@@ -1,4 +1,4 @@
-package uk.gov.ida.metadataaggregator.configuration;
+package uk.gov.ida.metadataaggregator;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

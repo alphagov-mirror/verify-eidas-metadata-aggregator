@@ -5,7 +5,6 @@ import com.squarespace.jersey2.guice.JerseyGuiceUtils;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import uk.gov.ida.metadataaggregator.configuration.MetadataAggregatorConfiguration;
 
 public class MetadataAggregatorApplication extends Application<MetadataAggregatorConfiguration> {
 
