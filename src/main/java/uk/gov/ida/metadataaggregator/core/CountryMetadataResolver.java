@@ -1,4 +1,4 @@
-package uk.gov.ida.metadataaggregator.metadatasource;
+package uk.gov.ida.metadataaggregator.core;
 
 import com.google.common.collect.ImmutableList;
 import com.nimbusds.jose.JOSEException;
@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.core.util.Duration;
+import uk.gov.ida.metadataaggregator.exceptions.MetadataSourceException;
 import uk.gov.ida.saml.metadata.EidasTrustAnchorResolver;
 import uk.gov.ida.saml.metadata.ExpiredCertificateMetadataFilter;
 import uk.gov.ida.saml.metadata.PKIXSignatureValidationFilterProvider;

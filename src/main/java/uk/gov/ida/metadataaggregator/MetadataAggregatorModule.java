@@ -6,11 +6,10 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.name.Named;
-import uk.gov.ida.metadataaggregator.config.ConfigSourceException;
-import uk.gov.ida.metadataaggregator.config.MetadataAggregatorConfiguration;
-import uk.gov.ida.metadataaggregator.config.MetadataSourceConfiguration;
-import uk.gov.ida.metadataaggregator.config.MetadataSourceConfigurationLoader;
-import uk.gov.ida.metadataaggregator.metadatastore.MetadataStore;
+import uk.gov.ida.metadataaggregator.core.S3BucketMetadataStore;
+import uk.gov.ida.metadataaggregator.exceptions.ConfigSourceException;
+import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
+import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfigurationLoader;
 import uk.gov.ida.saml.metadata.EidasTrustAnchorResolver;
 
 import javax.ws.rs.client.ClientBuilder;
@@ -21,7 +20,7 @@ class MetadataAggregatorModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(MetadataStore.class).to(S3BucketClient.class);
+ 
     }
 
     @Provides
@@ -57,8 +56,8 @@ class MetadataAggregatorModule extends AbstractModule {
     }
 
     @Provides
-    private S3BucketClient getS3BucketClient(MetadataAggregatorConfiguration configuration, AmazonS3 amazonS3Client) {
-        return new S3BucketClient(configuration.getS3BucketName(), amazonS3Client);
+    private S3BucketMetadataStore getS3BucketClient(MetadataAggregatorConfiguration configuration, AmazonS3 amazonS3Client) {
+        return new S3BucketMetadataStore(configuration.getS3BucketName(), amazonS3Client);
     }
 
     @Provides

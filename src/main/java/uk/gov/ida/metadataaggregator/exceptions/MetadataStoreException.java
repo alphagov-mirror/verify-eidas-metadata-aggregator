@@ -1,4 +1,4 @@
-package uk.gov.ida.metadataaggregator.metadatastore;
+package uk.gov.ida.metadataaggregator.exceptions;
 
 public class MetadataStoreException extends Exception {
     public MetadataStoreException(String s, Throwable e) {

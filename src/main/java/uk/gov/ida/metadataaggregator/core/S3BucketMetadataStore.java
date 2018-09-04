@@ -1,4 +1,4 @@
-package uk.gov.ida.metadataaggregator;
+package uk.gov.ida.metadataaggregator.core;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
@@ -12,27 +12,25 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
-import uk.gov.ida.metadataaggregator.metadatastore.MetadataStore;
-import uk.gov.ida.metadataaggregator.metadatastore.MetadataStoreException;
+import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
 import uk.gov.ida.saml.serializers.XmlObjectToElementTransformer;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-class S3BucketClient implements MetadataStore {
+public class S3BucketMetadataStore {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(S3BucketClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(S3BucketMetadataStore.class);
 
     private final String bucketName;
     private final AmazonS3 s3Client;
 
-    public S3BucketClient(String configBucket, AmazonS3 s3Client) {
+    public S3BucketMetadataStore(String configBucket, AmazonS3 s3Client) {
         this.bucketName = configBucket;
         this.s3Client = s3Client;
     }
 
-    @Override
     public void uploadMetadata(String resource, EntityDescriptor metadataNode) throws MetadataStoreException {
         String metadataString = serialise(metadataNode);
         ObjectMetadata objectMetadata = objectMetadata(metadataString.length());
@@ -51,7 +49,6 @@ class S3BucketClient implements MetadataStore {
         }
     }
 
-    @Override
     public void deleteMetadata(String resource) throws MetadataStoreException {
         try {
             LOGGER.info("Deleting metadata with key: {} from S3 bucket: {}", resource, bucketName);
@@ -61,7 +58,6 @@ class S3BucketClient implements MetadataStore {
         }
     }
 
-    @Override
     public List<String> getAllHexEncodedUrlsFromS3Bucket() throws MetadataStoreException {
         List<String> bucketKeyList = new ArrayList<>();
         List<S3ObjectSummary> bucketObjects;

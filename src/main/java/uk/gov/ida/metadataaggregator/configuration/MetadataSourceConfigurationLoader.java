@@ -1,7 +1,8 @@
-package uk.gov.ida.metadataaggregator.config;
+package uk.gov.ida.metadataaggregator.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import uk.gov.ida.metadataaggregator.exceptions.ConfigSourceException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,7 +10,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
-import static uk.gov.ida.metadataaggregator.Constants.AGGREGATOR_CONFIG_FILE_NAME;
+import static uk.gov.ida.metadataaggregator.util.Constants.AGGREGATOR_CONFIG_FILE_NAME;
 
 public class MetadataSourceConfigurationLoader {
 
