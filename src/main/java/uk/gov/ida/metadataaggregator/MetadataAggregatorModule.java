@@ -6,6 +6,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfigurationLoader;
@@ -17,6 +18,8 @@ import uk.gov.ida.saml.metadata.EidasTrustAnchorResolver;
 import javax.ws.rs.client.ClientBuilder;
 import java.net.URI;
 import java.security.KeyStore;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 class MetadataAggregatorModule extends AbstractModule {
 
@@ -73,5 +76,12 @@ class MetadataAggregatorModule extends AbstractModule {
         return AmazonS3ClientBuilder.standard()
                 .withCredentials(new EnvironmentVariableCredentialsProvider())
                 .build();
+    }
+
+    @Provides
+    @Singleton
+    @Named("BlockingExecutor")
+    public ScheduledExecutorService getScheduledExecutorService(){
+        return Executors.newSingleThreadScheduledExecutor();
     }
 }

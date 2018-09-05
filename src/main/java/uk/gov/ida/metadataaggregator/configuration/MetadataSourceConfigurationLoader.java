@@ -14,7 +14,7 @@ import static uk.gov.ida.metadataaggregator.util.Constants.AGGREGATOR_CONFIG_FIL
 
 public class MetadataSourceConfigurationLoader {
 
-    private String environment;
+    private final String environment;
 
     @Inject
     public MetadataSourceConfigurationLoader(String environment) {

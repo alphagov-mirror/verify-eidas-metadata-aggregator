@@ -9,8 +9,6 @@ import uk.gov.ida.metadataaggregator.core.MetadataAggregator;
 import uk.gov.ida.metadataaggregator.core.S3BucketMetadataStore;
 import uk.gov.ida.saml.metadata.EidasTrustAnchorResolver;
 
-import static java.lang.String.format;
-
 // Wraps all of the dependencies required to run metadata aggregations.
 public class MetadataAggregationTaskRunner {
     private final Logger log = LoggerFactory.getLogger(MetadataAggregationTaskRunner.class);
@@ -20,24 +18,43 @@ public class MetadataAggregationTaskRunner {
     private final EidasTrustAnchorResolver eidasTrustAnchorResolver;
 
     @Inject
-    public MetadataAggregationTaskRunner(
-            MetadataSourceConfiguration configSource,
-            S3BucketMetadataStore metadataStore,
-            EidasTrustAnchorResolver eidasTrustAnchorResolver) {
+    public MetadataAggregationTaskRunner(MetadataSourceConfiguration configSource,
+                                         S3BucketMetadataStore metadataStore,
+                                         EidasTrustAnchorResolver eidasTrustAnchorResolver) {
         this.configSource = configSource;
         this.metadataStore = metadataStore;
         this.eidasTrustAnchorResolver = eidasTrustAnchorResolver;
     }
 
-    public void run(String taskDescription) {
+    private void run(String taskDescription) {
         try {
             log.info("Beginning {} metadata aggregation", taskDescription.toLowerCase());
             CountryMetadataResolver countryMetadataSource = CountryMetadataResolver.fromTrustAnchor(eidasTrustAnchorResolver);
             MetadataAggregator metadataAggregator = new MetadataAggregator(configSource, countryMetadataSource, metadataStore);
             boolean result = metadataAggregator.aggregateMetadata();
-            log.info("{} metadata aggregation completed {}", taskDescription, result ? "successfully" : "unsuccessfully");
+            log.info("Completed {} metadata aggregation {}", taskDescription, result ? "successfully" : "unsuccessfully");
         } catch (Exception e) {
-            log.error(format("Uncaught error during {} metadata aggregation", taskDescription.toLowerCase()), e);
+            log.error("Uncaught error during {} metadata aggregation", taskDescription.toLowerCase(), e);
+        }
+    }
+
+    public Runnable manual() {
+        return new Manual();
+    }
+
+    public Runnable scheduled() {
+        return new Scheduled();
+    }
+
+    private class Manual implements Runnable {
+        public void run() {
+            MetadataAggregationTaskRunner.this.run("manual");
+        }
+    }
+
+    private class Scheduled implements Runnable {
+        public void run() {
+            MetadataAggregationTaskRunner.this.run("scheduled");
         }
     }
 }

@@ -21,6 +21,6 @@ public class MetadataAggregatorCommand extends ConfiguredCommand<MetadataAggrega
 
     @Override
     protected void run(Bootstrap<MetadataAggregatorConfiguration> bootstrap, Namespace namespace, MetadataAggregatorConfiguration configuration) {
-        taskRunner.run("Manual");
+        taskRunner.manual().run();
     }
 }

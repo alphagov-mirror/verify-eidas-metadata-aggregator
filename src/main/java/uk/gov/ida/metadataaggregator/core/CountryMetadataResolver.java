@@ -39,7 +39,7 @@ public class CountryMetadataResolver {
     private static final Long REFRESH_DELAY = Duration.buildByDays(365).getMilliseconds();
 
     private final Map<String, JWK> trustAnchors;
-    private ClientBuilder clientBuilder;
+    private final ClientBuilder clientBuilder;
 
     public CountryMetadataResolver(Map<String, JWK> trustAnchors, ClientBuilder clientBuilder) {
         this.trustAnchors = trustAnchors;
