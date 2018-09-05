@@ -31,6 +31,10 @@ public class MetadataAggregatorConfiguration extends Configuration {
     @JsonProperty
     private String metadataSourcesFile;
 
+    @Valid
+    @JsonProperty
+    private long scheduleHours = 1;
+
     protected MetadataAggregatorConfiguration() { }
 
     public URI getTrustAnchorUri() {
@@ -46,4 +50,8 @@ public class MetadataAggregatorConfiguration extends Configuration {
     }
 
     public String getMetadataSourcesFile() { return metadataSourcesFile; }
+
+    public long getScheduledHours() {
+        return scheduleHours;
+    }
 }

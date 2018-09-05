@@ -4,11 +4,10 @@ import com.google.inject.Inject;
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
-import net.sourceforge.argparse4j.inf.Subparser;
-import uk.gov.ida.metadataaggregator.config.AggregatorConfig;
+import uk.gov.ida.metadataaggregator.MetadataAggregatorConfiguration;
 import uk.gov.ida.metadataaggregator.managed.MetadataAggregationTaskRunner;
 
-public class MetadataAggregatorCommand extends ConfiguredCommand<AggregatorConfig> {
+public class MetadataAggregatorCommand extends ConfiguredCommand<MetadataAggregatorConfiguration> {
     private static final String NAME = "aggregate";
     private static final String DESCRIPTION = "Manually performs a single run of metadata aggregation using the supplied config.";
 
@@ -21,13 +20,7 @@ public class MetadataAggregatorCommand extends ConfiguredCommand<AggregatorConfi
     }
 
     @Override
-    public void configure(Subparser subparser) {
-        super.configure(subparser);
-    }
-
-    @Override
-    protected void run(Bootstrap<AggregatorConfig> bootstrap, Namespace namespace, AggregatorConfig configuration)
-            throws Exception {
+    protected void run(Bootstrap<MetadataAggregatorConfiguration> bootstrap, Namespace namespace, MetadataAggregatorConfiguration configuration) {
         taskRunner.run("Manual");
     }
 }

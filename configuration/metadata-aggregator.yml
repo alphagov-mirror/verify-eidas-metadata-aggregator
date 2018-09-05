@@ -46,4 +46,6 @@ trustStore:
 
 s3BucketName: ${S3_BUCKET_NAME}
 
+scheduledHours: ${SCHEDULED_HOURS}
+
 metadataSourcesFile: ${METADATA_SOURCES_FILE}
