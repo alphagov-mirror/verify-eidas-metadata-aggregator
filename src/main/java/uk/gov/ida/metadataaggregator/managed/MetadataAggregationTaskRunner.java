@@ -28,13 +28,13 @@ public class MetadataAggregationTaskRunner {
 
     private void run(String taskDescription) {
         try {
-            log.info("Beginning {} metadata aggregation", taskDescription.toLowerCase());
+            log.info("Beginning {} metadata aggregation", taskDescription);
             CountryMetadataResolver countryMetadataSource = CountryMetadataResolver.fromTrustAnchor(eidasTrustAnchorResolver);
             MetadataAggregator metadataAggregator = new MetadataAggregator(configSource, countryMetadataSource, metadataStore);
             boolean result = metadataAggregator.aggregateMetadata();
             log.info("Completed {} metadata aggregation {}", taskDescription, result ? "successfully" : "unsuccessfully");
         } catch (Exception e) {
-            log.error("Uncaught error during {} metadata aggregation", taskDescription.toLowerCase(), e);
+            log.error("Uncaught error during {} metadata aggregation", taskDescription, e);
         }
     }
 
