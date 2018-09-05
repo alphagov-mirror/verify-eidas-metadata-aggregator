@@ -1,6 +1,5 @@
 package uk.gov.ida.metadataaggregator;
 
-import ch.qos.logback.core.util.Duration;
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -11,8 +10,8 @@ import com.google.inject.name.Named;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfigurationLoader;
 import uk.gov.ida.metadataaggregator.core.S3BucketMetadataStore;
-import uk.gov.ida.metadataaggregator.managed.MetadataAggregationTaskRunner;
 import uk.gov.ida.metadataaggregator.exceptions.ConfigSourceException;
+import uk.gov.ida.metadataaggregator.managed.MetadataAggregationTaskRunner;
 import uk.gov.ida.saml.metadata.EidasTrustAnchorResolver;
 
 import javax.ws.rs.client.ClientBuilder;
@@ -36,8 +35,8 @@ class MetadataAggregatorModule extends AbstractModule {
 
     @Provides
     @Named("ScheduleFrequency")
-    public Duration getScheduleFrequency(MetadataAggregatorConfiguration configuration) {
-        return Duration.buildByHours(configuration.getScheduledHours());
+    public long getScheduleFrequency(MetadataAggregatorConfiguration configuration) {
+        return configuration.getScheduledHours();
     }
 
     @Provides
