@@ -29,3 +29,6 @@ Sweden:
 Italy:
   url: https://service.test.eid.gov.it/EidasNode/ServiceMetadata
   tls_cert: integration_tls_certs/italy.pem
+
+Germany:
+  url: https://middleware.integration-mw-de.eidas.signin.service.gov.uk/eidas-middleware/Metadata
