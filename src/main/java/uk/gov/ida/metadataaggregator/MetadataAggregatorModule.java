@@ -12,6 +12,7 @@ import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfigurationLo
 import uk.gov.ida.metadataaggregator.core.S3BucketMetadataStore;
 import uk.gov.ida.metadataaggregator.exceptions.ConfigSourceException;
 import uk.gov.ida.metadataaggregator.managed.MetadataAggregationTaskRunner;
+import uk.gov.ida.metadataaggregator.managed.ScheduledMetadataAggregator;
 import uk.gov.ida.saml.metadata.EidasTrustAnchorResolver;
 
 import javax.ws.rs.client.ClientBuilder;
@@ -24,6 +25,7 @@ class MetadataAggregatorModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        bind(ScheduledMetadataAggregator.class);
         bind(MetadataAggregationTaskRunner.class);
     }
 

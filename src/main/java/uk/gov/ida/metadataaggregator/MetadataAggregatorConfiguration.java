@@ -35,7 +35,7 @@ public class MetadataAggregatorConfiguration extends Configuration {
     @JsonProperty
     private long scheduleHours = 1;
 
-    protected MetadataAggregatorConfiguration() { }
+    public MetadataAggregatorConfiguration() { }
 
     public URI getTrustAnchorUri() {
         return trustAnchorUri;
