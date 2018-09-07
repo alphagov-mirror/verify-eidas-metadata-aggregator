@@ -1,6 +1,5 @@
 package uk.gov.ida.metadataaggregator.core;
 
-import ch.qos.logback.core.util.Duration;
 import com.google.common.collect.ImmutableList;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
@@ -25,6 +24,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.text.ParseException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,7 +37,7 @@ public class CountryMetadataResolver {
 
     // We don't want to refresh ever, but cannot specify zero milliseconds as it can lead to negative durations
     // and also can't specify Long.MAX_VALUE because it'll give bad values when subtracted. So just specify a long time.
-    private static final Long REFRESH_DELAY = Duration.buildByDays(365).getMilliseconds();
+    private static final Long REFRESH_DELAY = Duration.of(365, ChronoUnit.DAYS).toMillis();
 
     private final Map<String, JWK> trustAnchors;
     private final ClientBuilder clientBuilder;
