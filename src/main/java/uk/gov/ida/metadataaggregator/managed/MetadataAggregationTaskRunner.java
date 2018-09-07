@@ -10,7 +10,7 @@ import uk.gov.ida.metadataaggregator.core.S3BucketMetadataStore;
 import uk.gov.ida.saml.metadata.EidasTrustAnchorResolver;
 
 // Wraps all of the dependencies required to run metadata aggregations.
-public class MetadataAggregationTaskRunner {
+public class MetadataAggregationTaskRunner implements Runnable{
     private final Logger log = LoggerFactory.getLogger(MetadataAggregationTaskRunner.class);
 
     private final MetadataSourceConfiguration configSource;
@@ -26,35 +26,15 @@ public class MetadataAggregationTaskRunner {
         this.eidasTrustAnchorResolver = eidasTrustAnchorResolver;
     }
 
-    private void run(String taskDescription) {
+    public void run() {
         try {
-            log.info("Beginning {} metadata aggregation", taskDescription);
+            log.info("Beginning metadata aggregation");
             CountryMetadataResolver countryMetadataSource = CountryMetadataResolver.fromTrustAnchor(eidasTrustAnchorResolver);
             MetadataAggregator metadataAggregator = new MetadataAggregator(configSource, countryMetadataSource, metadataStore);
             boolean result = metadataAggregator.aggregateMetadata();
-            log.info("Completed {} metadata aggregation {}", taskDescription, result ? "successfully" : "unsuccessfully");
+            log.info("Completed metadata aggregation {}", result ? "successfully" : "unsuccessfully");
         } catch (Exception e) {
-            log.error("Uncaught error during {} metadata aggregation", taskDescription, e);
-        }
-    }
-
-    public Runnable manual() {
-        return new Manual();
-    }
-
-    public Runnable scheduled() {
-        return new Scheduled();
-    }
-
-    private class Manual implements Runnable {
-        public void run() {
-            MetadataAggregationTaskRunner.this.run("manual");
-        }
-    }
-
-    private class Scheduled implements Runnable {
-        public void run() {
-            MetadataAggregationTaskRunner.this.run("scheduled");
+            log.error("Uncaught error during metadata aggregation", e);
         }
     }
 }

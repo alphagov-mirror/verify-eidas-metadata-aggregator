@@ -28,7 +28,7 @@ public class ScheduledMetadataAggregator implements Managed {
 
     @Override
     public void start() {
-        scheduleFuture = scheduler.scheduleWithFixedDelay(taskRunner.scheduled(), 0, hoursBetweenRuns, TimeUnit.HOURS);
+        scheduleFuture = scheduler.scheduleWithFixedDelay(taskRunner, 0, hoursBetweenRuns, TimeUnit.HOURS);
     }
 
     @Override
