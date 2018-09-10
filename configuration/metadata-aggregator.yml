@@ -46,7 +46,7 @@ trustStore:
 
 s3BucketName: ${S3_BUCKET_NAME}
 
-scheduledHours: ${SCHEDULED_HOURS}
+hoursBetweenEachRun: ${HOURS_BETWEEN_EACH_RUN}
 
 metadataSourcesFile: ${METADATA_SOURCES_FILE}
 

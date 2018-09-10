@@ -32,6 +32,6 @@ trustStore:
 
 s3BucketName: testS3Bucket
 
-scheduledHours: 1
+hoursBetweenEachRun: 1
 
 metadataSourcesFile: joint

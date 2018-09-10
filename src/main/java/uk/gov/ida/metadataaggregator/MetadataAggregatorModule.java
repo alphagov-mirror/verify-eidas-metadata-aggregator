@@ -38,7 +38,7 @@ class MetadataAggregatorModule extends AbstractModule {
     @Provides
     @Named("ScheduleFrequency")
     public long getScheduleFrequency(MetadataAggregatorConfiguration configuration) {
-        return configuration.getScheduledHours();
+        return configuration.getHoursBetweenEachRun();
     }
 
     @Provides

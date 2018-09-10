@@ -33,7 +33,7 @@ public class MetadataAggregatorConfiguration extends Configuration {
 
     @Valid
     @JsonProperty
-    private long scheduleHours = 1;
+    private long hoursBetweenEachRun = 1;
 
     @Valid
     @JsonProperty
@@ -55,8 +55,8 @@ public class MetadataAggregatorConfiguration extends Configuration {
 
     public String getMetadataSourcesFile() { return metadataSourcesFile; }
 
-    public long getScheduledHours() {
-        return scheduleHours;
+    public long getHoursBetweenEachRun() {
+        return hoursBetweenEachRun;
     }
 
     public String getAwsRegion() {
