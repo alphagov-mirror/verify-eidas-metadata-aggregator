@@ -29,42 +29,29 @@ public class MetadataAggregator {
         this.countryMetadataResolver = countryMetadataResolver;
     }
 
-    public boolean aggregateMetadata() {
+    public StatusReport aggregateMetadata() {
         LOGGER.info("Processing country metadatasource");
 
-        int successfulUploads = 0;
+        StatusReport report = new StatusReport(configuration.getMetadataUrls());
         Collection<URL> configMetadataUrls = configuration.getMetadataUrls().values();
 
         deleteMetadataWhichIsNotInConfig(configMetadataUrls);
 
-        for (URL url : configMetadataUrls) {
-            boolean successfulUpload = processMetadataFrom(url);
-            if (successfulUpload) successfulUploads++;
+        for (URL metadataUrl : configMetadataUrls) {
+            try {
+                EntityDescriptor countryMetadataFile = countryMetadataResolver.downloadMetadata(metadataUrl);
+                s3BucketMetadataStore.uploadMetadata(HexUtils.encodeString(metadataUrl.toString()), countryMetadataFile);
+                report.recordSuccess(metadataUrl);
+            } catch (MetadataSourceException | MetadataStoreException e) {
+                LOGGER.error("Error processing metadata {}", metadataUrl, e);
+                deleteMetadataWithHexEncodedMetadataUrl(HexUtils.encodeString(metadataUrl.toString()));
+                report.recordFailure(metadataUrl, e);
+            }
         }
 
-        LOGGER.info("Finished processing country metadatasource with {} successful uploads out of {}", successfulUploads, configMetadataUrls.size());
+        LOGGER.info("Finished processing country metadatasource with {} successful uploads out of {}", report.numberOfSuccesses(), configMetadataUrls.size());
 
-        return successfulUploads == configMetadataUrls.size();
-    }
-
-    private boolean processMetadataFrom(URL metadataUrl) {
-        EntityDescriptor countryMetadataFile;
-        try {
-            countryMetadataFile = countryMetadataResolver.downloadMetadata(metadataUrl);
-        } catch (MetadataSourceException e) {
-            LOGGER.error("Error downloading metadatasource file {}", metadataUrl, e);
-            deleteMetadataWithHexEncodedMetadataUrl(HexUtils.encodeString(metadataUrl.toString()));
-            return false;
-        }
-
-        try {
-            s3BucketMetadataStore.uploadMetadata(HexUtils.encodeString(metadataUrl.toString()), countryMetadataFile);
-        } catch (MetadataStoreException e) {
-            LOGGER.error("Error uploading metadatasource file {}", metadataUrl, e);
-            deleteMetadataWithHexEncodedMetadataUrl(HexUtils.encodeString(metadataUrl.toString()));
-            return false;
-        }
-        return true;
+        return report;
     }
 
     private void deleteMetadataWhichIsNotInConfig(Collection<URL> configMetadataUrls) {

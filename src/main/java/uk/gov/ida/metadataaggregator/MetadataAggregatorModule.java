@@ -10,6 +10,7 @@ import com.google.inject.name.Named;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfigurationLoader;
 import uk.gov.ida.metadataaggregator.core.S3BucketMetadataStore;
+import uk.gov.ida.metadataaggregator.core.StatusReport;
 import uk.gov.ida.metadataaggregator.exceptions.ConfigSourceException;
 import uk.gov.ida.metadataaggregator.managed.MetadataAggregationTaskRunner;
 import uk.gov.ida.metadataaggregator.managed.ScheduledMetadataAggregator;
@@ -20,6 +21,7 @@ import java.net.URI;
 import java.security.KeyStore;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicReference;
 
 class MetadataAggregatorModule extends AbstractModule {
 
@@ -85,5 +87,11 @@ class MetadataAggregatorModule extends AbstractModule {
     @Named("BlockingExecutor")
     public ScheduledExecutorService getScheduledExecutorService(){
         return Executors.newSingleThreadScheduledExecutor();
+    }
+
+    @Provides
+    @Singleton
+    public AtomicReference<StatusReport> getStatusReportReference() {
+        return new AtomicReference<>();
     }
 }
