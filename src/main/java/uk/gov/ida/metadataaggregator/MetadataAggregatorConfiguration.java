@@ -35,6 +35,10 @@ public class MetadataAggregatorConfiguration extends Configuration {
     @JsonProperty
     private long scheduleHours = 1;
 
+    @Valid
+    @JsonProperty
+    private String awsRegion;
+
     public MetadataAggregatorConfiguration() { }
 
     public URI getTrustAnchorUri() {
@@ -53,5 +57,9 @@ public class MetadataAggregatorConfiguration extends Configuration {
 
     public long getScheduledHours() {
         return scheduleHours;
+    }
+
+    public String getAwsRegion() {
+        return awsRegion;
     }
 }

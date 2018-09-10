@@ -32,7 +32,8 @@ public class MetadataAggregatorAppRule extends DropwizardAppRule<MetadataAggrega
         List<ConfigOverride> overrides = Stream.of(
                 ConfigOverride.config("trustStore.type", "file"),
                 ConfigOverride.config("trustStore.store", trustStore.getAbsolutePath()),
-                ConfigOverride.config("trustStore.password", trustStore.getPassword())
+                ConfigOverride.config("trustStore.password", trustStore.getPassword()),
+                ConfigOverride.config("awsRegion", "eu-west-1")
         ).collect(Collectors.toList());
 
         overrides.addAll(asList(otherConfigOverrides));

@@ -73,8 +73,9 @@ class MetadataAggregatorModule extends AbstractModule {
     }
 
     @Provides
-    private AmazonS3 getAmazonS3Client() {
+    private AmazonS3 getAmazonS3Client(MetadataAggregatorConfiguration configuration) {
         return AmazonS3ClientBuilder.standard()
+                .withRegion(configuration.getAwsRegion())
                 .withCredentials(new EnvironmentVariableCredentialsProvider())
                 .build();
     }
