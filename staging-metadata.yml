@@ -1,2 +1,4 @@
+Stub Country:
+  url: https://ida-stub-idp-staging.cloudapps.digital/stub-country/ServiceMetadata
 Germany:
   url: https://middleware.staging-mw-de.eidas.signin.service.gov.uk/eidas-middleware/Metadata
