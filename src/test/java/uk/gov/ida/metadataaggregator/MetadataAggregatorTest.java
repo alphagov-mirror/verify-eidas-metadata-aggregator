@@ -5,7 +5,9 @@ import org.junit.Test;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.core.CountryMetadataResolver;
+import uk.gov.ida.metadataaggregator.core.HexEncodedMetadataStore;
 import uk.gov.ida.metadataaggregator.core.MetadataAggregator;
+import uk.gov.ida.metadataaggregator.core.MetadataStore;
 import uk.gov.ida.metadataaggregator.core.S3BucketMetadataStore;
 import uk.gov.ida.metadataaggregator.exceptions.MetadataSourceException;
 import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
@@ -29,7 +31,7 @@ public class MetadataAggregatorTest {
 
     private final MetadataSourceConfiguration testMetadataSourceConfiguration = mock(MetadataSourceConfiguration.class);
     private final CountryMetadataResolver testMetadataSource = mock(CountryMetadataResolver.class);
-    private final S3BucketMetadataStore testS3BucketMetadataStore = mock(S3BucketMetadataStore.class);
+    private final MetadataStore testS3BucketMetadataStore = mock(MetadataStore.class);
     private MetadataAggregator testAggregator;
     private HashMap<String, URL> urlList;
 
@@ -39,7 +41,7 @@ public class MetadataAggregatorTest {
 
     @Before
     public void before() throws MalformedURLException {
-        testAggregator = new MetadataAggregator(testMetadataSourceConfiguration, testMetadataSource, testS3BucketMetadataStore);
+        testAggregator = new MetadataAggregator(testMetadataSourceConfiguration, testMetadataSource, new HexEncodedMetadataStore(testS3BucketMetadataStore));
         urlList = new HashMap<>();
         testUrl1 = new URL("http://testUrl1");
         testKey1 = "testKey1";
@@ -68,7 +70,7 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl1.toString()), testMetadata1);
+        verify(testS3BucketMetadataStore).upload(HexUtils.encodeString(testUrl1.toString()), testMetadata1);
     }
 
     @Test
@@ -85,8 +87,8 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl1.toString()), testMetadata1);
-        verify(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl2.toString()), testMetadata2);
+        verify(testS3BucketMetadataStore).upload(HexUtils.encodeString(testUrl1.toString()), testMetadata1);
+        verify(testS3BucketMetadataStore).upload(HexUtils.encodeString(testUrl2.toString()), testMetadata2);
     }
 
     @Test
@@ -101,7 +103,7 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testS3BucketMetadataStore, never()).uploadMetadata(anyString(), any(EntityDescriptor.class));
+        verify(testS3BucketMetadataStore, never()).upload(anyString(), any(EntityDescriptor.class));
     }
 
     @Test
@@ -118,7 +120,7 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(successfulUrl.toString()), successfulMetadata);
+        verify(testS3BucketMetadataStore).upload(HexUtils.encodeString(successfulUrl.toString()), successfulMetadata);
     }
 
     @Test
@@ -134,11 +136,11 @@ public class MetadataAggregatorTest {
         when(testMetadataSource.downloadMetadata(successfulUrl)).thenReturn(successfulMetadata);
 
         doThrow(new MetadataStoreException("Metadata store failed"))
-                .when(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()), unsuccessfulMetadata);
+                .when(testS3BucketMetadataStore).upload(HexUtils.encodeString(unsuccessfulUrl.toString()), unsuccessfulMetadata);
 
         testAggregator.aggregateMetadata();
 
-        verify(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(successfulUrl.toString()), successfulMetadata);
+        verify(testS3BucketMetadataStore).upload(HexUtils.encodeString(successfulUrl.toString()), successfulMetadata);
     }
 
     @Test
@@ -154,7 +156,7 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testS3BucketMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()));
+        verify(testS3BucketMetadataStore).delete(HexUtils.encodeString(unsuccessfulUrl.toString()));
     }
 
     @Test
@@ -170,11 +172,11 @@ public class MetadataAggregatorTest {
         when(testMetadataSource.downloadMetadata(unsuccessfulUrl)).thenReturn(unsuccessfulMetadata);
 
         doThrow(new MetadataStoreException("Metadata store failed"))
-                .when(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()), unsuccessfulMetadata);
+                .when(testS3BucketMetadataStore).upload(HexUtils.encodeString(unsuccessfulUrl.toString()), unsuccessfulMetadata);
 
         testAggregator.aggregateMetadata();
 
-        verify(testS3BucketMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()));
+        verify(testS3BucketMetadataStore).delete(HexUtils.encodeString(unsuccessfulUrl.toString()));
     }
 
     @Test
@@ -189,11 +191,11 @@ public class MetadataAggregatorTest {
         doThrow(new MetadataSourceException("Download metadata has failed"))
                 .when(testMetadataSource).downloadMetadata(unsuccessfulUrl);
         doThrow(new MetadataStoreException("Delete metadata has failed"))
-                .when(testS3BucketMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()));
+                .when(testS3BucketMetadataStore).delete(HexUtils.encodeString(unsuccessfulUrl.toString()));
 
         testAggregator.aggregateMetadata();
 
-        verify(testS3BucketMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()));
+        verify(testS3BucketMetadataStore).delete(HexUtils.encodeString(unsuccessfulUrl.toString()));
     }
 
     @Test
@@ -212,11 +214,11 @@ public class MetadataAggregatorTest {
         doThrow(new MetadataSourceException("Download metadata has failed"))
                 .when(testMetadataSource).downloadMetadata(unsuccessfulUrl);
         doThrow(new MetadataStoreException("Delete metadata has failed"))
-                .when(testS3BucketMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()));
+                .when(testS3BucketMetadataStore).delete(HexUtils.encodeString(unsuccessfulUrl.toString()));
 
         testAggregator.aggregateMetadata();
 
-        verify(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(successfulUrl.toString()), successfulMetadata);
+        verify(testS3BucketMetadataStore).upload(HexUtils.encodeString(successfulUrl.toString()), successfulMetadata);
     }
 
     @Test
@@ -235,13 +237,13 @@ public class MetadataAggregatorTest {
             .thenReturn(urlList);
         when(testMetadataSource.downloadMetadata(testUrl1)).thenReturn(testMetadata1);
         when(testMetadataSource.downloadMetadata(testUrl2)).thenReturn(testMetadata2);
-        when(testS3BucketMetadataStore.getAllHexEncodedUrlsFromS3Bucket()).thenReturn(s3BucketUrls);
+        when(testS3BucketMetadataStore.list()).thenReturn(s3BucketUrls);
 
         testAggregator.aggregateMetadata();
 
-        verify(testS3BucketMetadataStore).deleteMetadata(HexUtils.encodeString(testUrl3.toString()));
-        verify(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl1.toString()), testMetadata1);
-        verify(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl2.toString()), testMetadata2);
+        verify(testS3BucketMetadataStore).delete(HexUtils.encodeString(testUrl3.toString()));
+        verify(testS3BucketMetadataStore).upload(HexUtils.encodeString(testUrl1.toString()), testMetadata1);
+        verify(testS3BucketMetadataStore).upload(HexUtils.encodeString(testUrl2.toString()), testMetadata2);
     }
 
     @Test
@@ -253,13 +255,13 @@ public class MetadataAggregatorTest {
         when(testMetadataSourceConfiguration.getMetadataUrls())
             .thenReturn(urlList);
         doThrow(new MetadataStoreException("Unable to retrieve keys from S3 Bucket"))
-                .when(testS3BucketMetadataStore).getAllHexEncodedUrlsFromS3Bucket();
+                .when(testS3BucketMetadataStore).list();
         when(testMetadataSource.downloadMetadata(testUrl1)).thenReturn(testMetadata1);
         when(testMetadataSource.downloadMetadata(testUrl2)).thenReturn(testMetadata2);
 
         testAggregator.aggregateMetadata();
 
-        verify(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl1.toString()), testMetadata1);
-        verify(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl2.toString()), testMetadata2);
+        verify(testS3BucketMetadataStore).upload(HexUtils.encodeString(testUrl1.toString()), testMetadata1);
+        verify(testS3BucketMetadataStore).upload(HexUtils.encodeString(testUrl2.toString()), testMetadata2);
     }
 }

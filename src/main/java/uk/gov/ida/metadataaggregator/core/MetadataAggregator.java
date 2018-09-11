@@ -6,12 +6,12 @@ import org.slf4j.LoggerFactory;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.exceptions.MetadataSourceException;
 import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
-import uk.gov.ida.metadataaggregator.util.HexUtils;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MetadataAggregator {
 
@@ -19,13 +19,13 @@ public class MetadataAggregator {
 
     private final MetadataSourceConfiguration configuration;
     private final CountryMetadataResolver countryMetadataResolver;
-    private final S3BucketMetadataStore s3BucketMetadataStore;
+    private final MetadataStore metadataStore;
 
     public MetadataAggregator(MetadataSourceConfiguration configuration,
                               CountryMetadataResolver countryMetadataResolver,
-                              S3BucketMetadataStore s3BucketMetadataStore) {
+                              MetadataStore metadataStore) {
         this.configuration = configuration;
-        this.s3BucketMetadataStore = s3BucketMetadataStore;
+        this.metadataStore = metadataStore;
         this.countryMetadataResolver = countryMetadataResolver;
     }
 
@@ -40,11 +40,11 @@ public class MetadataAggregator {
         for (URL metadataUrl : configMetadataUrls) {
             try {
                 EntityDescriptor countryMetadataFile = countryMetadataResolver.downloadMetadata(metadataUrl);
-                s3BucketMetadataStore.uploadMetadata(HexUtils.encodeString(metadataUrl.toString()), countryMetadataFile);
+                metadataStore.upload(metadataUrl.toString(), countryMetadataFile);
                 report.recordSuccess(metadataUrl);
             } catch (MetadataSourceException | MetadataStoreException e) {
                 LOGGER.error("Error processing metadata {}", metadataUrl, e);
-                deleteMetadataWithHexEncodedMetadataUrl(HexUtils.encodeString(metadataUrl.toString()));
+                deleteMetadata(metadataUrl.toString());
                 report.recordFailure(metadataUrl, e);
             }
         }
@@ -55,34 +55,26 @@ public class MetadataAggregator {
     }
 
     private void deleteMetadataWhichIsNotInConfig(Collection<URL> configMetadataUrls) {
-        List<String> hexedConfigUrls = new ArrayList<>();
+        List<String> toRemoveBucketUrls = getAllUrlsFromS3Bucket();
+        toRemoveBucketUrls.removeAll(configMetadataUrls.stream().map(URL::toString).collect(Collectors.toSet()));
 
-        for (URL configMetadataUrl : configMetadataUrls) {
-            hexedConfigUrls.add(HexUtils.encodeString(configMetadataUrl.toString()));
-        }
-
-        List<String> toRemoveHexedBucketUrls = getAllHexEncodedUrlsFromS3Bucket();
-
-        toRemoveHexedBucketUrls.removeAll(hexedConfigUrls);
-
-        for (String hexedBucketUrl : toRemoveHexedBucketUrls) {
-            deleteMetadataWithHexEncodedMetadataUrl(hexedBucketUrl);
+        for (String bucketUrl : toRemoveBucketUrls) {
+            deleteMetadata(bucketUrl);
         }
     }
 
-    private List<String> getAllHexEncodedUrlsFromS3Bucket() {
-        List<String> hexEncodedUrls = new ArrayList<>();
+    private List<String> getAllUrlsFromS3Bucket() {
         try {
-            hexEncodedUrls = s3BucketMetadataStore.getAllHexEncodedUrlsFromS3Bucket();
+            return metadataStore.list();
         } catch (MetadataStoreException e) {
             LOGGER.error("Metadata Aggregator error - Unable to retrieve keys from S3 bucket", e);
+            return Collections.emptyList();
         }
-        return hexEncodedUrls;
     }
 
-    private void deleteMetadataWithHexEncodedMetadataUrl(String hexEncodedUrl) {
+    private void deleteMetadata(String hexEncodedUrl) {
         try {
-            s3BucketMetadataStore.deleteMetadata(hexEncodedUrl);
+            metadataStore.delete(hexEncodedUrl);
         } catch (MetadataStoreException e) {
             LOGGER.error("Error deleting metadatasource file with hexEncodedUrl: {}", hexEncodedUrl, e);
         }

@@ -19,7 +19,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class S3BucketMetadataStore {
+public class S3BucketMetadataStore implements MetadataStore {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(S3BucketMetadataStore.class);
 
@@ -31,7 +31,7 @@ public class S3BucketMetadataStore {
         this.s3Client = s3Client;
     }
 
-    public void uploadMetadata(String resource, EntityDescriptor metadataNode) throws MetadataStoreException {
+    public void upload(String resource, EntityDescriptor metadataNode) throws MetadataStoreException {
         String metadataString = serialise(metadataNode);
         ObjectMetadata objectMetadata = objectMetadata(metadataString.length());
 
@@ -49,7 +49,7 @@ public class S3BucketMetadataStore {
         }
     }
 
-    public void deleteMetadata(String resource) throws MetadataStoreException {
+    public void delete(String resource) throws MetadataStoreException {
         try {
             LOGGER.info("Deleting metadata with key: {} from S3 bucket: {}", resource, bucketName);
             s3Client.deleteObject(new DeleteObjectRequest(bucketName, resource));
@@ -58,7 +58,7 @@ public class S3BucketMetadataStore {
         }
     }
 
-    public List<String> getAllHexEncodedUrlsFromS3Bucket() throws MetadataStoreException {
+    public List<String> list() throws MetadataStoreException {
         List<String> bucketKeyList = new ArrayList<>();
         List<S3ObjectSummary> bucketObjects;
 

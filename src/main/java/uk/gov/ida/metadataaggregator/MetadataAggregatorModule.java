@@ -9,6 +9,8 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfigurationLoader;
+import uk.gov.ida.metadataaggregator.core.HexEncodedMetadataStore;
+import uk.gov.ida.metadataaggregator.core.MetadataStore;
 import uk.gov.ida.metadataaggregator.core.S3BucketMetadataStore;
 import uk.gov.ida.metadataaggregator.core.StatusReport;
 import uk.gov.ida.metadataaggregator.exceptions.ConfigSourceException;
@@ -72,8 +74,8 @@ class MetadataAggregatorModule extends AbstractModule {
     }
 
     @Provides
-    private S3BucketMetadataStore getS3BucketClient(MetadataAggregatorConfiguration configuration, AmazonS3 amazonS3Client) {
-        return new S3BucketMetadataStore(configuration.getS3BucketName(), amazonS3Client);
+    private MetadataStore getS3BucketClient(MetadataAggregatorConfiguration configuration, AmazonS3 amazonS3Client) {
+        return new HexEncodedMetadataStore(new S3BucketMetadataStore(configuration.getS3BucketName(), amazonS3Client));
     }
 
     @Provides
