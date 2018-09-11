@@ -31,7 +31,15 @@ public class MetadataAggregatorConfiguration extends Configuration {
     @JsonProperty
     private String metadataSourcesFile;
 
-    protected MetadataAggregatorConfiguration() { }
+    @Valid
+    @JsonProperty
+    private long hoursBetweenEachRun = 1;
+
+    @Valid
+    @JsonProperty
+    private String awsRegion;
+
+    public MetadataAggregatorConfiguration() { }
 
     public URI getTrustAnchorUri() {
         return trustAnchorUri;
@@ -46,4 +54,12 @@ public class MetadataAggregatorConfiguration extends Configuration {
     }
 
     public String getMetadataSourcesFile() { return metadataSourcesFile; }
+
+    public long getHoursBetweenEachRun() {
+        return hoursBetweenEachRun;
+    }
+
+    public String getAwsRegion() {
+        return awsRegion;
+    }
 }

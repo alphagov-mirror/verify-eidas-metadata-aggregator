@@ -46,4 +46,8 @@ trustStore:
 
 s3BucketName: ${S3_BUCKET_NAME}
 
+hoursBetweenEachRun: ${HOURS_BETWEEN_EACH_RUN}
+
 metadataSourcesFile: ${METADATA_SOURCES_FILE}
+
+awsRegion: ${AWS_REGION}

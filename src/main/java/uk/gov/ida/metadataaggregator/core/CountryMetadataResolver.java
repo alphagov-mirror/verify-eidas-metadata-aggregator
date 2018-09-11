@@ -12,8 +12,6 @@ import org.opensaml.saml.metadata.resolver.filter.impl.SignatureValidationFilter
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import ch.qos.logback.core.util.Duration;
 import uk.gov.ida.metadataaggregator.exceptions.MetadataSourceException;
 import uk.gov.ida.saml.metadata.EidasTrustAnchorResolver;
 import uk.gov.ida.saml.metadata.ExpiredCertificateMetadataFilter;
@@ -26,6 +24,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.text.ParseException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -37,10 +37,10 @@ public class CountryMetadataResolver {
 
     // We don't want to refresh ever, but cannot specify zero milliseconds as it can lead to negative durations
     // and also can't specify Long.MAX_VALUE because it'll give bad values when subtracted. So just specify a long time.
-    private static final Long REFRESH_DELAY = Duration.buildByDays(365).getMilliseconds();
+    private static final Long REFRESH_DELAY = Duration.of(365, ChronoUnit.DAYS).toMillis();
 
     private final Map<String, JWK> trustAnchors;
-    private ClientBuilder clientBuilder;
+    private final ClientBuilder clientBuilder;
 
     public CountryMetadataResolver(Map<String, JWK> trustAnchors, ClientBuilder clientBuilder) {
         this.trustAnchors = trustAnchors;
@@ -51,10 +51,10 @@ public class CountryMetadataResolver {
         Map<String, JWK> trustAnchors;
         try {
             trustAnchors =
-                trustAnchorResolver
-                    .getTrustAnchors()
-                    .stream()
-                    .collect(Collectors.toMap(JWK::getKeyID, identity()));
+                    trustAnchorResolver
+                            .getTrustAnchors()
+                            .stream()
+                            .collect(Collectors.toMap(JWK::getKeyID, identity()));
         } catch (GeneralSecurityException | ParseException | JOSEException e) {
             LOGGER.error("Error creating CountryMetadataResolver", e);
             throw new MetadataSourceException("Error creating CountryMetadataResolver", e);
@@ -95,20 +95,20 @@ public class CountryMetadataResolver {
         }
 
         Provider<SignatureValidationFilter> pkixSignatureValidationFilterProvider =
-            new PKIXSignatureValidationFilterProvider(trustAnchors.get(url.toString()).getKeyStore());
+                new PKIXSignatureValidationFilterProvider(trustAnchors.get(url.toString()).getKeyStore());
 
         List<MetadataFilter> metadataFilters =
-            ImmutableList.of(
-                pkixSignatureValidationFilterProvider.get(),
-                new ExpiredCertificateMetadataFilter()
-            );
+                ImmutableList.of(
+                        pkixSignatureValidationFilterProvider.get(),
+                        new ExpiredCertificateMetadataFilter()
+                );
 
         return new MetadataResolverFactory().create(
-            clientBuilder.build(),
-            url.toURI(),
-            metadataFilters,
-            REFRESH_DELAY,
-            REFRESH_DELAY
+                clientBuilder.build(),
+                url.toURI(),
+                metadataFilters,
+                REFRESH_DELAY,
+                REFRESH_DELAY
         );
     }
 }
