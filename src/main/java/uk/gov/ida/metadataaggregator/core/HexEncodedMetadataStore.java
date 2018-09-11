@@ -24,6 +24,11 @@ public class HexEncodedMetadataStore implements MetadataStore {
   }
 
   @Override
+  public EntityDescriptor download(String name) throws MetadataStoreException {
+    return downstreamStore.download(encodeString(name));
+  }
+
+  @Override
   public void delete(String name) throws MetadataStoreException {
     downstreamStore.delete(encodeString(name));
 	}

@@ -2,19 +2,29 @@ package uk.gov.ida.metadataaggregator.core;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.util.StringInputStream;
+
+import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
+import org.opensaml.core.xml.io.UnmarshallingException;
+import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
+
+import net.shibboleth.utilities.java.support.xml.ParserPool;
+import net.shibboleth.utilities.java.support.xml.XMLParserException;
 import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
 import uk.gov.ida.saml.serializers.XmlObjectToElementTransformer;
 
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +56,17 @@ public class S3BucketMetadataStore implements MetadataStore {
             s3Client.putObject(new PutObjectRequest(bucketName, resource, metadataStream, objectMetadata));
         } catch (RuntimeException e) {
             throw new MetadataStoreException("Error uploading metadata to S3 bucket", e);
+        }
+    }
+
+    public EntityDescriptor download(String resource) throws MetadataStoreException {
+        try {
+            S3Object metadataObj = s3Client.getObject(new GetObjectRequest(bucketName, resource));
+            EntityDescriptor metadata = deserialise(metadataObj.getObjectContent());
+            // TODO: validate the metadata has not expired and is signed
+            return metadata;
+        } catch (RuntimeException | XMLParserException | UnmarshallingException e) {
+            throw new MetadataStoreException("Error downloading metadata from S3 bucket", e);
         }
     }
 
@@ -88,5 +109,10 @@ public class S3BucketMetadataStore implements MetadataStore {
                 .getImplementation();
         LSSerializer serializer = domImplLS.createLSSerializer();
         return serializer.writeToString(element);
+    }
+
+    private EntityDescriptor deserialise(InputStream inputStream) throws XMLParserException, UnmarshallingException {
+        ParserPool parserPool = XMLObjectProviderRegistrySupport.getParserPool();
+        return (EntityDescriptor) XMLObjectSupport.unmarshallFromInputStream(parserPool, inputStream);
     }
 }
