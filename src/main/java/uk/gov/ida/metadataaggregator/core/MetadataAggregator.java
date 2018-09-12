@@ -32,7 +32,7 @@ public class MetadataAggregator {
     public StatusReport aggregateMetadata() {
         LOGGER.info("Processing country metadatasource");
 
-        StatusReport report = new StatusReport(configuration.getMetadataUrls());
+        StatusReport report = new StatusReport(configuration.getMetadataUrls().size());
         Collection<URL> configMetadataUrls = configuration.getMetadataUrls().values();
 
         deleteMetadataWhichIsNotInConfig(configMetadataUrls);

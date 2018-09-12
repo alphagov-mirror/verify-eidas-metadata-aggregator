@@ -12,8 +12,8 @@ public class StatusReport {
   private final int expectedSuccesses;
   private final HashMap<URL, Throwable> errorsFromMetadataUrl = new HashMap<URL, Throwable>();
 
-  public StatusReport(Map<String, URL> metadataUrlsFromNames) {
-    this.expectedSuccesses = metadataUrlsFromNames.size();
+  public StatusReport(int expectedSuccesses) {
+    this.expectedSuccesses = expectedSuccesses;
   }
 
   public DateTime getRunAt() {

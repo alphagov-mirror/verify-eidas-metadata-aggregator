@@ -24,8 +24,7 @@ public class StatusReportTest {
 
   @Test
   public void testOnlySuccessfulWhenAllMetadataProcessed() throws MalformedURLException {
-    metadataUrls.put("local", metadataUrl);
-    StatusReport report = new StatusReport(metadataUrls);
+    StatusReport report = new StatusReport(1);
 
     assertFalse(report.wasSuccessful());
     report.recordSuccess(metadataUrl);
@@ -34,8 +33,7 @@ public class StatusReportTest {
 
   @Test
   public void testUnsuccessfulWhenMetadataFails() {
-    metadataUrls.put("local", metadataUrl);
-    StatusReport report = new StatusReport(metadataUrls);
+    StatusReport report = new StatusReport(1);
 
     report.recordFailure(metadataUrl, new Exception());
     assertFalse(report.wasSuccessful());
