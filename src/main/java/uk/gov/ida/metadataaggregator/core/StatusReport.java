@@ -24,7 +24,7 @@ public class StatusReport {
     return errorsFromMetadataUrl;
   }
 
-  public void recordSuccess(URL metadataUrl) {
+  public void recordSuccess() {
     numberOfSuccesses++;
   }
 

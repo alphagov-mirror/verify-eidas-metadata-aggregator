@@ -17,7 +17,7 @@ public class AggregationStatusHealthCheck extends HealthCheck {
     }
 
     @Override
-    public Result check() throws Exception {
+    public Result check() {
         StatusReport report = lastReportRef.get();
         if (report == null) return Result.unhealthy("No refresh has been run yet");
         ResultBuilder healthCheckResult = report.wasSuccessful() ?

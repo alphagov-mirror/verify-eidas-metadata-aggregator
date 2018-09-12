@@ -43,21 +43,21 @@ public class AggregationStatusHealthCheckTest {
     }
 
     @Test
-    public void testHealthCheckStatusIsUnhealthyWhenFailuresReported() throws Exception {
+    public void testHealthCheckStatusIsUnhealthyWhenFailuresReported() {
         when(statusReport.wasSuccessful()).thenReturn(false);
         Result result = healthCheck.check();
         assertFalse(result.isHealthy());
     }
 
     @Test
-    public void testHealthCheckStatusIsHealthyWhenSuccessReported() throws Exception {
+    public void testHealthCheckStatusIsHealthyWhenSuccessReported() {
         when(statusReport.wasSuccessful()).thenReturn(true);
         Result result = healthCheck.check();
         assertTrue(result.isHealthy());
     }
 
     @Test
-    public void testHealthCheckContainsURLsOfFailingMetadata() throws Exception {
+    public void testHealthCheckContainsURLsOfFailingMetadata() {
         when(statusReport.wasSuccessful()).thenReturn(false);
         when(statusReport.getErrors()).thenReturn(metadataUrls);
         Result result = healthCheck.check();

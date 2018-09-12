@@ -7,6 +7,7 @@ import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
 import uk.gov.ida.metadataaggregator.core.CountryMetadataResolver;
 import uk.gov.ida.metadataaggregator.core.MetadataAggregator;
 import uk.gov.ida.metadataaggregator.core.S3BucketMetadataStore;
+import uk.gov.ida.metadataaggregator.core.StatusReport;
 import uk.gov.ida.metadataaggregator.exceptions.MetadataSourceException;
 import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
 import uk.gov.ida.metadataaggregator.util.HexUtils;
@@ -17,11 +18,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -39,7 +43,8 @@ public class MetadataAggregatorTest {
 
     @Before
     public void before() throws MalformedURLException {
-        testAggregator = new MetadataAggregator(testMetadataSourceConfiguration, testMetadataSource, testS3BucketMetadataStore);
+        testAggregator = new MetadataAggregator(
+                testMetadataSourceConfiguration, testMetadataSource, testS3BucketMetadataStore);
         urlList = new HashMap<>();
         testUrl1 = new URL("http://testUrl1");
         testKey1 = "testKey1";
@@ -57,7 +62,7 @@ public class MetadataAggregatorTest {
     }
 
     @Test
-    public void shouldUploadMetadataDownloadedFromSourceToStore()
+    public void shouldUploadMetadataToS3AndReturnSuccessfulHealthcheck()
             throws MetadataSourceException, MetadataStoreException {
 
         urlList.put(testKey1, testUrl1);
@@ -66,13 +71,14 @@ public class MetadataAggregatorTest {
                 .thenReturn(urlList);
         when(testMetadataSource.downloadMetadata(testUrl1)).thenReturn(testMetadata1);
 
-        testAggregator.aggregateMetadata();
+        StatusReport statusReport = testAggregator.aggregateMetadata();
 
+        assertTrue(statusReport.wasSuccessful());
         verify(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl1.toString()), testMetadata1);
     }
 
     @Test
-    public void shouldUploadMultipleMetadataDownloadedFromSourceToStore()
+    public void shouldUploadMultipleMetadataToS3AndReturnSuccessfulHealthcheck()
             throws MetadataSourceException, MetadataStoreException {
 
         urlList.put(testKey1, testUrl1);
@@ -83,29 +89,32 @@ public class MetadataAggregatorTest {
         when(testMetadataSource.downloadMetadata(testUrl1)).thenReturn(testMetadata1);
         when(testMetadataSource.downloadMetadata(testUrl2)).thenReturn(testMetadata2);
 
-        testAggregator.aggregateMetadata();
+        StatusReport statusReport = testAggregator.aggregateMetadata();
 
+        assertTrue(statusReport.wasSuccessful());
         verify(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl1.toString()), testMetadata1);
         verify(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl2.toString()), testMetadata2);
     }
 
     @Test
-    public void shouldNotUploadMetadataWhenExceptionThrownByMetadataSource()
+    public void shouldNotUploadMetadataAndReturnUnsuccessfulHealthcheckWhenExceptionThrown()
             throws MetadataStoreException, MetadataSourceException {
 
         urlList.put(unsuccessfulKey, unsuccessfulUrl);
 
         when(testMetadataSourceConfiguration.getMetadataUrls())
             .thenReturn(urlList);
-        when(testMetadataSource.downloadMetadata(unsuccessfulUrl)).thenThrow(new MetadataSourceException("Metadata source exception"));
+        when(testMetadataSource.downloadMetadata(unsuccessfulUrl))
+                .thenThrow(new MetadataSourceException("Metadata source exception"));
 
-        testAggregator.aggregateMetadata();
+        StatusReport statusReport = testAggregator.aggregateMetadata();
 
+        assertFalse(statusReport.wasSuccessful());
         verify(testS3BucketMetadataStore, never()).uploadMetadata(anyString(), any(EntityDescriptor.class));
     }
 
     @Test
-    public void shouldUploadValidMetadataWhenExceptionThrowByMetadataSource()
+    public void shouldUploadMetadataAndReturnUnsuccessfulHealthcheckWhenPreviousDownloadFailed()
             throws MetadataStoreException, MetadataSourceException {
 
         urlList.put(unsuccessfulKey, unsuccessfulUrl);
@@ -113,16 +122,19 @@ public class MetadataAggregatorTest {
 
         when(testMetadataSourceConfiguration.getMetadataUrls())
             .thenReturn(urlList);
-        when(testMetadataSource.downloadMetadata(unsuccessfulUrl)).thenThrow(new MetadataSourceException("Metadata source exception"));
+        when(testMetadataSource.downloadMetadata(unsuccessfulUrl))
+                .thenThrow(new MetadataSourceException("Metadata source exception"));
         when(testMetadataSource.downloadMetadata(successfulUrl)).thenReturn(successfulMetadata);
 
-        testAggregator.aggregateMetadata();
+        StatusReport statusReport = testAggregator.aggregateMetadata();
 
-        verify(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(successfulUrl.toString()), successfulMetadata);
+        assertFalse(statusReport.wasSuccessful());
+        verify(testS3BucketMetadataStore, times(1))
+                .uploadMetadata(HexUtils.encodeString(successfulUrl.toString()), successfulMetadata);
     }
 
     @Test
-    public void shouldUploadValidMetadataWhenPreviousUploadFailed()
+    public void shouldUploadValidMetadataAndReturnUnsuccessfulHealthcheckWhenUploadFailed()
             throws MetadataStoreException, MetadataSourceException {
 
         urlList.put(unsuccessfulKey, unsuccessfulUrl);
@@ -134,15 +146,18 @@ public class MetadataAggregatorTest {
         when(testMetadataSource.downloadMetadata(successfulUrl)).thenReturn(successfulMetadata);
 
         doThrow(new MetadataStoreException("Metadata store failed"))
-                .when(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()), unsuccessfulMetadata);
+                .when(testS3BucketMetadataStore).uploadMetadata(
+                        HexUtils.encodeString(unsuccessfulUrl.toString()), unsuccessfulMetadata);
 
-        testAggregator.aggregateMetadata();
+        StatusReport statusReport = testAggregator.aggregateMetadata();
 
-        verify(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(successfulUrl.toString()), successfulMetadata);
+        assertFalse(statusReport.wasSuccessful());
+        verify(testS3BucketMetadataStore).uploadMetadata(
+                HexUtils.encodeString(successfulUrl.toString()), successfulMetadata);
     }
 
     @Test
-    public void shouldDeleteMetadataWhenDownloadIsUnsuccessful()
+    public void shouldDeleteMetadataAndReturnUnsuccessfulHealthcheckWhenDownloadIsUnsuccessful()
             throws MetadataSourceException, MetadataStoreException {
 
         urlList.put(unsuccessfulKey, unsuccessfulUrl);
@@ -158,7 +173,7 @@ public class MetadataAggregatorTest {
     }
 
     @Test
-    public void shouldDeleteMetadataWhenUploadIsUnsuccessful()
+    public void shouldDeleteMetadataAndReturnUnsuccessfulHealthcheckWhenUploadIsUnsuccessful()
             throws MetadataSourceException, MetadataStoreException {
 
         urlList.put(unsuccessfulKey, unsuccessfulUrl);
@@ -170,15 +185,17 @@ public class MetadataAggregatorTest {
         when(testMetadataSource.downloadMetadata(unsuccessfulUrl)).thenReturn(unsuccessfulMetadata);
 
         doThrow(new MetadataStoreException("Metadata store failed"))
-                .when(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()), unsuccessfulMetadata);
+                .when(testS3BucketMetadataStore).uploadMetadata(
+                        HexUtils.encodeString(unsuccessfulUrl.toString()), unsuccessfulMetadata);
 
-        testAggregator.aggregateMetadata();
+        StatusReport statusReport = testAggregator.aggregateMetadata();
 
+        assertFalse(statusReport.wasSuccessful());
         verify(testS3BucketMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()));
     }
 
     @Test
-    public void shouldThrowExceptionWhenDeleteMetadataFails()
+    public void shouldThrowExceptionAndReturnUnsuccessfulHealthcheckWhenDeleteMetadataFails()
             throws MetadataSourceException, MetadataStoreException {
 
         urlList.put(unsuccessfulKey, unsuccessfulUrl);
@@ -191,13 +208,14 @@ public class MetadataAggregatorTest {
         doThrow(new MetadataStoreException("Delete metadata has failed"))
                 .when(testS3BucketMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()));
 
-        testAggregator.aggregateMetadata();
+        StatusReport statusReport = testAggregator.aggregateMetadata();
 
+        assertFalse(statusReport.wasSuccessful());
         verify(testS3BucketMetadataStore).deleteMetadata(HexUtils.encodeString(unsuccessfulUrl.toString()));
     }
 
     @Test
-    public void shouldUploadValidMetadataWhenDeleteOfPreviousMetadataFails()
+    public void shouldUploadMetadataAndReturnUnsuccessfulHealthcheckWhenOtherMetadataDeleteFails()
             throws MetadataStoreException, MetadataSourceException {
 
         urlList.put(unsuccessfulKey, unsuccessfulUrl);
@@ -216,7 +234,8 @@ public class MetadataAggregatorTest {
 
         testAggregator.aggregateMetadata();
 
-        verify(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(successfulUrl.toString()), successfulMetadata);
+        verify(testS3BucketMetadataStore).uploadMetadata(
+                HexUtils.encodeString(successfulUrl.toString()), successfulMetadata);
     }
 
     @Test
@@ -237,15 +256,17 @@ public class MetadataAggregatorTest {
         when(testMetadataSource.downloadMetadata(testUrl2)).thenReturn(testMetadata2);
         when(testS3BucketMetadataStore.getAllHexEncodedUrlsFromS3Bucket()).thenReturn(s3BucketUrls);
 
-        testAggregator.aggregateMetadata();
+        StatusReport statusReport = testAggregator.aggregateMetadata();
 
+        assertTrue(statusReport.wasSuccessful());
         verify(testS3BucketMetadataStore).deleteMetadata(HexUtils.encodeString(testUrl3.toString()));
         verify(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl1.toString()), testMetadata1);
         verify(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl2.toString()), testMetadata2);
     }
 
     @Test
-    public void shouldUploadMetadataWhenRetrievingKeysFromS3BucketFails() throws MetadataSourceException, MetadataStoreException {
+    public void shouldUploadMetadataAndReturnSuccessfulHealthcheckWhenRetrievingKeysFromS3BucketFails()
+            throws MetadataSourceException, MetadataStoreException {
 
         urlList.put(testKey1, testUrl1);
         urlList.put(testKey2, testUrl2);
@@ -257,8 +278,9 @@ public class MetadataAggregatorTest {
         when(testMetadataSource.downloadMetadata(testUrl1)).thenReturn(testMetadata1);
         when(testMetadataSource.downloadMetadata(testUrl2)).thenReturn(testMetadata2);
 
-        testAggregator.aggregateMetadata();
+        StatusReport statusReport = testAggregator.aggregateMetadata();
 
+        assertTrue(statusReport.wasSuccessful());
         verify(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl1.toString()), testMetadata1);
         verify(testS3BucketMetadataStore).uploadMetadata(HexUtils.encodeString(testUrl2.toString()), testMetadata2);
     }

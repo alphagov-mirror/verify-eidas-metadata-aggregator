@@ -23,11 +23,11 @@ public class StatusReportTest {
   }
 
   @Test
-  public void testOnlySuccessfulWhenAllMetadataProcessed() throws MalformedURLException {
+  public void testOnlySuccessfulWhenAllMetadataProcessed() {
     StatusReport report = new StatusReport(1);
 
     assertFalse(report.wasSuccessful());
-    report.recordSuccess(metadataUrl);
+    report.recordSuccess();
     assertTrue(report.wasSuccessful());
   }
 

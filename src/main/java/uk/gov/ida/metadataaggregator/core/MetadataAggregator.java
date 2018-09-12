@@ -41,7 +41,7 @@ public class MetadataAggregator {
             try {
                 EntityDescriptor countryMetadataFile = countryMetadataResolver.downloadMetadata(metadataUrl);
                 s3BucketMetadataStore.uploadMetadata(HexUtils.encodeString(metadataUrl.toString()), countryMetadataFile);
-                report.recordSuccess(metadataUrl);
+                report.recordSuccess();
             } catch (MetadataSourceException | MetadataStoreException e) {
                 LOGGER.error("Error processing metadata {}", metadataUrl, e);
                 deleteMetadataWithHexEncodedMetadataUrl(HexUtils.encodeString(metadataUrl.toString()));
