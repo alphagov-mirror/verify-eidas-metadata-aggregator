@@ -13,6 +13,7 @@ import uk.gov.ida.metadataaggregator.core.S3BucketMetadataStore;
 import uk.gov.ida.metadataaggregator.core.StatusReport;
 import uk.gov.ida.metadataaggregator.exceptions.ConfigSourceException;
 import uk.gov.ida.metadataaggregator.healthcheck.AggregationStatusHealthCheck;
+import uk.gov.ida.metadataaggregator.healthcheck.ReconciliationHealthCheck;
 import uk.gov.ida.metadataaggregator.managed.MetadataAggregationTaskRunner;
 import uk.gov.ida.metadataaggregator.managed.ScheduledMetadataAggregator;
 import uk.gov.ida.saml.metadata.EidasTrustAnchorResolver;
@@ -31,6 +32,7 @@ class MetadataAggregatorModule extends AbstractModule {
         bind(ScheduledMetadataAggregator.class);
         bind(MetadataAggregationTaskRunner.class);
         bind(AggregationStatusHealthCheck.class);
+        bind(ReconciliationHealthCheck.class);
     }
 
     @Provides

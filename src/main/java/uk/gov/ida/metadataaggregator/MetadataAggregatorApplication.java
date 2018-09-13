@@ -7,6 +7,7 @@ import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import uk.gov.ida.metadataaggregator.healthcheck.AggregationStatusHealthCheck;
+import uk.gov.ida.metadataaggregator.healthcheck.ReconciliationHealthCheck;
 import uk.gov.ida.metadataaggregator.managed.ScheduledMetadataAggregator;
 
 public class MetadataAggregatorApplication extends Application<MetadataAggregatorConfiguration> {
@@ -41,5 +42,6 @@ public class MetadataAggregatorApplication extends Application<MetadataAggregato
         environment.getObjectMapper().setDateFormat(StdDateFormat.getDateInstance());
         environment.lifecycle().manage(guiceBundle.getInjector().getInstance(ScheduledMetadataAggregator.class));
         environment.healthChecks().register("lastAggregation", guiceBundle.getInjector().getInstance(AggregationStatusHealthCheck.class));
+        environment.healthChecks().register("lastReconciliation", guiceBundle.getInjector().getInstance(ReconciliationHealthCheck.class));
     }
 }
