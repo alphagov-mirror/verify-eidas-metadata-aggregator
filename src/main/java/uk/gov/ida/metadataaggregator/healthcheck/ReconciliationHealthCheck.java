@@ -10,6 +10,7 @@ import javax.inject.Inject;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ReconciliationHealthCheck extends HealthCheck {
@@ -25,28 +26,28 @@ public class ReconciliationHealthCheck extends HealthCheck {
 
     @Override
     public Result check() throws MetadataStoreException {
-        HashSet<String> fileUrlsInBucket = new HashSet<String>(metadataStore.getAllHexEncodedUrlsFromS3Bucket());
-        HashSet<String> inBucketNotInConfig = new HashSet<String>(fileUrlsInBucket);
+        Set<String> fileUrlsInBucket = new HashSet<>(metadataStore.getAllHexEncodedUrlsFromS3Bucket());
+        Set<String> inBucketNotInConfig = new HashSet<>(fileUrlsInBucket);
 
-        HashSet<String> filesUrlsInConfig = getHexEncodeConfigUrls();
-        HashSet<String> inConfigNotInBucket = new HashSet<String>(filesUrlsInConfig);
+        Set<String> filesUrlsInConfig = getHexEncodeConfigUrls();
+        Set<String> inConfigNotInBucket = new HashSet<>(filesUrlsInConfig);
 
         inConfigNotInBucket.removeAll(fileUrlsInBucket);
         inBucketNotInConfig.removeAll(filesUrlsInConfig);
 
-        if (!inConfigNotInBucket.isEmpty() || !inBucketNotInConfig.isEmpty()) {
+        if (inConfigNotInBucket.isEmpty() && inBucketNotInConfig.isEmpty()) {
+            return Result.healthy();
+        } else {
             return Result.builder().unhealthy()
                     .withDetail("inConfigNotInBucket", inConfigNotInBucket)
                     .withDetail("inBucketNotInConfig", inBucketNotInConfig)
                     .build();
-        } else {
-            return Result.healthy();
         }
     }
 
-    private HashSet<String> getHexEncodeConfigUrls() {
+    private Set<String> getHexEncodeConfigUrls() {
         Collection<String> filesInConfig = config.getMetadataUrls().values().stream().map(URL::toString).collect(Collectors.toSet());
-        HashSet<String> hexedConfigUrls = new HashSet<>();
+        Set<String> hexedConfigUrls = new HashSet<>();
 
         for (String configMetadataUrl : filesInConfig) {
             hexedConfigUrls.add(HexUtils.encodeString(configMetadataUrl));

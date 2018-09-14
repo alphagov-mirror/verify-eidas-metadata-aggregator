@@ -15,9 +15,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -32,7 +34,7 @@ public class ReconciliationHealthCheckTest {
     private final static String BUCKET_URL_C = HexUtils.encodeString("http://localhost-country-c");
     private URL countryAConfigUrl;
     private URL countryBConfigUrl;
-    private HashMap<String, URL> configUrls;
+    private Map <String, URL> configUrls;
 
     @Before
     public void setUp() throws MalformedURLException {
@@ -73,7 +75,11 @@ public class ReconciliationHealthCheckTest {
 
         HealthCheck.Result check = reconciliationHealthCheck.check();
 
+        String metadataConfigHealthCheckUrl = check.getDetails().get("inConfigNotInBucket").toString();
+        String expectedMetadataUrlValue = HexUtils.encodeString(countryAConfigUrl.toString());
+
         assertFalse(check.isHealthy());
+        assertTrue(metadataConfigHealthCheckUrl.contains(expectedMetadataUrlValue));
     }
 
     @Test
@@ -83,7 +89,12 @@ public class ReconciliationHealthCheckTest {
 
         HealthCheck.Result check = reconciliationHealthCheck.check();
 
+        String metadataBucketHealthCheckUrl = check.getDetails().get("inBucketNotInConfig").toString();
+        String expectedBucketMetadataUrlValue = BUCKET_URL_A;
+
         assertFalse(check.isHealthy());
+        assertTrue(metadataBucketHealthCheckUrl.contains(expectedBucketMetadataUrlValue));
+
     }
 
     @Test
