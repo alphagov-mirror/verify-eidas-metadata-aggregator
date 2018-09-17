@@ -38,6 +38,9 @@ logging:
       facility: local2
       tag: metadata-aggregator
 
+serviceInfo:
+  name: metadata-aggregator
+
 trustAnchorUri: ${TRUST_ANCHOR_URI}
 trustStore:
   type: ${TRUSTSTORE_TYPE:-file}
