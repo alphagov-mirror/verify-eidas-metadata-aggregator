@@ -31,15 +31,6 @@ ext {
 group = "uk.gov.ida.eidas"
 version = "0.1-$build_version"
 
-jar {
-    from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-    manifest {
-        attributes 'Main-Class': mainClassName
-    }
-}
-
 sourceCompatibility = 1.8
 
 repositories {
