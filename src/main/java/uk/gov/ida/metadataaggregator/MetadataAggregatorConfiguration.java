@@ -26,6 +26,10 @@ public class MetadataAggregatorConfiguration extends Configuration implements Se
     private URI trustAnchorUri;
 
     @Valid
+    @JsonProperty
+    private String environment;
+
+    @Valid
     @NotNull
     @JsonProperty
     private TrustStoreConfiguration trustStore;
@@ -60,7 +64,9 @@ public class MetadataAggregatorConfiguration extends Configuration implements Se
         return s3BucketName;
     }
 
-    public String getMetadataSourcesFile() { return metadataSourcesFile; }
+    public String getEnvironment() {
+        return environment;
+    }
 
     public long getHoursBetweenEachRun() {
         return hoursBetweenEachRun;
