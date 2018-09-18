@@ -33,9 +33,33 @@ AWS_SECRET_ACCESS_KEY
 AWS_SESSION_TOKEN
 ```
 
-## Future Development - DropWizard Application
+## DropWizard Application
 
 The eIDAS metadata aggregator is currently undergoing transformation to run as a DropWizard application. This README file will be updated when the changes are completed.
+
+### Building and running
+
+To build for use run:
+```
+./gradlew clean build installDist
+```
+
+Then to run it:
+```
+./build/install/verify-eidas-metadata-aggregator/bin/verify-eidas-metadata-aggregator server configuration/metadata-aggregator.yml
+```
+
+The configuration file reads some environment variables. Depending on your environment you could also need to set, as an example:
+```
+export TRUST_ANCHOR_URI="https://verify-joint-metadata.cloudapps.digital/trust-anchor.jws"
+export TRUSTSTORE="../ida-hub-acceptance-tests/truststores/ida_truststore.ts"
+export LOG_PATH="/tmp"`cat ../ida-hub-acceptance-tests/configuration/test-rp-msa.yml | grep trustStorePassword | awk '{ print $2; }'`
+export HOURS_BETWEEN_EACH_RUN=1
+export ENVIRONMENT="joint"
+export AWS_REGION="eu-west-2"
+```
+
+To access the results of aggregations and reconciliation, in a browser visit http://localhost:51201/healthcheck.
 
 ## Support and responsible disclosure
 
