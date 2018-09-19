@@ -25,20 +25,12 @@ mainClassName = 'uk.gov.ida.metadataaggregator.MetadataAggregatorApplication'
 ext {
     openSamlVersion = '3.3.0'
     saml_libs_version = "${openSamlVersion}-151"
+    ida_utils_version = "336"
     build_version = "${System.env.BUILD_NUMBER ?: 'SNAPSHOT'}"
 }
 
 group = "uk.gov.ida.eidas"
 version = "0.1-$build_version"
-
-jar {
-    from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-    manifest {
-        attributes 'Main-Class': mainClassName
-    }
-}
 
 sourceCompatibility = 1.8
 
@@ -62,7 +54,8 @@ dependencies {
             'org.slf4j:log4j-over-slf4j:1.7.12',
             'com.squarespace.jersey2-guice:jersey2-guice-impl:1.0.6',
             'com.hubspot.dropwizard:dropwizard-guicier:1.0.0.6',
-            'uk.gov.ida:common-utils:2.0.0-335',
+            "uk.gov.ida:common-utils:2.0.0-$ida_utils_version",
+            "uk.gov.ida:rest-utils:2.0.0-$ida_utils_version",
             "uk.gov.ida:saml-serializers:$saml_libs_version"
     )
 

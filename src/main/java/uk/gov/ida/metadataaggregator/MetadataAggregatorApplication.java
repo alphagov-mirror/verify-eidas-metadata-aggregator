@@ -4,8 +4,11 @@ import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.hubspot.dropwizard.guicier.GuiceBundle;
 import com.squarespace.jersey2.guice.JerseyGuiceUtils;
 import io.dropwizard.Application;
+import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
+import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import uk.gov.ida.bundles.LoggingBundle;
 import uk.gov.ida.metadataaggregator.healthcheck.AggregationStatusHealthCheck;
 import uk.gov.ida.metadataaggregator.healthcheck.ReconciliationHealthCheck;
 import uk.gov.ida.metadataaggregator.managed.ScheduledMetadataAggregator;
@@ -35,6 +38,8 @@ public class MetadataAggregatorApplication extends Application<MetadataAggregato
                 .build();
 
         bootstrap.addBundle(guiceBundle);
+        bootstrap.addBundle(new LoggingBundle());
+        bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(false)));
     }
 
     @Override

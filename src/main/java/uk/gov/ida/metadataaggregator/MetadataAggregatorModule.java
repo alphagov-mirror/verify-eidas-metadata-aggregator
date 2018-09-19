@@ -65,7 +65,7 @@ class MetadataAggregatorModule extends AbstractModule {
 
     @Provides
     public MetadataSourceConfigurationLoader getMetadataSourceConfigurationLoader(MetadataAggregatorConfiguration configuration) {
-        return new MetadataSourceConfigurationLoader(configuration.getMetadataSourcesFile());
+        return new MetadataSourceConfigurationLoader(configuration.getEnvironment());
     }
 
     @Provides

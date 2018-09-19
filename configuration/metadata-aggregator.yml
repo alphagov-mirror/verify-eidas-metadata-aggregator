@@ -38,6 +38,9 @@ logging:
       facility: local2
       tag: metadata-aggregator
 
+serviceInfo:
+  name: metadata-aggregator
+
 trustAnchorUri: ${TRUST_ANCHOR_URI}
 trustStore:
   type: ${TRUSTSTORE_TYPE:-file}
@@ -48,6 +51,6 @@ s3BucketName: ${S3_BUCKET_NAME}
 
 hoursBetweenEachRun: ${HOURS_BETWEEN_EACH_RUN}
 
-metadataSourcesFile: ${METADATA_SOURCES_FILE}
+environment: ${ENVIRONMENT}
 
 awsRegion: ${AWS_REGION}

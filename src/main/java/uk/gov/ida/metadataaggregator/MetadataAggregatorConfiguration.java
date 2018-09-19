@@ -3,6 +3,8 @@ package uk.gov.ida.metadataaggregator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
+import uk.gov.ida.common.ServiceInfoConfiguration;
+import uk.gov.ida.configuration.ServiceNameConfiguration;
 import uk.gov.ida.saml.metadata.TrustStoreConfiguration;
 
 import javax.validation.Valid;
@@ -11,12 +13,21 @@ import java.net.URI;
 import java.security.KeyStore;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class MetadataAggregatorConfiguration extends Configuration {
+public class MetadataAggregatorConfiguration extends Configuration implements ServiceNameConfiguration {
+
+    @JsonProperty
+    @NotNull
+    @Valid
+    private ServiceInfoConfiguration serviceInfo;
 
     @Valid
     @NotNull
     @JsonProperty
     private URI trustAnchorUri;
+
+    @Valid
+    @JsonProperty
+    private String environment;
 
     @Valid
     @NotNull
@@ -53,7 +64,9 @@ public class MetadataAggregatorConfiguration extends Configuration {
         return s3BucketName;
     }
 
-    public String getMetadataSourcesFile() { return metadataSourcesFile; }
+    public String getEnvironment() {
+        return environment;
+    }
 
     public long getHoursBetweenEachRun() {
         return hoursBetweenEachRun;
@@ -61,5 +74,10 @@ public class MetadataAggregatorConfiguration extends Configuration {
 
     public String getAwsRegion() {
         return awsRegion;
+    }
+
+    @Override
+    public String getServiceName() {
+        return serviceInfo.getName();
     }
 }

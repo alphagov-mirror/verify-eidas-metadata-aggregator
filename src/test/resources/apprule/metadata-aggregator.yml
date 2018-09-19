@@ -30,8 +30,11 @@ trustStore:
   store: ABCD
   password: 1234
 
+serviceInfo:
+  name: metadata-aggregator
+
 s3BucketName: testS3Bucket
 
 hoursBetweenEachRun: 1
 
-metadataSourcesFile: joint
+environment: joint
