@@ -97,8 +97,8 @@ public class S3BucketMetadataStoreTest {
 
         List<String> s3BucketKeys = s3BucketMetadataStore.getAllHexEncodedUrlsFromS3Bucket();
 
-        assertThat(s3BucketKeys.get(0).contains(kid1));
-        assertThat(s3BucketKeys.get(1).contains(kid2));
+        assertThat(s3BucketKeys.get(0)).isEqualTo(kid1);
+        assertThat(s3BucketKeys.get(1)).isEqualTo(kid2);
     }
 
     @Test
