@@ -6,6 +6,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.util.StringInputStream;
+import org.apache.commons.codec.DecoderException;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
 import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
+import uk.gov.ida.metadataaggregator.util.HexUtils;
 import uk.gov.ida.saml.serializers.XmlObjectToElementTransformer;
 
 import java.io.UnsupportedEncodingException;
@@ -22,6 +24,8 @@ import java.util.List;
 public class S3BucketMetadataStore {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(S3BucketMetadataStore.class);
+
+    private final Logger logger = LoggerFactory.getLogger(S3BucketMetadataStore.class);
 
     private final String bucketName;
     private final AmazonS3 s3Client;
@@ -73,6 +77,25 @@ public class S3BucketMetadataStore {
         }
 
         return bucketKeyList;
+    }
+
+    public DecodingResults getAllUrls() throws MetadataStoreException {
+        List<String> encodedUrls = getAllHexEncodedUrlsFromS3Bucket();
+
+        List<String> decodedUrls = new ArrayList<>();
+        List<String> invalidEncodingUrls = new ArrayList<>();
+        for (String encodedUrl: encodedUrls){
+            String decodeString;
+            try {
+                decodeString = HexUtils.decodeString(encodedUrl);
+                decodedUrls.add(decodeString);
+            } catch (DecoderException e) {
+                logger.error("Unable to decode string {} ", encodedUrl, e);
+                invalidEncodingUrls.add(encodedUrl);
+            }
+        }
+
+        return new DecodingResults(decodedUrls, invalidEncodingUrls);
     }
 
     private ObjectMetadata objectMetadata(int contentLength) {

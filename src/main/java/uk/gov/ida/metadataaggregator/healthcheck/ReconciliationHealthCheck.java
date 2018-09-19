@@ -1,19 +1,17 @@
 package uk.gov.ida.metadataaggregator.healthcheck;
 
 import com.codahale.metrics.health.HealthCheck;
-import org.apache.commons.codec.DecoderException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
+import uk.gov.ida.metadataaggregator.core.DecodingResults;
 import uk.gov.ida.metadataaggregator.core.S3BucketMetadataStore;
 import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
-import uk.gov.ida.metadataaggregator.util.HexUtils;
 
 import javax.inject.Inject;
 import java.net.URL;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class ReconciliationHealthCheck extends HealthCheck {
@@ -30,59 +28,35 @@ public class ReconciliationHealthCheck extends HealthCheck {
 
     @Override
     public Result check() throws MetadataStoreException {
-        Set<String> fileUrlsInBucket = new HashSet<>(metadataStore.getAllHexEncodedUrlsFromS3Bucket());
+        DecodingResults decodedBucketUrls = metadataStore.getAllUrls();
+        Collection<String> fileUrlsInBucket = decodedBucketUrls.urls();
+        Collection<String> fileUrlsInConfig = getHexEncodeConfigUrls();
 
-        Set<String> fileUrlsInConfig = getHexEncodeConfigUrls();
+        Collection<String> inConfigNotInBucket = subtract(fileUrlsInConfig, fileUrlsInBucket);
+        Collection<String> inBucketNotInConfig = subtract(fileUrlsInBucket, fileUrlsInConfig);
 
-        Set<String> inConfigNotInBucket = new HashSet<>();
-        Set<String> invalidHexEncodedUrl = new HashSet<>();
+        Collection<String> invalidEncodingUrls = decodedBucketUrls.invalidEncodingUrls();
 
-        for (String hexEncodedUrl : fileUrlsInConfig) {
-            if (!fileUrlsInBucket.contains(hexEncodedUrl)) {
-                String decodeString;
-                try {
-                    decodeString = HexUtils.decodeString(hexEncodedUrl);
-                    inConfigNotInBucket.add(decodeString);
-                } catch (DecoderException e) {
-                    logger.error("Unable to decode string {} ", hexEncodedUrl, e);
-                    invalidHexEncodedUrl.add(hexEncodedUrl);
-                }
-            }
-        }
-
-        Set<String> inBucketNotInConfig = new HashSet<>();
-
-        for (String hexEncodedUrl : fileUrlsInBucket) {
-            if (!fileUrlsInConfig.contains(hexEncodedUrl)) {
-                String decodeString;
-                try {
-                    decodeString = HexUtils.decodeString(hexEncodedUrl);
-                    inBucketNotInConfig.add(decodeString);
-                } catch (DecoderException e) {
-                    logger.error("Unable to decode string {} ", hexEncodedUrl, e);
-                    invalidHexEncodedUrl.add(hexEncodedUrl);
-                }
-            }
-        }
-
-        if (inConfigNotInBucket.isEmpty() && inBucketNotInConfig.isEmpty()) {
+        if (inConfigNotInBucket.isEmpty() && inBucketNotInConfig.isEmpty() && invalidEncodingUrls.isEmpty()) {
             return Result.healthy();
         } else {
             return Result.builder().unhealthy()
                     .withDetail("inConfigNotInBucket", inConfigNotInBucket)
                     .withDetail("inBucketNotInConfig", inBucketNotInConfig)
-                    .withDetail("invalidHexEncodedUrl", invalidHexEncodedUrl)
+                    .withDetail("invalidHexEncodedUrl", invalidEncodingUrls)
                     .build();
         }
     }
 
-    private Set<String> getHexEncodeConfigUrls() {
-        Collection<String> filesInConfig = config.getMetadataUrls().values().stream().map(URL::toString).collect(Collectors.toSet());
-        Set<String> hexedConfigUrls = new HashSet<>();
+    private Collection<String> subtract(Collection<String> a, Collection<String> b) {
+        return a.stream()
+                .filter(s -> !b.contains(s))
+                .collect(Collectors.toSet());
+    }
 
-        for (String configMetadataUrl : filesInConfig) {
-            hexedConfigUrls.add(HexUtils.encodeString(configMetadataUrl));
-        }
-        return hexedConfigUrls;
+    private Collection<String> getHexEncodeConfigUrls() {
+        return config.getMetadataUrls().values().stream()
+                .map(URL::toString)
+                .collect(Collectors.toSet());
     }
 }
