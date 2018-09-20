@@ -11,6 +11,8 @@ import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
 import javax.inject.Inject;
 import java.net.URL;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ReconciliationHealthCheck extends HealthCheck {
@@ -31,8 +33,11 @@ public class ReconciliationHealthCheck extends HealthCheck {
         Collection<String> fileUrlsInBucket = decodedBucketUrls.urls();
         Collection<String> fileUrlsInConfig = getHexEncodeConfigUrls();
 
-        Collection<String> inConfigNotInBucket = subtract(fileUrlsInConfig, fileUrlsInBucket);
-        Collection<String> inBucketNotInConfig = subtract(fileUrlsInBucket, fileUrlsInConfig);
+        Collection<String> inConfigNotInBucket = new HashSet<>(fileUrlsInConfig);
+        inConfigNotInBucket.removeAll(fileUrlsInBucket);
+
+        Collection<String> inBucketNotInConfig = new HashSet<>(fileUrlsInBucket);
+        inBucketNotInConfig.removeAll(fileUrlsInConfig);
 
         Collection<String> invalidEncodingUrls = decodedBucketUrls.invalidEncodingUrls();
 
@@ -45,12 +50,6 @@ public class ReconciliationHealthCheck extends HealthCheck {
                     .withDetail("invalidHexEncodedUrl", invalidEncodingUrls)
                     .build();
         }
-    }
-
-    private Collection<String> subtract(Collection<String> a, Collection<String> b) {
-        return a.stream()
-                .filter(s -> !b.contains(s))
-                .collect(Collectors.toSet());
     }
 
     private Collection<String> getHexEncodeConfigUrls() {
