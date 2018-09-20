@@ -85,10 +85,8 @@ public class S3BucketMetadataStore {
         List<String> decodedUrls = new ArrayList<>();
         List<String> invalidEncodingUrls = new ArrayList<>();
         for (String encodedUrl: encodedUrls){
-            String decodeString;
             try {
-                decodeString = HexUtils.decodeString(encodedUrl);
-                decodedUrls.add(decodeString);
+                decodedUrls.add(HexUtils.decodeString(encodedUrl));
             } catch (DecoderException e) {
                 logger.error("Unable to decode string {} ", encodedUrl, e);
                 invalidEncodingUrls.add(encodedUrl);
