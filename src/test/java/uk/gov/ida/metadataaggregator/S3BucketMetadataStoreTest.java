@@ -12,8 +12,9 @@ import org.mockito.ArgumentCaptor;
 import org.opensaml.core.config.InitializationException;
 import org.opensaml.core.config.InitializationService;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
-import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
+import uk.gov.ida.metadataaggregator.core.DecodingResults;
 import uk.gov.ida.metadataaggregator.core.S3BucketMetadataStore;
+import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
 import uk.gov.ida.metadataaggregator.util.HexUtils;
 import uk.gov.ida.saml.core.test.TestEntityIds;
 import uk.gov.ida.saml.metadata.test.factories.metadata.EntityDescriptorFactory;
@@ -36,6 +37,9 @@ public class S3BucketMetadataStoreTest {
     private static final String HEX_ENCODED_METADATA_URL = String.valueOf(Hex.encodeHex(STUB_COUNTRY_ENTITY_ID.getBytes()));
     private static final EntityDescriptor STUB_COUNTRY_METADATA = new EntityDescriptorFactory().idpEntityDescriptor(STUB_COUNTRY_ENTITY_ID);
 
+    private static final String EXAMPLE_URL_1 = "http://example1.com";
+    private static final String EXAMPLE_URL_2 = "http://example2.com";
+    private static final String INVALID_ENCODING_STRING = "ThisIsInvalidEncoding";
 
     private AmazonS3 amazonS3Client;
     private S3BucketMetadataStore s3BucketMetadataStore;
@@ -81,11 +85,9 @@ public class S3BucketMetadataStoreTest {
 
     @Test
     public void shouldRetrieveAllKeysFromS3Bucket() throws MetadataStoreException {
-        String kid1 = "http://example1.com";
-        String kid2 = "http://example2.com";
 
-        S3ObjectSummary s3Object1 = createS3ObjectSummary(kid1);
-        S3ObjectSummary s3Object2 = createS3ObjectSummary(kid2);
+        S3ObjectSummary s3Object1 = createS3ObjectSummary(EXAMPLE_URL_1);
+        S3ObjectSummary s3Object2 = createS3ObjectSummary(EXAMPLE_URL_2);
 
         List<S3ObjectSummary> s3ObjectSummaries = new ArrayList<>();
         s3ObjectSummaries.add(s3Object1);
@@ -97,8 +99,68 @@ public class S3BucketMetadataStoreTest {
 
         List<String> s3BucketKeys = s3BucketMetadataStore.getAllHexEncodedUrlsFromS3Bucket();
 
-        assertThat(s3BucketKeys.get(0).contains(kid1));
-        assertThat(s3BucketKeys.get(1).contains(kid2));
+        assertThat(s3BucketKeys.get(0)).isEqualTo(EXAMPLE_URL_1);
+        assertThat(s3BucketKeys.get(1)).isEqualTo(EXAMPLE_URL_2);
+    }
+
+    @Test
+    public void shouldRetrieveAllKeysFromS3BucketAndDecodeThem() throws MetadataStoreException {
+
+        S3ObjectSummary s3Object1 = createS3ObjectSummary(HexUtils.encodeString(EXAMPLE_URL_1));
+        S3ObjectSummary s3Object2 = createS3ObjectSummary(HexUtils.encodeString(EXAMPLE_URL_2));
+
+        List<S3ObjectSummary> s3ObjectSummaries = new ArrayList<>();
+        s3ObjectSummaries.add(s3Object1);
+        s3ObjectSummaries.add(s3Object2);
+
+        ObjectListing objectListing = mock(ObjectListing.class);
+        when(amazonS3Client.listObjects(TEST_BUCKET_NAME)).thenReturn(objectListing);
+        when(objectListing.getObjectSummaries()).thenReturn(s3ObjectSummaries);
+
+        List<String> s3BucketKeys = s3BucketMetadataStore.getAllHexDecodedUrlsFromS3Bucket().urls();
+
+        assertThat(s3BucketKeys.get(0)).isEqualTo(EXAMPLE_URL_1);
+        assertThat(s3BucketKeys.get(1)).isEqualTo(EXAMPLE_URL_2);
+    }
+
+    @Test
+    public void shouldRetrieveAllKeysFromS3BucketAndReturnStringsWithInvalidDecoding() throws MetadataStoreException {
+
+        S3ObjectSummary s3Object2 = createS3ObjectSummary(INVALID_ENCODING_STRING);
+
+        List<S3ObjectSummary> s3ObjectSummaries = new ArrayList<>();
+        s3ObjectSummaries.add(s3Object2);
+
+        ObjectListing objectListing = mock(ObjectListing.class);
+        when(amazonS3Client.listObjects(TEST_BUCKET_NAME)).thenReturn(objectListing);
+        when(objectListing.getObjectSummaries()).thenReturn(s3ObjectSummaries);
+
+        List<String> s3BucketKeys = s3BucketMetadataStore.getAllHexDecodedUrlsFromS3Bucket().invalidEncodingUrls();
+
+        assertThat(s3BucketKeys.get(0)).isEqualTo(INVALID_ENCODING_STRING);
+    }
+
+    @Test
+    public void shouldRetrieveAllKeysFromS3BucketAndDecodeThemWhileReturningInvalidDecodedUrls()
+            throws MetadataStoreException {
+
+        S3ObjectSummary s3Object1 = createS3ObjectSummary(HexUtils.encodeString(EXAMPLE_URL_1));
+        S3ObjectSummary s3Object2 = createS3ObjectSummary(INVALID_ENCODING_STRING);
+
+        List<S3ObjectSummary> s3ObjectSummaries = new ArrayList<>();
+        s3ObjectSummaries.add(s3Object1);
+        s3ObjectSummaries.add(s3Object2);
+
+        ObjectListing objectListing = mock(ObjectListing.class);
+        when(amazonS3Client.listObjects(TEST_BUCKET_NAME)).thenReturn(objectListing);
+        when(objectListing.getObjectSummaries()).thenReturn(s3ObjectSummaries);
+
+        DecodingResults decodingResults = s3BucketMetadataStore.getAllHexDecodedUrlsFromS3Bucket();
+        List<String> validS3BucketKeys = decodingResults.urls();
+        List<String> invalidEncodedUrls = decodingResults.invalidEncodingUrls();
+
+        assertThat(validS3BucketKeys.get(0)).isEqualTo(EXAMPLE_URL_1);
+        assertThat(invalidEncodedUrls.get(0)).isEqualTo(INVALID_ENCODING_STRING);
     }
 
     @Test
@@ -107,6 +169,14 @@ public class S3BucketMetadataStoreTest {
 
         assertThatExceptionOfType(MetadataStoreException.class)
                 .isThrownBy(() -> s3BucketMetadataStore.getAllHexEncodedUrlsFromS3Bucket());
+    }
+
+    @Test
+    public void shouldThrowWhenS3ObjectListCantBeRetrievedFromBucketWhenRetrievingDecodedUrls() {
+        doThrow(new RuntimeException()).when(amazonS3Client).listObjects(TEST_BUCKET_NAME);
+
+        assertThatExceptionOfType(MetadataStoreException.class)
+                .isThrownBy(() -> s3BucketMetadataStore.getAllHexDecodedUrlsFromS3Bucket());
     }
 
     private S3ObjectSummary createS3ObjectSummary(String key) {

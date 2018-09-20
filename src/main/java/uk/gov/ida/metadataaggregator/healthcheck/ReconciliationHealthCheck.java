@@ -1,10 +1,12 @@
 package uk.gov.ida.metadataaggregator.healthcheck;
 
 import com.codahale.metrics.health.HealthCheck;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
+import uk.gov.ida.metadataaggregator.core.DecodingResults;
 import uk.gov.ida.metadataaggregator.core.S3BucketMetadataStore;
 import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
-import uk.gov.ida.metadataaggregator.util.HexUtils;
 
 import javax.inject.Inject;
 import java.net.URL;
@@ -17,6 +19,7 @@ public class ReconciliationHealthCheck extends HealthCheck {
 
     private final S3BucketMetadataStore metadataStore;
     private final MetadataSourceConfiguration config;
+    private final Logger logger = LoggerFactory.getLogger(ReconciliationHealthCheck.class);
 
     @Inject
     public ReconciliationHealthCheck(S3BucketMetadataStore metadataStore, MetadataSourceConfiguration config) {
@@ -26,32 +29,32 @@ public class ReconciliationHealthCheck extends HealthCheck {
 
     @Override
     public Result check() throws MetadataStoreException {
-        Set<String> fileUrlsInBucket = new HashSet<>(metadataStore.getAllHexEncodedUrlsFromS3Bucket());
-        Set<String> inBucketNotInConfig = new HashSet<>(fileUrlsInBucket);
+        DecodingResults decodedBucketUrls = metadataStore.getAllHexDecodedUrlsFromS3Bucket();
+        Collection<String> fileUrlsInBucket = decodedBucketUrls.urls();
+        Collection<String> fileUrlsInConfig = getHexEncodeConfigUrls();
 
-        Set<String> filesUrlsInConfig = getHexEncodeConfigUrls();
-        Set<String> inConfigNotInBucket = new HashSet<>(filesUrlsInConfig);
-
+        Collection<String> inConfigNotInBucket = new HashSet<>(fileUrlsInConfig);
         inConfigNotInBucket.removeAll(fileUrlsInBucket);
-        inBucketNotInConfig.removeAll(filesUrlsInConfig);
 
-        if (inConfigNotInBucket.isEmpty() && inBucketNotInConfig.isEmpty()) {
+        Collection<String> inBucketNotInConfig = new HashSet<>(fileUrlsInBucket);
+        inBucketNotInConfig.removeAll(fileUrlsInConfig);
+
+        Collection<String> invalidEncodingUrls = decodedBucketUrls.invalidEncodingUrls();
+
+        if (inConfigNotInBucket.isEmpty() && inBucketNotInConfig.isEmpty() && invalidEncodingUrls.isEmpty()) {
             return Result.healthy();
         } else {
             return Result.builder().unhealthy()
                     .withDetail("inConfigNotInBucket", inConfigNotInBucket)
                     .withDetail("inBucketNotInConfig", inBucketNotInConfig)
+                    .withDetail("invalidHexEncodedUrl", invalidEncodingUrls)
                     .build();
         }
     }
 
-    private Set<String> getHexEncodeConfigUrls() {
-        Collection<String> filesInConfig = config.getMetadataUrls().values().stream().map(URL::toString).collect(Collectors.toSet());
-        Set<String> hexedConfigUrls = new HashSet<>();
-
-        for (String configMetadataUrl : filesInConfig) {
-            hexedConfigUrls.add(HexUtils.encodeString(configMetadataUrl));
-        }
-        return hexedConfigUrls;
+    private Collection<String> getHexEncodeConfigUrls() {
+        return config.getMetadataUrls().values().stream()
+                .map(URL::toString)
+                .collect(Collectors.toSet());
     }
 }

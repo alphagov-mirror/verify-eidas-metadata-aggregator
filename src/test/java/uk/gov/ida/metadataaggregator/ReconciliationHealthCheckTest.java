@@ -6,20 +6,21 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.ida.metadataaggregator.configuration.MetadataSourceConfiguration;
+import uk.gov.ida.metadataaggregator.core.DecodingResults;
 import uk.gov.ida.metadataaggregator.core.S3BucketMetadataStore;
 import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
 import uk.gov.ida.metadataaggregator.healthcheck.ReconciliationHealthCheck;
-import uk.gov.ida.metadataaggregator.util.HexUtils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -30,8 +31,11 @@ public class ReconciliationHealthCheckTest {
     private ReconciliationHealthCheck reconciliationHealthCheck;
     private final S3BucketMetadataStore metadataStore = mock(S3BucketMetadataStore.class);
     private final MetadataSourceConfiguration config = mock(MetadataSourceConfiguration.class);
-    private final static String BUCKET_URL_A = HexUtils.encodeString("http://localhost-country-a");
-    private final static String BUCKET_URL_C = HexUtils.encodeString("http://localhost-country-c");
+    private final static String BUCKET_URL_A = "http://localhost-country-a";
+    private final static String BUCKET_URL_B = "http://localhost-country-b";
+    private final static String BUCKET_URL_C = "http://localhost-country-c";
+    private final static String INVALID_STRING = "Thisisinvalidencoding";
+
     private URL countryAConfigUrl;
     private URL countryBConfigUrl;
     private Map <String, URL> configUrls;
@@ -39,8 +43,8 @@ public class ReconciliationHealthCheckTest {
     @Before
     public void setUp() throws MalformedURLException {
         configUrls = new HashMap<>();
-        countryAConfigUrl = new URL("http://localhost-country-a");
-        countryBConfigUrl = new URL("http://localhost-country-b");
+        countryAConfigUrl = new URL(BUCKET_URL_A);
+        countryBConfigUrl = new URL(BUCKET_URL_B);
         reconciliationHealthCheck = new ReconciliationHealthCheck(metadataStore, config);
     }
 
@@ -49,7 +53,8 @@ public class ReconciliationHealthCheckTest {
         configUrls.put("someCountry", countryAConfigUrl);
 
         when(config.getMetadataUrls()).thenReturn(configUrls);
-        when(metadataStore.getAllHexEncodedUrlsFromS3Bucket()).thenReturn(Arrays.asList(BUCKET_URL_A));
+        when(metadataStore.getAllHexDecodedUrlsFromS3Bucket())
+                .thenReturn(new DecodingResults(singletonList(BUCKET_URL_A), emptyList()));
 
         HealthCheck.Result check = reconciliationHealthCheck.check();
 
@@ -59,7 +64,7 @@ public class ReconciliationHealthCheckTest {
     @Test
     public void shouldReturnHealthyWhenBothConfigAndBucketAreEmpty() throws MetadataStoreException {
         when(config.getMetadataUrls()).thenReturn(configUrls);
-        when(metadataStore.getAllHexEncodedUrlsFromS3Bucket()).thenReturn(emptyList());
+        when(metadataStore.getAllHexDecodedUrlsFromS3Bucket()).thenReturn(new DecodingResults(emptyList(), emptyList()));
 
         HealthCheck.Result check = reconciliationHealthCheck.check();
 
@@ -71,29 +76,28 @@ public class ReconciliationHealthCheckTest {
         configUrls.put("someCountry", countryAConfigUrl);
 
         when(config.getMetadataUrls()).thenReturn(configUrls);
-        when(metadataStore.getAllHexEncodedUrlsFromS3Bucket()).thenReturn(emptyList());
+        when(metadataStore.getAllHexDecodedUrlsFromS3Bucket()).thenReturn(new DecodingResults(emptyList(), emptyList()));
 
         HealthCheck.Result check = reconciliationHealthCheck.check();
 
         String metadataConfigHealthCheckUrl = check.getDetails().get("inConfigNotInBucket").toString();
-        String expectedMetadataUrlValue = HexUtils.encodeString(countryAConfigUrl.toString());
 
         assertFalse(check.isHealthy());
-        assertTrue(metadataConfigHealthCheckUrl.contains(expectedMetadataUrlValue));
+        assertTrue(metadataConfigHealthCheckUrl.contains(countryAConfigUrl.toString()));
     }
 
     @Test
     public void shouldReturnUnhealthyWhenMetadataIsNotInConfig() throws MetadataStoreException {
         when(config.getMetadataUrls()).thenReturn(configUrls);
-        when(metadataStore.getAllHexEncodedUrlsFromS3Bucket()).thenReturn(Arrays.asList(BUCKET_URL_A));
+        when(metadataStore.getAllHexDecodedUrlsFromS3Bucket())
+                .thenReturn(new DecodingResults(singletonList(BUCKET_URL_A), emptyList()));
 
         HealthCheck.Result check = reconciliationHealthCheck.check();
 
         String metadataBucketHealthCheckUrl = check.getDetails().get("inBucketNotInConfig").toString();
-        String expectedBucketMetadataUrlValue = BUCKET_URL_A;
 
         assertFalse(check.isHealthy());
-        assertTrue(metadataBucketHealthCheckUrl.contains(expectedBucketMetadataUrlValue));
+        assertTrue(metadataBucketHealthCheckUrl.contains(BUCKET_URL_A));
 
     }
 
@@ -103,10 +107,26 @@ public class ReconciliationHealthCheckTest {
         configUrls.put("countryB", countryBConfigUrl);
 
         when(config.getMetadataUrls()).thenReturn(configUrls);
-        when(metadataStore.getAllHexEncodedUrlsFromS3Bucket()).thenReturn(Arrays.asList(BUCKET_URL_A,BUCKET_URL_C));
+        when(metadataStore.getAllHexDecodedUrlsFromS3Bucket())
+                .thenReturn(new DecodingResults(emptyList(), asList(BUCKET_URL_A, BUCKET_URL_C)));
 
         HealthCheck.Result check = reconciliationHealthCheck.check();
 
         assertFalse(check.isHealthy());
+    }
+
+    @Test
+    public void shouldReturnUnhealthyWhenUrlsHaveInvalidEncoding() throws MetadataStoreException {
+        when(config.getMetadataUrls()).thenReturn(configUrls);
+        when(metadataStore.getAllHexDecodedUrlsFromS3Bucket())
+                .thenReturn(new DecodingResults(emptyList(), singletonList(INVALID_STRING)));
+
+        HealthCheck.Result check = reconciliationHealthCheck.check();
+
+        String metadataBucketHealthCheckUrl = check.getDetails().get("invalidHexEncodedUrl").toString();
+
+        assertFalse(check.isHealthy());
+        assertThat(metadataBucketHealthCheckUrl).contains(INVALID_STRING);
+
     }
 }
