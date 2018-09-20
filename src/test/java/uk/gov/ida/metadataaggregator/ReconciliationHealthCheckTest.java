@@ -53,7 +53,7 @@ public class ReconciliationHealthCheckTest {
         configUrls.put("someCountry", countryAConfigUrl);
 
         when(config.getMetadataUrls()).thenReturn(configUrls);
-        when(metadataStore.getAllUrls())
+        when(metadataStore.getAllHexDecodedUrlsFromS3Bucket())
                 .thenReturn(new DecodingResults(singletonList(BUCKET_URL_A), emptyList()));
 
         HealthCheck.Result check = reconciliationHealthCheck.check();
@@ -64,7 +64,7 @@ public class ReconciliationHealthCheckTest {
     @Test
     public void shouldReturnHealthyWhenBothConfigAndBucketAreEmpty() throws MetadataStoreException {
         when(config.getMetadataUrls()).thenReturn(configUrls);
-        when(metadataStore.getAllUrls()).thenReturn(new DecodingResults(emptyList(), emptyList()));
+        when(metadataStore.getAllHexDecodedUrlsFromS3Bucket()).thenReturn(new DecodingResults(emptyList(), emptyList()));
 
         HealthCheck.Result check = reconciliationHealthCheck.check();
 
@@ -76,7 +76,7 @@ public class ReconciliationHealthCheckTest {
         configUrls.put("someCountry", countryAConfigUrl);
 
         when(config.getMetadataUrls()).thenReturn(configUrls);
-        when(metadataStore.getAllUrls()).thenReturn(new DecodingResults(emptyList(), emptyList()));
+        when(metadataStore.getAllHexDecodedUrlsFromS3Bucket()).thenReturn(new DecodingResults(emptyList(), emptyList()));
 
         HealthCheck.Result check = reconciliationHealthCheck.check();
 
@@ -89,7 +89,7 @@ public class ReconciliationHealthCheckTest {
     @Test
     public void shouldReturnUnhealthyWhenMetadataIsNotInConfig() throws MetadataStoreException {
         when(config.getMetadataUrls()).thenReturn(configUrls);
-        when(metadataStore.getAllUrls())
+        when(metadataStore.getAllHexDecodedUrlsFromS3Bucket())
                 .thenReturn(new DecodingResults(singletonList(BUCKET_URL_A), emptyList()));
 
         HealthCheck.Result check = reconciliationHealthCheck.check();
@@ -107,7 +107,7 @@ public class ReconciliationHealthCheckTest {
         configUrls.put("countryB", countryBConfigUrl);
 
         when(config.getMetadataUrls()).thenReturn(configUrls);
-        when(metadataStore.getAllUrls())
+        when(metadataStore.getAllHexDecodedUrlsFromS3Bucket())
                 .thenReturn(new DecodingResults(emptyList(), asList(BUCKET_URL_A, BUCKET_URL_C)));
 
         HealthCheck.Result check = reconciliationHealthCheck.check();
@@ -118,7 +118,7 @@ public class ReconciliationHealthCheckTest {
     @Test
     public void shouldReturnUnhealthyWhenUrlsHaveInvalidEncoding() throws MetadataStoreException {
         when(config.getMetadataUrls()).thenReturn(configUrls);
-        when(metadataStore.getAllUrls())
+        when(metadataStore.getAllHexDecodedUrlsFromS3Bucket())
                 .thenReturn(new DecodingResults(emptyList(), singletonList(INVALID_STRING)));
 
         HealthCheck.Result check = reconciliationHealthCheck.check();

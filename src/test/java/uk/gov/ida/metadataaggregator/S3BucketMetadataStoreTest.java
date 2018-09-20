@@ -117,7 +117,7 @@ public class S3BucketMetadataStoreTest {
         when(amazonS3Client.listObjects(TEST_BUCKET_NAME)).thenReturn(objectListing);
         when(objectListing.getObjectSummaries()).thenReturn(s3ObjectSummaries);
 
-        List<String> s3BucketKeys = s3BucketMetadataStore.getAllUrls().urls();
+        List<String> s3BucketKeys = s3BucketMetadataStore.getAllHexDecodedUrlsFromS3Bucket().urls();
 
         assertThat(s3BucketKeys.get(0)).isEqualTo(EXAMPLE_URL_1);
         assertThat(s3BucketKeys.get(1)).isEqualTo(EXAMPLE_URL_2);
@@ -135,7 +135,7 @@ public class S3BucketMetadataStoreTest {
         when(amazonS3Client.listObjects(TEST_BUCKET_NAME)).thenReturn(objectListing);
         when(objectListing.getObjectSummaries()).thenReturn(s3ObjectSummaries);
 
-        List<String> s3BucketKeys = s3BucketMetadataStore.getAllUrls().invalidEncodingUrls();
+        List<String> s3BucketKeys = s3BucketMetadataStore.getAllHexDecodedUrlsFromS3Bucket().invalidEncodingUrls();
 
         assertThat(s3BucketKeys.get(0)).isEqualTo(INVALID_ENCODING_STRING);
     }
@@ -155,7 +155,7 @@ public class S3BucketMetadataStoreTest {
         when(amazonS3Client.listObjects(TEST_BUCKET_NAME)).thenReturn(objectListing);
         when(objectListing.getObjectSummaries()).thenReturn(s3ObjectSummaries);
 
-        DecodingResults decodingResults = s3BucketMetadataStore.getAllUrls();
+        DecodingResults decodingResults = s3BucketMetadataStore.getAllHexDecodedUrlsFromS3Bucket();
         List<String> validS3BucketKeys = decodingResults.urls();
         List<String> invalidEncodedUrls = decodingResults.invalidEncodingUrls();
 
@@ -176,7 +176,7 @@ public class S3BucketMetadataStoreTest {
         doThrow(new RuntimeException()).when(amazonS3Client).listObjects(TEST_BUCKET_NAME);
 
         assertThatExceptionOfType(MetadataStoreException.class)
-                .isThrownBy(() -> s3BucketMetadataStore.getAllUrls());
+                .isThrownBy(() -> s3BucketMetadataStore.getAllHexDecodedUrlsFromS3Bucket());
     }
 
     private S3ObjectSummary createS3ObjectSummary(String key) {

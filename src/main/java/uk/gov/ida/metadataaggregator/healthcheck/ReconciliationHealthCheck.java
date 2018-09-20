@@ -11,7 +11,6 @@ import uk.gov.ida.metadataaggregator.exceptions.MetadataStoreException;
 import javax.inject.Inject;
 import java.net.URL;
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class ReconciliationHealthCheck extends HealthCheck {
@@ -28,7 +27,7 @@ public class ReconciliationHealthCheck extends HealthCheck {
 
     @Override
     public Result check() throws MetadataStoreException {
-        DecodingResults decodedBucketUrls = metadataStore.getAllUrls();
+        DecodingResults decodedBucketUrls = metadataStore.getAllHexDecodedUrlsFromS3Bucket();
         Collection<String> fileUrlsInBucket = decodedBucketUrls.urls();
         Collection<String> fileUrlsInConfig = getHexEncodeConfigUrls();
 

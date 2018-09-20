@@ -79,7 +79,7 @@ public class S3BucketMetadataStore {
         return bucketKeyList;
     }
 
-    public DecodingResults getAllUrls() throws MetadataStoreException {
+    public DecodingResults getAllHexDecodedUrlsFromS3Bucket() throws MetadataStoreException {
         List<String> encodedUrls = getAllHexEncodedUrlsFromS3Bucket();
 
         List<String> decodedUrls = new ArrayList<>();
