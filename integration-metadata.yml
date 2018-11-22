@@ -7,7 +7,7 @@ Stub Country:
 Spain:
   url: https://se-eidas.redsara.es/EidasNode/ServiceMetadata
 Denmark:
-  url: https://eidasservice.test.eid.digst.dk/metadata
+  url: https://eidasservice.test.eid.digst.dk/Metadata
 
 # No info
 # Luxembourg:
