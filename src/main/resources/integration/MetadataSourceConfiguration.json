@@ -1,10 +1,13 @@
 {
   "metadataUrls": {
-    "Stub Country metadata": "https://idp-stub-joint.ida.digital.cabinet-office.gov.uk/stub-country/ServiceMetadata",
-    "Poland metadata": "https://plnode.eidas.gov.pl/EidasNode/ServiceMetadata",
-    "Italy metadata": "https://service.eid.gov.it/ServiceMetadata",
-    "Spain metadata": "https://se-eidas.redsara.es/EidasNode/ServiceMetadata",
+    "Belgium metadata": "https://idp.iamfas.qa.belgium.be/EidasNode/ServiceMetadata",
+    "Denmark metadata": "https://eidasservice.test.eid.digst.dk/Metadata",
+    "Estonia metadata": "https://eidastest.eesti.ee/EidasNode/ServiceMetadata",
+    "Germany metadata": "https://middleware.integration-mw-de.eidas.signin.service.gov.uk/eidas-middleware/Metadata",
+    "Italy metadata": "https://service.pre.eid.gov.it/EidasNode/ServiceMetadata",
     "Netherlands metadata": "https://acc-eidas.minez.nl/EidasNodeP/ServiceMetadata",
-    "Belgium metadata": "https://idp-poc2.iamfas.qa.belgium.be/EidasNode/ServiceMetadata"
+    "Spain metadata": "https://se-eidas.redsara.es/EidasNode/ServiceMetadata",
+    "Stub Country metadata": "https://ida-stub-idp-integration.cloudapps.digital/stub-country/ServiceMetadata",
+    "Sweden metadata": "https://qa.proxy.eidas.swedenconnect.se/eidas-ps/ServiceMetadata"
   }
 }

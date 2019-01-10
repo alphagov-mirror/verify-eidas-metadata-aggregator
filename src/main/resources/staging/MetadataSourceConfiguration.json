@@ -1,4 +1,6 @@
 {
   "metadataUrls": {
+    "Germany metadata": "https://middleware.staging-mw-de.eidas.signin.service.gov.uk/eidas-middleware/Metadata",
+    "Stub Country metadata": "https://ida-stub-idp-staging.cloudapps.digital/stub-country/ServiceMetadata"
   }
 }
