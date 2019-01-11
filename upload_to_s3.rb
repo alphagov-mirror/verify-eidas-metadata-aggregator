@@ -32,6 +32,10 @@ def aws_put object, content
   )
 end
 
+def metadata_content url
+  `curl -A "Mozilla" --max-time 15 #{url}`
+end
+
 s3 = Aws::S3::Resource.new(region: aws_region)
 updated_metadata = []
 
@@ -39,7 +43,7 @@ country_list.each do |country, url|
     puts "Pushing #{url} to S3 bucket"
     s3_object_key = url.unpack('H*')[0].downcase
     updated_metadata << s3_object_key
-    aws_put s3.bucket(bucket_name).object(s3_object_key)
+    aws_put s3.bucket(bucket_name).object(s3_object_key), metadata_content(url)
 end
 
 s3.bucket(bucket_name).objects.each do |object|
