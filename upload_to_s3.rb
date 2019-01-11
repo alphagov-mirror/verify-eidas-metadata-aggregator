@@ -6,6 +6,7 @@ require 'json'
 
 aws_region = ENV['AWS_REGION']
 bucket_name = ENV['BUCKET_NAME']
+environment = ENV['ENVIRONMENT']
 
 unless aws_region && bucket_name && environment
     abort('Please supply AWS_REGION, BUCKET_NAME, ENVIRONMENT as environment variables')
