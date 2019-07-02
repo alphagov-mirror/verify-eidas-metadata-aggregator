@@ -51,12 +51,12 @@ Then to run it:
 
 The configuration file reads some environment variables. Depending on your environment you could also need to set, as an example:
 ```
-export TRUST_ANCHOR_URI="https://verify-joint-metadata.cloudapps.digital/trust-anchor.jws"
+export TRUST_ANCHOR_URI="https://verify-integration-metadata.cloudapps.digital/trust-anchor.jws"
 export TRUSTSTORE="../ida-hub-acceptance-tests/truststores/ida_truststore.ts"
 export LOG_PATH="/tmp"
 export TRUSTSTORE_PASSWORD=`cat ../ida-hub-acceptance-tests/configuration/test-rp-msa.yml | grep trustStorePassword | awk '{ print $2; }'`
 export HOURS_BETWEEN_EACH_RUN=1
-export ENVIRONMENT="joint"
+export ENVIRONMENT="integration"
 export AWS_REGION="eu-west-2"
 ```
 
