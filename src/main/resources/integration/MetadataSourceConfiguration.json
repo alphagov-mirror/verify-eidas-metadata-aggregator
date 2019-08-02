@@ -7,7 +7,7 @@
     "Italy metadata": "https://service.pre.eid.gov.it/EidasNode/ServiceMetadata",
     "Netherlands metadata": "https://acc-eidas.minez.nl/EidasNodeP/ServiceMetadata",
     "Spain metadata": "https://se-eidas.redsara.es/EidasNode/ServiceMetadata",
-    "Stub Country metadata": "https://ida-stub-idp-integration.cloudapps.digital/stub-country/ServiceMetadata",
+    "Stub Country metadata": "https://stub-idp-integration.cloudapps.digital/stub-country/ServiceMetadata",
     "Sweden metadata": "https://qa.proxy.eidas.swedenconnect.se/eidas-ps/ServiceMetadata"
   }
 }
