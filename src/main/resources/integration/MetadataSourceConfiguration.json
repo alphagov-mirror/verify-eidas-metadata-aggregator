@@ -1,6 +1,7 @@
 {
   "metadataUrls": {
     "Belgium metadata": "https://idp.iamfas.qa.belgium.be/EidasNode/ServiceMetadata",
+    "Czechia metadata": "https://srv.dev.eidasnode.cz/EidasNode/ServiceMetadata",
     "Denmark metadata": "https://eidasservice.test.eid.digst.dk/Metadata",
     "Estonia metadata": "https://eidastest.eesti.ee/EidasNode/ServiceMetadata",
     "Germany metadata": "https://middleware.integration-mw-de.eidas.signin.service.gov.uk/eidas-middleware/Metadata",
