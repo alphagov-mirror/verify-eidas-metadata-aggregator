@@ -1,6 +1,7 @@
 {
   "metadataUrls": {
     "Germany metadata": "https://middleware-de.eidas.signin.service.gov.uk/eidas-middleware/Metadata",
-    "Italy metadata": "https://service.eid.gov.it/EidasNode/ServiceMetadata"
+    "Italy metadata": "https://service.eid.gov.it/EidasNode/ServiceMetadata",
+    "Spain metadata":  "https://eidas.redsara.es/EidasNode/ServiceMetadata"
   }
 }
