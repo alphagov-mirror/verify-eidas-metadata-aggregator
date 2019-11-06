@@ -1,7 +1,10 @@
 {
   "metadataUrls": {
+    "Croatia metadata": "https://eidas.gov.hr/EidasNode/ServiceMetadata",
+    "Estonia metadata": "https://eidas.ria.ee/EidasNode/ServiceMetadata",
     "Germany metadata": "https://middleware-de.eidas.signin.service.gov.uk/eidas-middleware/Metadata",
     "Italy metadata": "https://service.eid.gov.it/EidasNode/ServiceMetadata",
+    "Luxembourg metadata": "https://eidas.services-publics.lu/cisie-node/ServiceMetadata",
     "Spain metadata":  "https://eidas.redsara.es/EidasNode/ServiceMetadata"
   }
 }
